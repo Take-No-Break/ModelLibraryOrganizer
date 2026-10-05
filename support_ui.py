@@ -1,0 +1,165 @@
+import json,webbrowser,time
+from pathlib import Path
+import tkinter as tk
+import i18n,network
+from i18n import ttk,messagebox,filedialog,LocalizedToplevel,LocalizedText,Tooltip,tr
+from core import atomic_json,read_json
+from support import VERSION,load_publisher,valid_repo,check_release,support_report,record_error
+from guide import GUIDE
+
+class SupportUI:
+ def setup_support(self,outer):
+    self.preferences=read_json(self.engine.data/'preferences.json',{}) or {}
+    self.publisher=load_publisher(self.engine.data)
+    network.OFFLINE=bool(self.preferences.get('offline',False))
+    if network.OFFLINE:self.online.set(False)
+    head=ttk.Frame(outer);head.pack(fill='x',before=outer.winfo_children()[0],pady=(0,5))
+    ttk.Label(head,text='v'+VERSION).pack(side='left')
+    self.language=tk.StringVar(value=i18n.LANGS[i18n.LANG])
+    choose=ttk.Combobox(head,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=19);choose.pack(side='right');choose.bind('<<ComboboxSelected>>',self.change_language)
+    ttk.Label(head,text='言語').pack(side='right',padx=5)
+    self.root.report_callback_exception=self.callback_error
+    if self.preferences.get('auto_updates') and not network.OFFLINE and self.publisher.get('github_repository'):
+        self.root.after(1800,lambda:self.check_updates(True))
+ def save_preferences(self):atomic_json(self.engine.data/'preferences.json',self.preferences)
+ def change_language(self,event=None):
+    code=next(k for k,v in i18n.LANGS.items() if v==self.language.get())
+    if not self.ready() or not self.editor_guard():self.language.set(i18n.LANGS[i18n.LANG]);return
+    root=self.root;data=self.engine.data;geometry=root.geometry()
+    page=next((k for k,v in self.pages.items() if str(v)==self.current_page()),'models')
+    rows=self.rows;dataset=self.dataset_rows;dataset_path=self.dataset_path.get()
+    state={k:v.get() for k,v in vars(self).items() if isinstance(v,tk.Variable) and k not in ('language','filter','status','editor_status','compat_origin','cap_connection')}
+    groups={k:{name:v.get() for name,v in getattr(self,k).items()} for k in ('cap_thresholds','compat_roots')}
+    context={k:getattr(self,k) for k in ['scan_source','scan_target'] if hasattr(self,k)}
+    self.save_training_settings()
+    self.preferences['language']=code;self.save_preferences()
+    for timer in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(timer)
+    for child in root.winfo_children():child.destroy()
+    self.__init__(root,data)
+    root.geometry(geometry)
+    for k,v in state.items():getattr(self,k).set(v)
+    for k,values in groups.items():
+        for name,value in values.items():getattr(self,k)[name].set(value)
+    for k,v in context.items():setattr(self,k,v)
+    self.rows=rows;self.render();self.set_gallery_rows(rows,select=False)
+    self.dataset_path.set(dataset_path);self.receive_dataset(dataset)
+    self.update_template_view()
+    self.populate_compatibility();self.select_page(self.pages[page])
+ def callback_error(self,kind,value,tb):
+    try:record_error(self.engine.data,value.with_traceback(tb),'ui_callback')
+    except Exception:pass
+    messagebox.showerror('確認が必要です',kind.__name__+'\n'+tr('通信診断・サポートログ'))
+ def check_updates(self,automatic=False):
+    if self.busy:
+        if automatic:self.root.after(3000,lambda:self.check_updates(True))
+        return
+    if network.OFFLINE:
+        if not automatic:messagebox.showinfo('更新','ネットワーク通信はオフライン設定で無効です。')
+        return
+    repo=self.publisher.get('github_repository','')
+    if not repo:
+        if not automatic:messagebox.showinfo('公開先未設定','公開先を設定してください。ログは自動送信されません。')
+        return
+    self.work(lambda:{**check_release(repo),'automatic':automatic},'release')
+ def release_result(self,data):
+    self.preferences['last_update_check']=time.time();self.save_preferences()
+    if data['automatic'] and (not data['newer'] or self.preferences.get('notified_version')==data['latest']):return
+    self.preferences['notified_version']=data['latest'];self.save_preferences()
+    self.record_result('更新があります' if data['newer'] else '最新版です',f"{data['current']} → {data['latest']}\n{data['url']}\n{data['notes']}")
+    win=self.open_panel('results','更新があります' if data['newer'] else '最新版です')
+    ttk.Label(win,text=f"{data['current']} → {data['latest']}").pack(pady=10)
+    box=LocalizedText(win,wrap='word');box.pack(fill='both',expand=True,padx=12);box.insert('1.0',data['notes']);box.configure(state='disabled')
+    ttk.Button(win,text='リリースページを開く',command=lambda:self.open_external(data['url'])).pack(pady=8)
+ def open_external(self,url):
+    if network.OFFLINE:messagebox.showinfo('オフライン・プライバシー','ネットワーク通信はオフライン設定で無効です。');return
+    if not str(url).startswith('https://'):raise ValueError('HTTPS URL required.')
+    webbrowser.open(url)
+ def help_center(self):
+    win=self.open_panel('help','About')
+    tabs=ttk.Notebook(win);tabs.pack(fill='both',expand=True,padx=12,pady=12)
+    titles=['概要','識別と整理','オフライン・プライバシー','Support & Updates']
+    for idx,title in enumerate(titles):
+        frame=ttk.Frame(tabs,padding=12);tabs.add(frame,text=tr(title))
+        body=LocalizedText(frame,wrap='word',height=12);body.pack(fill='both',expand=True);body.insert('1.0',GUIDE[i18n.LANG][idx]+('\n\n'+GUIDE[i18n.LANG][4] if idx==3 else ''));body.configure(state='disabled')
+        if idx==2:
+            offline=tk.BooleanVar(value=network.OFFLINE)
+            def toggle(v=offline):
+                network.OFFLINE=v.get();self.preferences['offline']=v.get();self.save_preferences()
+                if v.get():self.online.set(False)
+            ttk.Checkbutton(frame,text='完全オフライン（すべての通信を停止）',variable=offline,command=toggle,tooltip='ネットワーク通信はオフライン設定で無効です。').pack(anchor='w',pady=8)
+        if idx==3:
+            ttk.Button(frame,text='通信診断・サポートログ…',command=self.network_report).pack(side='left',padx=5)
+            ttk.Button(frame,text='問い合わせページを開く',command=self.open_support).pack(side='left',padx=5)
+        if idx==3:
+            ttk.Button(frame,text='GitHub repository',command=self.open_repository).pack(side='left',padx=5)
+            repo=self.publisher.get('github_repository','')
+            if repo:
+                link=ttk.Label(frame,text='https://github.com/'+valid_repo(repo),foreground='#175fa6',cursor='hand2');link.pack(anchor='w',pady=5);link.bind('<Button-1>',lambda event:self.open_repository())
+            auto=tk.BooleanVar(value=self.preferences.get('auto_updates',False))
+            def toggle_auto(v=auto):self.preferences['auto_updates']=v.get();self.save_preferences()
+            ttk.Checkbutton(frame,text='起動時に更新を確認（任意）',variable=auto,command=toggle_auto,tooltip='最新版の確認にはインターネット接続が必要です。自動インストールはしません。').pack(anchor='w',pady=8)
+            ttk.Button(frame,text='更新を確認',command=self.check_updates).pack(side='left',padx=5)
+            ttk.Button(frame,text='更新・サポート設定',command=self.publisher_settings).pack(side='left',padx=5)
+    about=ttk.Frame(tabs,padding=12);tabs.add(about,text='About')
+    tabs.select(about)
+    body=tk.Text(about,wrap='word');body.pack(fill='both',expand=True)
+    body.insert('1.0',f'''Model Library Organizer {VERSION}
+
+A desktop utility for inspecting and organizing local AI model libraries.
+
+Identify models using file structure, embedded metadata, SHA256 hashes and available public source information. Review proposed destinations and hard links before applying file changes. Unidentified files remain visible for review.
+
+Compatibility colors are estimates: green indicates the same family, yellow indicates related SDXL families, and gray indicates no known relationship or insufficient information. Successful loading does not guarantee useful results. You can record a separate assessment for each LoRA/checkpoint pair after testing it.
+
+Image to Text exports editable ComfyUI workflow templates for supported image analysis models. This app does not connect to or launch ComfyUI. Run the workflow in ComfyUI to analyze images and optionally save matching image-name TXT files. The text editor supports individual and batch caption edits. Model source TXT instead documents model identity, source links, family, trigger words and other selected metadata; it is not a training caption.
+
+Model weights, ComfyUI and a GPU runtime are not bundled. Choose folders on each computer; the app does not search every drive. Preview images are shown inside the app, not written beside your models.
+
+Online lookup can send model hashes and search names to source services. Offline mode disables external requests; workflow template creation and text editing remain available. Diagnostic reports are not uploaded automatically. Updates and support links depend on the distributor's configured publication address.
+
+Source descriptions and model names retain their original language. Exported model information uses English field labels. This application is independent of ComfyUI, Civitai, Hugging Face and the model authors.
+''');body.configure(state='disabled')
+ def publisher_settings(self):
+    win=self.open_panel('help','更新・サポート設定')
+    ttk.Label(win,text='GitHub: owner/repository').pack(anchor='w',padx=16,pady=10)
+    repo=tk.StringVar(value=self.publisher.get('github_repository',''));ttk.Entry(win,textvariable=repo,width=95).pack(padx=16,fill='x')
+    ttk.Label(win,text='Support URL (HTTPS) — optional; default: GitHub Issues').pack(anchor='w',padx=16,pady=10)
+    url=tk.StringVar(value=self.publisher.get('support_url',''));ttk.Entry(win,textvariable=url,width=95).pack(padx=16,fill='x')
+    def config():
+        r=valid_repo(repo.get()) if repo.get().strip() else ''
+        u=url.get().strip()
+        from urllib.parse import urlparse
+        if u:
+            parsed=urlparse(u)
+            if parsed.scheme!='https' or not parsed.netloc or parsed.username or parsed.password:raise ValueError('Use an HTTPS support page without embedded credentials.')
+        return {'github_repository':r,'support_url':u}
+    def save(export=False):
+        try:
+            c=config()
+            if export:
+                path=filedialog.asksaveasfilename(parent=win,initialfile='publisher.json',defaultextension='.json')
+                if path:atomic_json(path,c)
+            else:
+                atomic_json(self.engine.data/'publisher-settings.json',c);self.publisher=c;self.help_center()
+        except Exception as e:messagebox.showerror('確認が必要です',str(e),parent=win)
+    ttk.Button(win,text='設定を保存',command=save).pack(pady=12)
+    ttk.Button(win,text='配布用設定を書き出す',command=lambda:save(True)).pack()
+ def open_repository(self):
+    repo=self.publisher.get('github_repository','')
+    if not repo:self.publisher_settings();return
+    self.open_external('https://github.com/'+valid_repo(repo))
+ def open_support(self):
+    url=self.publisher.get('support_url','');repo=self.publisher.get('github_repository','')
+    if not url and repo:url='https://github.com/'+valid_repo(repo)+'/issues/new/choose'
+    if not url:messagebox.showinfo('公開先未設定','公開先を設定してください。ログは自動送信されません。');return
+    self.open_external(url)
+ def network_report(self):
+    report=support_report(self.engine.data)
+    win=self.open_panel('results','通信診断・サポートログ')
+    box=LocalizedText(win,wrap='word');box.pack(fill='both',expand=True,padx=12,pady=12)
+    box.insert('1.0',GUIDE[i18n.LANG][3]+'\n\n'+json.dumps(report,ensure_ascii=False,indent=2));box.configure(state='disabled')
+    def export():
+        p=filedialog.asksaveasfilename(parent=win,defaultextension='.json',initialfile='model-organizer-support.json')
+        if p:atomic_json(p,report);messagebox.showinfo('保存完了','必要な場合、このJSONを配布者に送ってください。',parent=win)
+    ttk.Button(win,text='診断ログを保存…（自動送信なし）',command=export).pack(side='left',padx=12,pady=10)
+    ttk.Button(win,text='問い合わせページを開く',command=self.open_support).pack(side='left',padx=12,pady=10)

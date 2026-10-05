@@ -1,0 +1,277 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "type": "OrganizerImagePaths",
+      "title": "Images",
+      "pos": [
+        30,
+        30
+      ],
+      "size": [
+        380,
+        240
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "properties": {
+        "Node name for S&R": "OrganizerImagePaths"
+      },
+      "widgets_values": [
+        "[]"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "image_paths",
+          "type": "ORGANIZER_IMAGE_PATHS",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "OrganizerCaptionModel",
+      "title": "Model",
+      "pos": [
+        30,
+        350
+      ],
+      "size": [
+        380,
+        240
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "properties": {
+        "Node name for S&R": "OrganizerCaptionModel"
+      },
+      "widgets_values": [
+        "CL Tagger",
+        "",
+        "auto"
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "caption_model",
+          "type": "ORGANIZER_OTHER_MODEL",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "OrganizerCaptionSettings",
+      "title": "Model settings",
+      "pos": [
+        450,
+        350
+      ],
+      "size": [
+        380,
+        240
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "properties": {
+        "Node name for S&R": "OrganizerCaptionSettings"
+      },
+      "widgets_values": [
+        0.55,
+        0.4,
+        "Describe the visible subject, clothing, pose, composition, background and art style in English. Return only the caption.",
+        512
+      ],
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "settings",
+          "type": "ORGANIZER_OTHER_SETTINGS",
+          "links": [
+            3
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "OrganizerCaptionAnalyze",
+      "title": "Analyze images",
+      "pos": [
+        880,
+        30
+      ],
+      "size": [
+        380,
+        240
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "properties": {
+        "Node name for S&R": "OrganizerCaptionAnalyze"
+      },
+      "widgets_values": [],
+      "inputs": [
+        {
+          "name": "image_paths",
+          "type": "ORGANIZER_IMAGE_PATHS",
+          "link": 1
+        },
+        {
+          "name": "caption_model",
+          "type": "ORGANIZER_OTHER_MODEL",
+          "link": 2
+        },
+        {
+          "name": "settings",
+          "type": "ORGANIZER_OTHER_SETTINGS",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "captions",
+          "type": "ORGANIZER_OTHER_CAPTIONS",
+          "links": [
+            4
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "OrganizerCaptionFormat",
+      "title": "Caption text",
+      "pos": [
+        1300,
+        30
+      ],
+      "size": [
+        380,
+        240
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "properties": {
+        "Node name for S&R": "OrganizerCaptionFormat"
+      },
+      "widgets_values": [],
+      "inputs": [
+        {
+          "name": "captions",
+          "type": "ORGANIZER_OTHER_CAPTIONS",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "caption_json",
+          "type": "STRING",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "OrganizerSaveCaptionTXT",
+      "title": "Save matching TXT / optional",
+      "pos": [
+        1750,
+        950
+      ],
+      "size": [
+        410,
+        140
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "properties": {
+        "Node name for S&R": "OrganizerSaveCaptionTXT"
+      },
+      "inputs": [
+        {
+          "name": "caption_json",
+          "type": "STRING",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "save_report",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        false
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      4,
+      0,
+      "ORGANIZER_IMAGE_PATHS"
+    ],
+    [
+      2,
+      2,
+      0,
+      4,
+      1,
+      "ORGANIZER_OTHER_MODEL"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      2,
+      "ORGANIZER_OTHER_SETTINGS"
+    ],
+    [
+      4,
+      4,
+      0,
+      5,
+      0,
+      "ORGANIZER_OTHER_CAPTIONS"
+    ],
+    [
+      5,
+      5,
+      0,
+      6,
+      0,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4,
+  "last_node_id": 6,
+  "last_link_id": 5
+}

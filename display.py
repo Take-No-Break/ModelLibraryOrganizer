@@ -1,0 +1,28 @@
+"""Windows DPI setup and consistent readable Tk fonts."""
+import sys
+from tkinter import font
+
+def enable_dpi():
+    if sys.platform != 'win32': return
+    import ctypes
+    try:
+        # Tk 8.6 does not rescale all existing widgets on WM_DPICHANGED.
+        # System awareness lets Windows scale the complete window when it moves
+        # to a monitor with a different display scale, rather than keeping it tiny.
+        if ctypes.windll.user32.SetProcessDpiAwarenessContext(ctypes.c_void_p(-2)): return
+    except (AttributeError, OSError): pass
+    try: ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    except (AttributeError, OSError): pass
+
+def scaled_window_size(root,width,height):
+    scale=max(1,float(root.winfo_fpixels('1i'))/96)
+    return round(width*scale),round(height*scale)
+
+def configure_fonts(root):
+    families=set(font.families(root))
+    family='Yu Gothic UI' if 'Yu Gothic UI' in families else 'Segoe UI'
+    for name in ('TkDefaultFont','TkTextFont','TkMenuFont','TkHeadingFont','TkCaptionFont','TkSmallCaptionFont','TkIconFont','TkTooltipFont'):
+        font.nametofont(name,root=root).configure(family=family,size=11)
+    root.option_add('*Text.Font','TkTextFont')
+    root.option_add('*Entry.Font','TkTextFont')
+    return family

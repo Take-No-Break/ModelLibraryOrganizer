@@ -1,0 +1,9 @@
+.build-venv/
+__pycache__/
+build/
+dist/
+*.zip
+*.log
+local-scan-verification.json
+missing-locales.json
+ui_strings.json

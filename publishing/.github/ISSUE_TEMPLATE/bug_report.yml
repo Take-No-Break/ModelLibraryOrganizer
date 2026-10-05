@@ -1,0 +1,39 @@
+name: Bug report
+description: Report an issue. Do not include private model paths or credentials.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Save a diagnostic report using About → Support & Updates → Diagnostics. Review it before attaching. This issue will be public."
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      placeholder: "1.0.7"
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: App language
+      options:
+        - 日本語
+        - English
+        - Español
+        - 简体中文
+        - 繁體中文（台灣）
+        - ไทย
+        - Deutsch
+        - Português (Brasil)
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Describe the action and the expected result. Avoid private filenames and paths.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostic
+    attributes:
+      label: Diagnostic report
+      description: Attach the reviewed JSON or paste its contents here. Do not attach models, account tokens or your entire cache.json.
