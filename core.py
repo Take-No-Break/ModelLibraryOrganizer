@@ -12,7 +12,7 @@ import urllib.error
 from pathlib import Path
 
 EXTS={'.safetensors','.sft','.ckpt','.pt','.pth','.bin','.onnx','.gguf','.pt2'}
-CATEGORIES=['checkpoints','loras','embeddings','diffusion_models','diffusers','vae','vae_approx',
+CATEGORIES=['checkpoints','loras','embeddings','workflows','diffusion_models','diffusers','vae','vae_approx',
  'text_encoders','clip','clip_vision','controlnet','background_removal','upscale_models',
  'latent_upscale_models','style_models','model_patches','audio_encoders','detection','sams',
  'ultralytics','frame_interpolation','geometry_estimation','optical_flow','gligen',
@@ -113,6 +113,9 @@ def enumerate_units(root,stop):
                 if f.name not in {'.cache','.git','__pycache__','.organizer'}:walk(f)
             elif f.suffix.lower() in EXTS:
                 units.append((f,False))
+            elif f.suffix.lower()=='.json':
+                from organization import is_workflow
+                if is_workflow(f):units.append((f,False))
     walk(Path(root));return units
 
 def safe_shallow(p):return not has_link(p)
@@ -157,7 +160,7 @@ class Engine:
         sha=digest(p,stop)
         if stamp(p)!=s:raise ValueError('調査中にファイルが変更されました')
         self.cache['hashes'][key]={'stamp':s,'sha':sha};return sha
-    def scan(self,scan_root,target_root,online=True,host='https://civitai.red',stop=None,notify=lambda x:None,only_new=False,progress=lambda completed,total:None):
+    def scan(self,scan_root,target_root,online=True,host='https://civitai.red',stop=None,notify=lambda x:None,only_new=False,progress=lambda completed,total:None,layout='category'):
         stop=stop or threading.Event();source_root=Path(scan_root).resolve();target_root=Path(target_root).resolve()
         from scan_history import capture
         notify('調査前の配置をJSONに記録しています…')
@@ -166,12 +169,12 @@ class Engine:
         seen=self.cache.setdefault('seen',{});catalog=self.cache.setdefault('catalog',{})
         for n,(p,bundle) in enumerate(units,1):
             if stop.is_set():raise Cancelled()
-            identity=str(p.resolve());fingerprint={'files':snapshot(p),'online':online,'host':host,'target':str(target_root)}
+            identity=str(p.resolve());fingerprint={'files':snapshot(p),'online':online,'host':host,'target':str(target_root),'layout':layout}
             if only_new and seen.get(identity)==fingerprint:
                 progress(n,len(units));continue
             notify(f'{n}/{len(units)} 調査: {p.name}')
             row={'source':str(p.resolve()),'destination':'','links':[],'sha':'','kind':'','family':'',
-                 'title':p.name,'evidence':'','url':'','confidence':'要確認','decision':'保留','bundle':bundle,'blocked':False}
+                 'title':p.name,'evidence':'','url':'','confidence':'要確認','decision':'保留','bundle':bundle,'blocked':False,'layout':layout,'scan_root':str(source_root)}
             try:
                 if not safe_tree(p):raise ValueError('シンボリックリンク／ジャンクションを含むため移動対象外')
                 row['snapshot']=snapshot(p)
@@ -189,8 +192,11 @@ class Engine:
                     if p.suffix.lower() in {'.safetensors','.sft'}:h,meta=header(p)
                     row['metadata']=meta
                     inferred,why=infer(h,meta,p.name)
+                    if p.suffix.lower()=='.json':inferred,why='workflows','Recognized ComfyUI workflow JSON'
                     sha=self.sha(p,stop);row['sha']=sha
                     saved=self.cache['choices'].get(sha)
+                    if not saved or saved.get('layout','category')!=layout:
+                        saved=self.cache.get('layout_choices',{}).get(layout,{}).get(sha)
                     info=self.cache['models'].get(sha)
                     if host in ('まとめて調査（Civitai + HF）','Hugging Face'):info=self.cache.setdefault('lookups',{}).get(host,{}).get(sha)
                     status='照合済み（キャッシュ）' if info else '未照合（オフライン）'
@@ -205,11 +211,20 @@ class Engine:
                                 from urllib.parse import urlparse
                                 origin=urlparse(info['source'])
                                 card=fetch_json(origin.scheme+'://'+origin.netloc+'/api/v1/models/'+str(info['model_id']))
-                                info['tags']=card.get('tags',[])
+                                info['tags']=card.get('tags',[]);info['author']=card.get('creator',{}).get('username')
                             except Exception:pass
                             self.cache['models'][sha]=info
                             if host in ('まとめて調査（Civitai + HF）','Hugging Face') and '通信失敗' not in status:self.cache.setdefault('lookups',{}).setdefault(host,{})[sha]=info
                     if info:
+                        row['author']=info.get('author') or self.cache.get('details',{}).get(sha,{}).get('author')
+                        if layout=='creator' and not row['author'] and info.get('model_id') and online:
+                            try:
+                                from urllib.parse import urlparse
+                                origin=urlparse(info['source'])
+                                if origin.hostname in ('civitai.red','civitai.com'):
+                                    card=fetch_json(origin.scheme+'://'+origin.netloc+'/api/v1/models/'+str(info['model_id']))
+                                    row['author']=info['author']=card.get('creator',{}).get('username')
+                            except Exception as exc:row['evidence']='Creator lookup failed: '+str(exc)
                         row['source_checks']=info.get('source_checks',[])
                         row['matched_sources']=info.get('matched_sources',[info.get('source','')])
                         if info.get('details'):
@@ -231,7 +246,7 @@ class Engine:
                         row.update(destination=str(dest),links=[str(target_root/Path(x)/p.name) for x in saved.get('links',[])],confidence='確認済みルール')
                         row['url']=saved.get('url') or row['url'];reason.append('同一SHA256の確認済み配置')
                         row['family']=saved.get('family') or row['family']
-                        row['kind']=str(dest.relative_to(target_root).parts[0])
+                        row['kind']=saved.get('kind') or str(dest.relative_to(target_root).parts[0])
                     elif kind:
                         dest=target_root/kind/p.name
                         if kind in {'checkpoints','loras'} and info:
@@ -248,7 +263,11 @@ class Engine:
                         row.update(destination=str(p),confidence='配置維持',kind=current)
                     if conflict:row['confidence']='要確認'
                     if status.startswith('通信失敗'):row['confidence']='通信失敗'
-                    row['evidence']=' / '.join(reason)
+                    row['evidence']+=' / '+' / '.join(reason)
+                from organization import apply_layout
+                if row.get('sha') and not row.get('author'):
+                    row['author']=self.cache.get('details',{}).get(row['sha'],{}).get('author')
+                apply_layout(row,target_root,layout)
                 if row['destination'] and Path(row['destination'])==p:row['decision']='変更なし'
                 if row['destination'] and Path(row['destination']).exists() and Path(row['destination'])!=p:
                     if p.is_file() and os.path.samefile(p,row['destination']):row['decision']='変更なし';row['evidence']+=' / 既存ハードリンク'
@@ -262,6 +281,18 @@ class Engine:
             else:seen.pop(identity,None)
             progress(n,len(units))
             if n%10==0:self.save()
+        if layout=='creator':
+            destinations={}
+            for row in result:
+                if row.get('blocked') or not row.get('destination') or row['destination']==row['source']:continue
+                key=os.path.normcase(row['destination']);other=destinations.get(key)
+                if other:
+                    if Path(row['source']).is_file() and Path(other['source']).is_file() and os.path.samefile(row['source'],other['source']):
+                        row.update(destination=row['source'],links=[],decision='変更なし')
+                        row['evidence']+=' / Existing hard-link alias retained; no file deleted.'
+                    else:
+                        row['blocked']=True;row['confidence']='要確認';row['evidence']+=' / Multiple files propose the same destination; choose another destination.'
+                else:destinations[key]=row
         self.save();return result
 
     def hf_match(self,row,url):
@@ -329,7 +360,8 @@ class Engine:
                 'targets_before':[{'path':str(p),'exists':p.exists(),'snapshot':snapshot(p) if p.exists() else None} for p in [d,*links]]})
         record={'version':2,'created_at':time.strftime('%Y-%m-%d %H:%M:%S'),'root':str(root),
                 'scope':'Affected model paths and source TXT only; not a content backup.',
-                'before_state':before,'created_dirs':[],'complete':False,'ops':[]}
+                'before_state':before,'created_dirs':[],'complete':False,'ops':[],
+                'cleanup_root':str(Path(ops[0][0].get('scan_root',root)).resolve()),'layout':ops[0][0].get('layout','category')}
         atomic_json(journal,record)
         from scan_history import link
         record['scan_snapshot']=link(self,journal)
@@ -368,10 +400,18 @@ class Engine:
                 for location in [d,*links]:
                     self.write_note(r,location,op,lambda:atomic_json(journal,record))
                 if r['sha']:
+                    previous=self.cache['choices'].get(r['sha'])
+                    layouts=self.cache.setdefault('layout_choices',{})
+                    if previous:layouts.setdefault(previous.get('layout','category'),{})[r['sha']]=previous
                     self.cache['choices'][r['sha']]={'relative':str(d.parent.relative_to(root)),
-                       'links':[str(h.parent.relative_to(root)) for h in links], 'url':r['url'],'family':r['family']}
+                       'links':[str(h.parent.relative_to(root)) for h in links], 'url':r['url'],'family':r['family'],
+                       'layout':r.get('layout','category'),'kind':r['kind']}
+                    layouts.setdefault(r.get('layout','category'),{})[r['sha']]=self.cache['choices'][r['sha']]
                     self.cache['hashes'][str(d)]={'stamp':stamp(d),'sha':r['sha']}
                 r['decision']='実行済み';progress(completed,len(ops))
+            if record['layout']=='creator':
+                from organization import cleanup_empty_sources
+                cleanup_empty_sources(record,journal,lambda:atomic_json(journal,record))
             record['complete']=True;atomic_json(journal,record);self.save()
         except Exception as e:
             record['error']=str(e);atomic_json(journal,record)
@@ -425,7 +465,11 @@ class Engine:
         affected={op['destination'] for op in j['ops']}
         for p in affected:
             c=self.cache['hashes'].get(p)
-            if c:self.cache['choices'].pop(c['sha'],None)
+            if c:
+                self.cache['choices'].pop(c['sha'],None)
+                for rules in self.cache.get('layout_choices',{}).values():
+                    rule=rules.get(c['sha'])
+                    if rule and str(root/Path(rule['relative'])/Path(p).name)==p:rules.pop(c['sha'],None)
         self.save();return len(ops)
 
     @staticmethod

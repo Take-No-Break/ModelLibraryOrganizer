@@ -122,6 +122,10 @@ Source lookup limits: Combined scanning automatically checks Civitai and Hugging
 Scan and restoration: Every scan first saves a JSON inventory of original file/folder paths under scan-history. Scanning does not move files. Applying approved changes separately writes a move journal under history before the first change and links it to that inventory. Select the inventory or open its JSON in History / Restore to inspect it; restore uses the linked move journals. Inventory is not a file-content backup, and it cannot undo edits/deletions or changes made outside this app.
 
 Source descriptions and model names retain their original language. Exported model information uses English field labels. This application is independent of ComfyUI, Civitai, Hugging Face and the model authors.
+
+Folder organization: Starting a scan offers the existing type/category layout or provider / creator / type / family. Creator mode uses verified source metadata; Hugging Face namespaces may be organizations. Unknown creators or types stay in place for review. Already organized libraries can be scanned again to propose the other layout. The destination models root remains user-selected. Provider-first layouts can require corresponding ComfyUI model-search configuration. Only empty former source folders are removed after approved moves; installed files, independent duplicate copies and existing hard-link aliases are not deleted. Empty-folder changes are recorded with the move history. Recognized ComfyUI workflow JSON files are included; arbitrary JSON settings are not treated as workflows.
+
+Create source TXT fills in missing model information files. A scan alone does not create these TXT files. Applying organization creates a TXT if missing and moves an existing source TXT with its model. The button skips existing TXT rather than creating extra copies or overwriting edits. Update readable TXT is a separate explicit operation with backup.
 ''');body.configure(state='disabled')
  def publisher_settings(self):
     win=self.open_panel('help','更新・サポート設定')

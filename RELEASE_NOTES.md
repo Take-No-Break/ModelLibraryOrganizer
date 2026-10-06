@@ -1,7 +1,10 @@
-# Windows preview 1.0.9
+# Windows preview 1.0.10
 
-- Preview list now shows family / type, including Checkpoint, LoRA, Embedding, Image to Text model and other recognized types.
-- Type column widened for readability. Unknown family/type stays explicit. No identification rules, model files or file placements were changed.
-- Includes the 1.0.8 duplicate-result and scan-history improvements.
+- New scan layout selector: existing categories or provider / creator / type / family.
+- Proposes reorganizing existing libraries; keeps confirmed routing separately per layout.
+- Verified Civitai creators and Hugging Face namespaces; unknown creator/type stays in place for review.
+- Recognizes ComfyUI workflow JSON alongside supported model files.
+- Existing source TXT moves with its model; missing notes can be generated without duplicate TXT.
+- Removes only empty former source folders after approved creator-layout moves and records changes for restoration. Models, unrelated data, independent duplicate copies and existing hard-link aliases are preserved. Conflicts are not overwritten.
 
-Unsigned Windows preview; no independent PC/VM validation is claimed. MIT project license. No models or personal caches are included.
+ComfyUI model-search settings may need adjustment for provider-first layouts. Source metadata availability limits creator identification. Unsigned Windows preview; no second-PC/VM validation claimed. MIT project license. No personal model data included; no GitHub push or release performed.

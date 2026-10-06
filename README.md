@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.9 — Windows preview
+# Model Library Organizer 1.0.10 — Windows preview
 
 ## Run or install
 
@@ -149,3 +149,28 @@ Neither an independent PC/VM test nor code signing is claimed.
 ## Preview classification (1.0.9)
 
 Preview lists show base family / file type, for example Illustrious / LoRA or SDXL / Checkpoint. Recognized embeddings, Image to Text packages and other model types keep their own type labels. Unknown classification is displayed explicitly; this display change does not expand scanning to workflow JSON files or infer model identity from filenames.
+
+## Organization layouts (1.0.10)
+
+Starting Scan all (or a new-only scan) opens a layout selector:
+
+1. Existing type/category/family placement.
+2. Provider / creator / type / family, for example models/Civitai/Creator/loras/Illustrious/model.safetensors.
+
+Scan an already organized library again to propose another layout. Each layout
+remembers its routing separately. Review and approve proposals before applying.
+Creator names come from source metadata; Hugging Face uses the repository account
+or organization namespace. Unknown creators/types stay in place for review.
+ComfyUI may require model-search configuration for provider-first hierarchies.
+
+Existing model-name.source.txt moves with its model. Applying changes creates this
+TXT only if absent. Create source TXT fills missing notes for scanned models without
+moving them; existing TXT is skipped. It documents identity, source URL, creator,
+family, trigger words and selected metadata, not image training captions.
+
+Only empty former source ancestors are removed after approved creator-layout moves,
+within the selected scan root. No model, unrelated file, duplicate copy or old
+hard-link alias is deleted. Same-name destination conflicts require review. Folder
+removal is journaled and source folders are recreated during restoration.
+Recognized ComfyUI UI/API workflow JSON is scanned; arbitrary JSON settings are not.
+Workflows whose creator is not known remain in place in creator mode.
