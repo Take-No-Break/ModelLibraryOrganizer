@@ -17,6 +17,7 @@ from feature_ui import FeatureUI
 from support_ui import SupportUI
 from support import record_error
 from panels import Panels
+from responsive_controls import ControlFlow
 from dataset_editor import DatasetEditor
 from caption_ui import CaptionUI
 from restore_ui import RestoreUI
@@ -56,11 +57,11 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         for group,title,children in groups:
             parent=ttk.Frame(self.tabs,padding=2);self.tabs.add(parent,text=tr(title))
             if len(children)==1:
-                host=ScrollablePage(parent);host.pack(fill='both',expand=True);key=children[0][0];self.pages[key]=host.body;self.page_hosts[key]=parent
+                host=ScrollablePage(parent,fit_width=(children[0][0]=='models'));host.pack(fill='both',expand=True);key=children[0][0];self.pages[key]=host.body;self.page_hosts[key]=parent
             else:
                 notebook=ttk.Notebook(parent);notebook.pack(fill='both',expand=True)
                 for key,label in children:
-                    host=ScrollablePage(notebook,fit_width=(key=='tag_editor'))
+                    host=ScrollablePage(notebook,fit_width=(key in ('tag_editor','preview','compatibility')))
                     if key!='tag_ranking':notebook.add(host,text=tr(label))
                     self.pages[key]=host.body;self.page_hosts[key]=host
                     self.page_notebooks[key]=(parent,notebook)
@@ -70,7 +71,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.target_dir=tk.StringVar(value=self.settings.get('target_root',''))
         for n,(label,var) in enumerate([('調査するフォルダー',self.scan_dir),('整理先の models フォルダー',self.target_dir)]):
             ttk.Label(fields,text=label).grid(row=n,column=0,sticky='w',pady=4)
-            ttk.Entry(fields,textvariable=var,tooltip=__import__('tips').TIPS[label]).grid(row=n,column=1,sticky='ew',padx=10)
+            ttk.Entry(fields,textvariable=var,width=1,tooltip=__import__('tips').TIPS[label]).grid(row=n,column=1,sticky='ew',padx=10)
             ttk.Button(fields,text='選択…',command=lambda v=var:self.choose_root(v)).grid(row=n,column=2)
         bar=ttk.Frame(outer);bar.pack(fill='x',pady=10)
         self.online=tk.BooleanVar(value=True)
@@ -83,7 +84,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.add_features(self.pages['tools'])
         self.add_sources_ui(self.pages['tools'])
         ttk.Label(outer,text='移動やリンク追加の提案がある場合だけ、変更内容を確認する画面が開きます。').pack(anchor='w',pady=4)
-        actions=ttk.Frame(outer);actions.pack(fill='x',pady=(0,8))
+        actions=ControlFlow(outer);actions.pack(fill='x',pady=(0,8))
         for label,fn in [('保存先・リンクを変更…',self.edit),('プレビュー',self.preview),('新規・変更分を調査',lambda:self.scan(True)),('調査履歴リセット',self.reset_scan)]:
             ttk.Button(actions,text=label,command=fn).pack(side='left',padx=(0,5))
         self.filter=ChoiceVar(value='すべて');combo=ttk.Combobox(actions,textvariable=self.filter,values=['すべて','移動案のみ','要確認・エラー','判別できなかったモデル','承認','拒否'],state='readonly',width=16);combo.pack(side='right');combo.bind('<<ComboboxSelected>>',lambda _:self.render())

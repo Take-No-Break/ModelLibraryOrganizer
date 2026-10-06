@@ -79,7 +79,7 @@ class Gallery:
  def init_gallery(self):
   page=self.pages['preview'];bar=ttk.Frame(page);bar.pack(fill='x')
   self.gallery_path=tk.StringVar(value=self.scan_dir.get())
-  ttk.Entry(bar,textvariable=self.gallery_path).pack(side='left',fill='x',expand=True)
+  ttk.Entry(bar,textvariable=self.gallery_path,width=1).pack(side='left',fill='x',expand=True)
   def browse():
    p=filedialog.askdirectory()
    if p:self.gallery_path.set(p)
