@@ -13,11 +13,11 @@ class SupportUI:
     self.publisher=load_publisher(self.engine.data)
     network.OFFLINE=bool(self.preferences.get('offline',False))
     if network.OFFLINE:self.online.set(False)
-    head=ttk.Frame(outer);head.pack(fill='x',before=outer.winfo_children()[0],pady=(0,5))
-    ttk.Label(head,text='v'+VERSION).pack(side='left')
+    head=self.operation_header;head.pack(fill='x',before=self.tabs,pady=(0,3))
+    ttk.Label(head,text='v'+VERSION,font=('Yu Gothic UI',9)).pack(side='left',before=self.operation_status)
     self.language=tk.StringVar(value=i18n.LANGS[i18n.LANG])
-    choose=ttk.Combobox(head,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=19);choose.pack(side='right');choose.bind('<<ComboboxSelected>>',self.change_language)
-    ttk.Label(head,text='言語').pack(side='right',padx=5)
+    choose=ttk.Combobox(head,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=15,font=('Yu Gothic UI',9));choose.pack(side='right',before=self.progress);choose.bind('<<ComboboxSelected>>',self.change_language)
+    ttk.Label(head,text='言語',font=('Yu Gothic UI',9)).pack(side='right',before=self.progress,padx=5)
     self.root.report_callback_exception=self.callback_error
     if self.preferences.get('auto_updates') and not network.OFFLINE and self.publisher.get('github_repository'):
         self.root.after(1800,lambda:self.check_updates(True))
@@ -94,7 +94,7 @@ class SupportUI:
             ttk.Button(frame,text='GitHub repository',command=self.open_repository).pack(side='left',padx=5)
             repo=self.publisher.get('github_repository','')
             if repo:
-                link=ttk.Label(frame,text='https://github.com/'+valid_repo(repo),foreground='#175fa6',cursor='hand2');link.pack(anchor='w',pady=5);link.bind('<Button-1>',lambda event:self.open_repository())
+                link=ttk.Label(frame,text='https://github.com/'+valid_repo(repo),foreground='#83b1ff',cursor='hand2');link.pack(anchor='w',pady=5);link.bind('<Button-1>',lambda event:self.open_repository())
             auto=tk.BooleanVar(value=self.preferences.get('auto_updates',False))
             def toggle_auto(v=auto):self.preferences['auto_updates']=v.get();self.save_preferences()
             ttk.Checkbutton(frame,text='起動時に更新を確認（任意）',variable=auto,command=toggle_auto,tooltip='最新版の確認にはインターネット接続が必要です。自動インストールはしません。').pack(anchor='w',pady=8)

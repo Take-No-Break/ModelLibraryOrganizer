@@ -29,7 +29,7 @@ def layout_chips(canvas,items,width,remove=False):
 
 def draw_chip(canvas,item,x0=0,y0=0,remove=False,selected=False):
  tag,badge,display,x,y,w,h,bw=item;scale,f=metrics(canvas);x+=x0;y+=y0
- rounded(canvas,x,y,w,h,theme.FIELD if not selected else '#3d5278',radius=(8 if badge is not None else 4)*scale)
+ rounded(canvas,x,y,w,h,theme.FIELD if not selected else '#456797',outline=theme.BLUE if selected else '',radius=(8 if badge is not None else 4)*scale)
  canvas.create_text(x+5*scale,y+h/2,anchor='w',text=display,font=f,fill=theme.TEXT)
  if badge is not None:
   rounded(canvas,x+w-bw-2*scale,y+2*scale,bw,h-4*scale,theme.BLUE,radius=7*scale)
@@ -37,10 +37,10 @@ def draw_chip(canvas,item,x0=0,y0=0,remove=False,selected=False):
  if remove:canvas.create_text(x+w-6*scale,y+h/2,text='×',font=f,fill=theme.RED)
  return (x,y,x+w,y+h)
 
-def chip_flow(canvas,items,click,remove=None,context=None):
+def chip_flow(canvas,items,click,remove=None,context=None,selected=None):
  canvas.delete('all');scale,_=metrics(canvas);width=max(120,canvas.winfo_width());pad=4*scale
  layouts,height=layout_chips(canvas,items,width-pad*2,bool(remove));hits=[]
- for item in layouts:hits.append((draw_chip(canvas,item,pad,pad,bool(remove)),item[0]))
+ for item in layouts:hits.append((draw_chip(canvas,item,pad,pad,bool(remove),item[0]==selected),item[0]))
  canvas._chip_hits=hits;canvas._chip_click=click;canvas._chip_remove=remove;canvas._chip_context=context
  if not getattr(canvas,'_chip_events_installed',False):
   def handle(event):

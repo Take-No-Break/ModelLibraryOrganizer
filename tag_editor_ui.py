@@ -43,7 +43,7 @@ for key,english in TAG_STRINGS.items():
 
 class TagEditorUI:
  def init_tag_editor(self):
-  self.tag_records=[];self.tag_loaded_key=None;self.tag_load_timer=None;self.tag_filter='';self.tag_selected_index=None
+  self.tag_records=[];self.tag_loaded_key=None;self.tag_load_timer=None;self.tag_filter='';self.tag_selected_index=None;self.tag_selected_chip=None
   self.tag_folder=tk.StringVar(value=self.dataset_path.get());self.tag_recursive=tk.BooleanVar(value=False)
   self.tag_search=tk.StringVar();self.tag_value=tk.StringVar()
   settings=read_json(self.engine.data/'tag-editor-settings.json',{}) or {}
@@ -105,7 +105,7 @@ class TagEditorUI:
   if not self.editor_guard() or not self.tag_guard():return
   try:
    records=load_tags(*key)
-   self.tag_records=records;self.tag_loaded_key=key;self.tag_filter='';self.tag_selected_index=None;self.refresh_tag_views()
+   self.tag_records=records;self.tag_loaded_key=key;self.tag_filter='';self.tag_selected_index=None;self.tag_selected_chip=None;self.refresh_tag_views()
   except Exception as error:messagebox.showerror('TXTを読み込めません',str(error))
 
  def refresh_tag_views(self):
@@ -164,6 +164,7 @@ class TagEditorUI:
   self.tag_chip_canvas.delete('inline-editor')
 
  def remove_one_tag(self,index,tag):
+  if self.tag_selected_chip==(index,tag):self.tag_selected_chip=None
   edit_tags(self.tag_records[index],tag,True);self.refresh_tag_views()
 
  def matches_tag_category(self,tag):
@@ -173,7 +174,7 @@ class TagEditorUI:
   _,counts=frequencies(self.tag_records);query=self.tag_cloud_search.get().casefold()
   counts=[pair for pair in counts if self.matches_tag_category(pair[0]) and query in pair[0].casefold()]
   if self.tag_sort.get()=='By name':counts.sort(key=lambda pair:pair[0].casefold())
-  chip_flow(self.tag_cloud_canvas,counts,lambda tag,event:self.set_tag_filter(tag),context=self.tag_category_menu)
+  chip_flow(self.tag_cloud_canvas,counts,lambda tag,event:self.set_tag_filter(tag),context=self.tag_category_menu,selected=self.tag_filter)
 
  def tag_scope_indices(self):
   scope=self.tag_scope.get()
@@ -251,11 +252,15 @@ class TagEditorUI:
   for tag in original:
    for value in (requested if tag==old else [tag]):
     if value not in updated:updated.append(value)
-  if updated!=original:record['draft']=', '.join(updated)+'\n';self.refresh_tag_views()
+  if updated!=original:
+   record['draft']=', '.join(updated)+'\n';self.tag_selected_chip=(index,requested[0]);self.refresh_tag_views()
 
  def inline_tag_edit(self,index,tag,event):
   canvas=self.tag_chip_canvas
   self.cancel_inline_tag_edit()
+  self.tag_selected_chip=(index,tag)
+  if self.tag_rows.pending:self.root.after_cancel(self.tag_rows.pending);self.tag_rows.pending=None
+  self.tag_rows.draw()
   entry=tk.Entry(canvas,font=('Segoe UI',9),relief='flat',borderwidth=0,background='#3b405b',foreground='#e1eaff',insertbackground='#e1eaff');self.tag_inline_editor=entry
   entry.insert(0,tag);entry.select_range(0,'end');width=min(260,max(130,canvas.winfo_width()-20));x=min(max(4,event.x),max(4,canvas.winfo_width()-width-4));y=canvas.canvasy(event.y)
   from tag_widgets import rounded

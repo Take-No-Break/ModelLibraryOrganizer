@@ -35,12 +35,17 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         set_language((read_json(self.engine.data/'preferences.json',{}) or {}).get('language','ja'))
         self.settings=read_json(Path(data)/'settings.json',{})
         from display import scaled_window_size
-        width,height=scaled_window_size(root,1320,860);minimum=scaled_window_size(root,760,480)
+        saved_size=(read_json(self.engine.data/'preferences.json',{}) or {}).get('window_size',[1200,800])
+        if not isinstance(saved_size,list) or len(saved_size)!=2 or not all(isinstance(v,(int,float)) and 100<=v<=10000 for v in saved_size):saved_size=[1200,800]
+        width,height=scaled_window_size(root,*saved_size);minimum=scaled_window_size(root,640,420)
+        width=min(width,root.winfo_screenwidth()-40);height=min(height,root.winfo_screenheight()-80)
         root.title('Model Library Organizer');root.geometry(f'{width}x{height}');root.minsize(*minimum)
         from display import configure_fonts
         configure_fonts(root)
-        style=ttk.Style();style.theme_use('clam');style.configure('.',font=('Yu Gothic UI',11));style.configure('TNotebook.Tab',padding=(10,7));style.configure('Treeview',rowheight=scaled_window_size(root,29,29)[0],font=('Yu Gothic UI',10));style.configure('TButton',padding=(10,6));style.configure('TLabel',font=('Yu Gothic UI',10))
-        outer=ttk.Frame(root,padding=8);outer.pack(fill='both',expand=True)
+        from ui_theme import configure_theme,recolor_existing
+        configure_theme(root)
+        style=ttk.Style();style.configure('Treeview',rowheight=scaled_window_size(root,27,27)[0])
+        outer=ttk.Frame(root,padding=4);outer.pack(fill='both',expand=True)
         shell=outer
         self.tabs=ttk.Notebook(shell);self.tabs.pack(fill='both',expand=True)
         self.pages={};self.page_notebooks={};self.page_hosts={}
@@ -48,7 +53,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         root.bind_all('<MouseWheel>',scroll_wheel)
         groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性')]),('training','学習データ',[('captions','Image to Text'),('texts','テキスト編集'),('tag_ranking','Tag rankings'),('tag_editor','Tag editor')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('restore','履歴・復元',[('restore','履歴・復元')])]
         for group,title,children in groups:
-            parent=ttk.Frame(self.tabs,padding=4);self.tabs.add(parent,text=tr(title))
+            parent=ttk.Frame(self.tabs,padding=2);self.tabs.add(parent,text=tr(title))
             if len(children)==1:
                 host=ScrollablePage(parent);host.pack(fill='both',expand=True);key=children[0][0];self.pages[key]=host.body;self.page_hosts[key]=parent
             else:
@@ -107,10 +112,11 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.notes_button=ttk.Button(bottom,text='配布元TXTを作成',command=self.enhanced_notes)
         ttk.Button(bottom,text='移動案を確認して整理…',command=self.review_and_apply).pack(side='right')
         self.status=StatusVar(value='まずフォルダーを選んで「調査開始」。Ctrl / Shiftで複数選択できます。');None
-        footer=ttk.Frame(shell);footer.pack(side='bottom',fill='x',pady=(10,0),before=self.tabs)
-        self.progress=ttk.Progressbar(footer,mode='determinate',maximum=100,length=165);self.progress.pack(side='left',padx=(0,6))
-        self.progress_label=tk.StringVar(value='0%');ttk.Label(footer,textvariable=self.progress_label,width=5).pack(side='left',padx=(0,10))
-        ttk.Label(footer,textvariable=self.status,wraplength=1050).pack(side='left',fill='x',expand=True)
+        self.operation_header=ttk.Frame(shell)
+        self.progress=ttk.Progressbar(self.operation_header,mode='determinate',maximum=100,length=110);self.progress.pack(side='right',padx=(3,8))
+        self.progress_label=tk.StringVar(value='0%');ttk.Label(self.operation_header,textvariable=self.progress_label,width=4,font=('Yu Gothic UI',9)).pack(side='right')
+        self.operation_status=ttk.Label(self.operation_header,textvariable=self.status,width=1,anchor='center',font=('Yu Gothic UI',9));self.operation_status.pack(side='left',fill='x',expand=True,padx=8)
+        status_tip=Tooltip(self.operation_status,self.status.get());self.operation_status.bind('<Enter>',lambda _:setattr(status_tip,'text',self.status.get()),add='+')
         self.init_panels()
         self.init_captions()
         self.init_tag_editor()
@@ -118,7 +124,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.setup_support(shell)
         self.init_restore()
         self.init_results()
-        self.help_center();self.select_page(self.pages['models'])
+        self.help_center();self.select_page(self.pages['models']);recolor_existing(root)
         self.tabs.bind('<<NotebookTabChanged>>',self.reset_model_filter)
         root.after(100,self.poll);root.protocol('WM_DELETE_WINDOW',self.close)
 
@@ -309,6 +315,8 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         if hasattr(self,'editor_guard') and not self.editor_guard():return
         if hasattr(self,'tag_guard') and not self.tag_guard():return
         self.save_training_settings()
+        scale=max(1,self.root.winfo_fpixels('1i')/96)
+        self.preferences['window_size']=[round(self.root.winfo_width()/scale),round(self.root.winfo_height()/scale)];self.save_preferences()
         for timer in self.root.tk.splitlist(self.root.tk.call('after','info')):self.root.after_cancel(timer)
         self.root.destroy()
 

@@ -62,7 +62,7 @@ class CaptionRows(tk.Frame):
    c.create_text(139*s,y+84*s,text='Copy view tags',font=f,fill=theme.TEXT)
    self.hits.append(((83*s,y+69*s,195*s,y+100*s),'copy',ident,None))
    for chip in chips:
-    bounds=draw_chip(c,chip,self.tag_x,y+8*s,True)
+    bounds=draw_chip(c,chip,self.tag_x,y+8*s,True,self.app.tag_selected_chip==(int(ident),chip[0]))
     self.hits.append((bounds,'tag',ident,chip[0]))
    if not chips:c.create_text(self.tag_x,y+20*s,text='No tags in this filter' if self.app.tag_category.get()!='All' else 'No caption tags',anchor='w',font=f,fill=theme.MUTED)
   if not self.ids:c.create_text(width/2,65*s,text='Open a folder to view image captions',font=('Segoe UI',10),fill=theme.MUTED)

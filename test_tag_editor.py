@@ -88,6 +88,8 @@ class TagTests(unittest.TestCase):
    self.assertEqual(len(app.tag_rank_table.get_children()),3)
    app.tag_rank_table.selection_set('1');app.show_tag_frequency();self.assertAlmostEqual(float(app.tag_frequency_bar['value']),200/3)
    app.filter_ranked_tag();self.assertEqual(len(app.tag_image_list.get_children()),2)
+   root.update()
+   self.assertTrue(any(app.tag_cloud_canvas.itemcget(i,'fill')=='#456797' for i in app.tag_cloud_canvas.find_all()))
    app.tag_image_list.selection_set('0');app.select_tag_image();app.remove_one_tag(0,'1girl')
    self.assertEqual(dict(frequencies(app.tag_records)[1])['1girl'],1);self.assertIn('1girl',(self.folder/'a.txt').read_text())
   finally:

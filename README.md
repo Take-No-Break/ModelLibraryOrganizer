@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.13 — Windows preview
+# Model Library Organizer 1.0.14 — Windows preview
 
 ## Run or install
 
@@ -244,3 +244,16 @@ The Tag editor now follows the supplied dataset-editor reference:
 Save All still opens the before/after review. TXT writes, encoding preservation,
 conflict checks and backups follow the existing process. Other application tabs
 retain their appearance. No image analysis or inference was added to the editor.
+
+## Compact unified navigation (1.0.14)
+
+The application now shares the Tag editor's dark palette, with compact navigation
+tabs and smaller outer margins. Progress, percent and operation status appear in
+the top header instead of occupying a separate footer. The status can be read in
+full by hovering over it. Page scrollbars appear only when content overflows.
+
+The window is resizable down to a smaller minimum. Its size is saved on normal
+close in logical DPI units and restored within the current screen bounds.
+Selected statistics tags and image-row tags are visibly highlighted in blue.
+The tag filter is also shown beside Clear filter. File operations and caption
+saving retain their existing confirmation, conflict checks and backups.

@@ -59,6 +59,18 @@ class LayoutAndOptions(UIChanges):
   self.assertGreater(self.app.progress.winfo_height(),5)
   self.assertLess(self.app.progress.winfo_rooty()+self.app.progress.winfo_height(),self.root.winfo_rooty()+self.root.winfo_height()+1)
   self.assertEqual(self.app.short_path('C:/models/loras/a.safetensors','C:/models'),'loras\\a.safetensors')
+ def test_compact_navigation_progress_is_above_tabs(self):
+  self.root.deiconify();self.root.geometry('1000x680');self.root.update()
+  self.assertLess(self.app.progress.winfo_rooty(),self.app.tabs.winfo_rooty())
+  self.assertLess(self.app.progress.winfo_height(),30)
+  self.assertEqual(self.root.cget('background'),'#1f1f30')
+ def test_window_size_saved_on_close(self):
+  self.root.deiconify();self.root.geometry('900x600');self.root.update()
+  scale=max(1,self.root.winfo_fpixels('1i')/96)
+  expected=[round(self.root.winfo_width()/scale),round(self.root.winfo_height()/scale)]
+  with patch.object(self.root,'destroy'):self.app.close()
+  from core import read_json
+  self.assertEqual(read_json(Path(self.temp.name)/'preferences.json')['window_size'],expected)
  def test_notes_english_and_sections(self):
   row={'source':'demo.safetensors','kind':'loras','info':{'triggers':['unique'],'description':'desc'},'metadata':{'secret':'data'}}
   from note_format import note_content

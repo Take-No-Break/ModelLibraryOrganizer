@@ -1,10 +1,10 @@
-# Windows preview 1.0.13
+# Windows preview 1.0.14
 
-- Tag editor redesigned to follow the supplied dataset-editor reference: dark panel, blue count badges, dense small rounded tags.
-- Large scrolling thumbnails on the left; statistics and filters above; multiple image/caption editing rows below.
-- Each caption row has its own thumbnail, name, tag count, Copy view tags and inline tag editing/removal.
-- Compact rounded controls for count/name sorting, category filters, Bulk Insert and unwanted-tag operations.
-- Virtualized caption rows and shared bounded image cache for large datasets.
-- Existing draft edits, save preview, encoding checks and caption backups preserved. Model weights and original images are never modified by the tag editor.
+- Compact application tabs and outer margins; shared dark palette across application pages.
+- Progress bar, percent and operation status moved into the top header. Full status is available on hover.
+- Selected statistics/image-row tags have a blue background and outline.
+- Smaller resizable window minimum; logical window size saved on normal close and restored within screen bounds.
+- Page scrollbars shown only when content overflows; bright source links remain readable on the dark theme.
+- Existing model and caption editing safety unchanged.
 
-Extract the whole Windows ZIP and keep _internal beside the EXE. Unsigned preview; no independent PC/VM validation claimed. MIT license. No personal models, history or cache included. No GitHub push/release performed.
+Extract the complete Windows ZIP; keep _internal beside the EXE. Unsigned preview. No independent PC/VM validation claimed. MIT license. No personal models, history or cache included. No GitHub push/release performed.
