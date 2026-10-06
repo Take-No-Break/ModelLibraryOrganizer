@@ -1,4 +1,5 @@
 import tempfile,unittest,tkinter as tk
+from types import SimpleNamespace
 from unittest.mock import patch
 from pathlib import Path
 from PIL import Image
@@ -92,5 +93,21 @@ class TagTests(unittest.TestCase):
   finally:
    for job in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(job)
    root.destroy()
+ def test_reference_rows_edit_their_own_caption_and_stay_virtual(self):
+  root,app=self.make_app();rows=app.tag_rows
+  self.assertEqual(rows.ids,['0','1','2'])
+  app.tag_image_list.selection_set('0');rows.see('1');root.update()
+  tag_hit=next(h for h in rows.hits if h[1]=='tag' and h[2]=='1' and h[3]=='short_hair')
+  bounds=tag_hit[0];event=SimpleNamespace(x=bounds[2]-3,y=(bounds[1]+bounds[3])/2-rows.canvas.canvasy(0))
+  rows.clicked(event)
+  self.assertNotIn('short_hair',app.tag_records[1]['draft']);self.assertIn('long_hair',app.tag_records[0]['draft'])
+  self.assertIn('short_hair',(self.folder/'b.txt').read_text(encoding='utf-8-sig'))
+  root.update();rows.see('0');root.update()
+  hit=next(h for h in rows.hits if h[1]=='tag' and h[2]=='0' and h[3]=='long_hair')
+  bounds=hit[0];event=SimpleNamespace(x=bounds[0]+4,y=(bounds[1]+bounds[3])/2-rows.canvas.canvasy(0))
+  rows.clicked(event);self.assertEqual(app.tag_inline_editor.get(),'long_hair')
+  app.cancel_inline_tag_edit();self.assertIsNone(app.tag_inline_editor)
+  app.tag_records=[dict(app.tag_records[0]) for _ in range(400)];app.refresh_tag_views();root.update()
+  self.assertEqual(len(rows.ids),400);self.assertLess(len(rows.visible_ids),10)
 
 if __name__=='__main__':unittest.main()

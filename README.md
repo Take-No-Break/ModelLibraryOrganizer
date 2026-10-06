@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.12 — Windows preview
+# Model Library Organizer 1.0.13 — Windows preview
 
 ## Run or install
 
@@ -225,3 +225,22 @@ All caption edits remain drafts until Save all changes and the before/after revi
 are confirmed. Existing encoding, conflict checks and caption backups are retained.
 Changing language, switching dataset folders or closing checks unsaved drafts.
 The app does not modify images or run automatic tagging in this editor.
+
+## Reference-style Tag editor (1.0.13)
+
+The Tag editor now follows the supplied dataset-editor reference:
+- Local dark theme, dense rounded tags and separate blue count badges.
+- Scrollable large thumbnails on the left, tag statistics above the editing area,
+  category pills and compact Bulk Insert / Unwanted Tag controls in between.
+- Multiple image/caption rows below, each with its own thumbnail, filename, tag
+  count, Copy view tags button and editable tags. Selecting a left thumbnail brings
+  that image's row into view instead of replacing every other row.
+- Click an image-row tag and press Enter to stage an edit; Escape cancels. Its ×
+  removes that tag only from that image's draft. Category filters affect which tags
+  are displayed in each row; clicking a statistics tag filters dataset images.
+- Both image panes render only nearby visible rows and share a bounded thumbnail
+  cache. Large datasets do not create a widget for every tag in every image.
+
+Save All still opens the before/after review. TXT writes, encoding preservation,
+conflict checks and backups follow the existing process. Other application tabs
+retain their appearance. No image analysis or inference was added to the editor.

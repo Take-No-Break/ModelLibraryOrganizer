@@ -1,11 +1,10 @@
-# Windows preview 1.0.12
+# Windows preview 1.0.13
 
-- Scrollable image thumbnails in the Tag editor's left pane, with Ctrl/Shift selection and visible-only image loading.
-- Small rounded tag chips, scrollable statistics, count/name sorting and tag/filename search.
-- Local category filters with manual category overrides via right-click. Unknown character/artist names are not guessed.
-- Inline tag editing: click, Enter to apply, Esc to cancel, × to remove.
-- Bulk Insert/Remove, unwanted-tag registry and explicit removal, category/all-tag deletion, Selected/Filtered/All scope.
-- Caption edits remain staged until save review; original image bytes are never written. Existing TXT encoding and backups are preserved.
-- Language switching protects unsaved tag drafts; repeated chip redraws clean up callbacks.
+- Tag editor redesigned to follow the supplied dataset-editor reference: dark panel, blue count badges, dense small rounded tags.
+- Large scrolling thumbnails on the left; statistics and filters above; multiple image/caption editing rows below.
+- Each caption row has its own thumbnail, name, tag count, Copy view tags and inline tag editing/removal.
+- Compact rounded controls for count/name sorting, category filters, Bulk Insert and unwanted-tag operations.
+- Virtualized caption rows and shared bounded image cache for large datasets.
+- Existing draft edits, save preview, encoding checks and caption backups preserved. Model weights and original images are never modified by the tag editor.
 
-Extract the complete Windows ZIP and run the EXE with _internal beside it. Unsigned preview; no independent PC/VM validation claimed. MIT license. No personal models, user history or cache included. No GitHub push/release performed.
+Extract the whole Windows ZIP and keep _internal beside the EXE. Unsigned preview; no independent PC/VM validation claimed. MIT license. No personal models, history or cache included. No GitHub push/release performed.
