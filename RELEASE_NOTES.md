@@ -1,49 +1,25 @@
-# Windows preview 1.0.22
+# v1.0.32 Windows preview
 
-- Progress/status header fits narrow windows; long status is shortened with full text on hover.
-- Proposed new folder paths are green in move review; created folder paths are green in history details.
-- Fixed callback ownership when closing responsive controls.
-- Existing scan classification tests and all 18 test modules passed. No real models moved.
-- Uninstaller is included but has not been executed or tested. No GitHub push/release performed.
+## Included
 
-## 1.0.23: Model roles and Image to Text folder
+- Full SHA-256 source identification with Civitai and verified Hugging Face candidates.
+- Reviewed model organization by type/category or provider, creator, type and family.
+- Per-file role corrections, including VAE classification ahead of page-wide Checkpoint categories.
+- In-app model previews, published trigger words and readable source TXT.
+- One-LoRA-to-all-checkpoint family comparison with per-pair manual results.
+- Image to Text adapters for PixAI, JoyCaption, CL Tagger and Taggerine.
+- Combined/Expanded workflow export and direct execution against local ComfyUI.
+- Direct custom-node installation/update with instance detection and manual selection.
+- Adapter-named output folders containing image hardlinks and matching TXT; generated folders excluded from recursive analysis.
+- Training caption editing, compact visual Tag editor and bulk changes.
+- Operation results, duplicate reports, linked move journals and eligible restore.
+- Dark/Classic appearance and guides in eight languages.
+- English public documentation, MIT source license, installer and uninstaller scripts.
 
-Added conservative StyleAdapter/Redux and supported ModelPatchLoader tensor signatures. Multimodal language layers take priority over their vision encoder component. Recognized caption bundles stay intact and use Image_to_txt_models; generic CLIPVision bundles are not assumed to be caption models. Explicit comfyui.model_type metadata can propose other known model roles, but is self-reported. All 31 existing folder names are supported for preserving placement; this does not verify every model type. ONNX is a format, and repository tags do not establish per-file roles. Unknown models remain unchanged for review. Classification changes invalidate incremental scan fingerprints. No user models were moved.
+## Verification and limitations
 
-## 1.0.24: Per-file classification correction
+Local tests and fresh-settings packaged startup were checked. No real model library was reorganized for release verification. The uninstaller is included but has not been executed or tested. No second-PC or VM verification is claimed.
 
-Reliable tensor structure takes priority over the distribution page category. A VAE bundled in a Checkpoint publication stays a VAE. Conflicting remembered routes are not reused; the corrected destination is proposed for review. Incremental scans revisit previous classifications. No real model files were moved.
+Weights, dependencies and ComfyUI are separate installations. SeaArt/Tensor.Art automatic reverse-hash lookup is not implemented. Compatibility colors are metadata estimates, not generation tests. Scan inventories require linked move journals to restore locations. Existing TXT is protected. See the README for setup and output paths.
 
-## 1.0.25: Select a specific LoRA and Checkpoint
-
-Compatibility now has separate LoRA and Checkpoint/diffusion model selectors. Select both files to display the assessment for that exact pair and save a pair-specific manual evaluation. Folder selection filters previously scanned models; use Scan selected folders for models not investigated yet. This comparison estimates compatibility from known families and does not load models or perform image generation. No files are moved.
-
-## 1.0.26: One LoRA against every checkpoint
-
-Select a LoRA to compare against all identified checkpoint/diffusion models in the selected folder, including subfolders. Choosing a folder starts a read-only compatibility scan when idle. The checkpoint selector was removed. Automatic family estimates remain untested; each row can separately record successful use, adjustments or failure. No generation test is performed and no models are moved.
-
-## 1.0.27: Source triggers and setup help
-
-Source TXT always includes published trigger words when available, even with older section preferences. Incomplete Civitai details caches are refreshed when online. Japanese and English help now explains ZIP extraction, correct custom_nodes placement, ComfyUI Python dependencies, restarting, workflow export, supported model changes and error diagnosis.
-
-## 1.0.28: Run local Image to Text and save to a chosen folder
-
-Select images, a supported model folder/type, thresholds, an output folder and the running ComfyUI URL. Run in ComfyUI and save creates image hardlinks and matching captions in the chosen output folder after successful inference. Hardlinks require the same drive. Existing TXT and differing images are protected. Required nodes must be installed directly in the custom_nodes directory of the actual running instance, then ComfyUI must be restarted. Workflow exports remain available. The app does not launch or restart ComfyUI automatically.
-
-## 1.0.29: Automatic caption output and connection check
-
-Image to Text saves under the selected image folder in a PixAI/JoyCaption/CL-Tagger/Taggerine subfolder. The separate output entry was removed; automatic save location is displayed. Check connection beside the ComfyUI URL verifies that the required nodes are loaded. Recursive runs exclude generated output folders. Exported templates also use the automatic output folder when TXT saving is enabled. The updated save node must be installed and ComfyUI restarted for new templates; direct app execution only needs the existing analysis nodes.
-
-## 1.0.30: Localized caption overview and resizable model preview
-
-Image to Text overview, connection button and automatic save label are translated into all eight supported UI languages. The model preview now has a draggable vertical divider between the model list and information. Preview text places trigger words near the top and evidence/SHA256 at the bottom. Source TXT ordering is unchanged.
-
-History/Restore now keeps its restore action visible at the top. It is enabled for pending move history; otherwise an explanation distinguishes scan-only inventories, already restored changes, empty logs and missing linked history. Opening JSON starts in the move history directory. No restoration was performed automatically.
-
-## 1.0.31: Restore explanation and centered scan dialogs
-
-History/Restore permanently explains, in all eight UI languages, that a scan inventory without linked move history cannot restore files. Organization choice and move warning popups center over the app, and scan confirmation uses the app as its parent.
-
-## 1.0.32: Direct node setup and two appearance modes
-
-Install/update nodes from Image to Text: detect candidates or choose the actual custom_nodes folder and install directly. Restart ComfyUI and check the connection. Generated output folders are excluded from both exported templates and direct runs. Guides and README now describe the current automatic caption output. Appearance offers only Dark and Classic; Classic uses a nostalgic gray palette. Old accent preferences no longer affect the app.
+This is a prerelease; stable automatic update checks do not advertise it.

@@ -1,34 +1,23 @@
-# 配布者向け：更新通知と報告先の開設
+# Publishing, updates and support
 
-## おすすめの構成
-公開GitHubリポジトリのReleasesでZIPを配布し、Issuesで不具合報告を受け付けます。アプリの利用・公開APIでの更新確認にGitHubログインは不要です。Issuesへの投稿にはGitHubアカウントが必要です。アカウントのない利用者向けには別のHTTPS問い合わせページも設定できます。
+Use the public repository's GitHub Releases for downloads and Issues for bug reports. Using the app or checking public releases does not require a GitHub login. Posting an issue requires a GitHub account.
 
-## 初回設定
-1. 自分のGitHubアカウントで公開リポジトリを作ります（Take-No-Break/ModelLibraryOrganizer は作成済み、MITライセンス設定済み）。
-2. 「About」→「Support & Updates」→「更新・サポート設定」に `所有者/リポジトリ名` を入力します。
-3. 問い合わせURLを空欄にすると、そのリポジトリのIssuesを使用します。別フォームならHTTPS URLを指定します。
-4. 「配布用設定を書き出す」で `publisher.json` を保存します。配布するEXEと同じフォルダーへ置いてからZIP化します。ローカルの「設定を保存」だけでは、他ユーザーには反映されません。
-5. このpublishingフォルダー内の `.github/ISSUE_TEMPLATE/bug_report.yml` をリポジトリへ入れると報告フォームを使えます。
-6. GitHub Releasesに安定版 `v1.0.0` を作り、Windows配布ZIPを添付します。次回は `v1.0.1` のように番号を上げ、ソフト内の `support.py` の VERSION と揃えます。draft / prerelease は更新通知の対象外です。
-7. アプリの「更新を確認」で確認します。将来のバージョンは「起動時に更新を確認」をオンにした利用者に表示されます。初期設定はオフです。
+## Distributor setup
 
-## どこに届くか
-ログの保存だけでは誰にも送信されません。「問い合わせページを開く」はブラウザーを開くだけで、投稿は利用者が行います。GitHub Issuesに投稿するとそのリポジトリに届きます。配布者はGitHubのWatch/通知設定でメール等を設定してください。アプリへメールアドレス・パスワード・トークンを預ける方式ではありません。
-ログは公開前に確認してください。CSV一覧やcache.jsonにはモデル名・ローカルパスを含むため、診断ログと混同して公開しないでください。
+1. Configure `Take-No-Break/ModelLibraryOrganizer` in About → Support & Updates.
+2. An empty support URL uses repository Issues; optionally configure an HTTPS support form.
+3. Export `publisher.json` beside the EXE. Local settings alone are not included in other users' packages.
+4. Publish versioned ZIPs and checksums in GitHub Releases. Keep the app version and release tag synchronized.
+5. Stable update checks ignore drafts and prereleases. Startup checks are off by default.
 
-## オフラインと更新
-完全オフラインでは更新を取得できません。オンラインに戻して手動確認するか、利用者が配布ページを確認する必要があります。更新は案内のみで、自動ダウンロード・上書き・実行はしません。ZIPを新しいフォルダーへ展開して起動します。
-利用者の設定・分類・移動履歴は `%LOCALAPPDATA%/ModelLibraryOrganizer` に保存され、新版でも維持されます。配布ZIPにこの個人データフォルダーは含めないでください。
+## Reports
 
-## 診断ログ
-- 通信: 接続先ホスト、UTC時刻、操作種別、HTTP状態、待機秒数（この起動中の直近1000件）
-- エラー: 例外の型、アプリ内のモジュール名・関数・行番号（直近100件を端末に保存）
-- 含めないもの: モデル名、ローカルパス、認証情報、例外本文、API応答本文、モデル画像
-- 「完全オフライン」をオンにすると新しいAPI呼び出しを拒否します。既に開始した通信の応答待ちは終了するまで続く場合があります。
+Saving a report does not send it anywhere. Opening the support page opens the browser; users submit reports themselves. GitHub Issues arrive in this repository. Configure GitHub Watch/email notifications in the owner's GitHub account if desired.
 
-## 参考
-https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
-https://docs.github.com/en/rest/releases/releases
+Diagnostic reports omit personal paths, model names, credentials, detailed exception messages, response bodies and images. Always review attachments. Exported model lists and local caches are different from sanitized diagnostics and may contain private paths.
 
-### 旧版の利用者への最初の案内
-v1.2.1以前には更新確認機能がないため、最初のv1.0.0への更新だけは配布ページ等で案内が必要です。以後は公開先を設定して配布したv1.0.0以上で、新版を確認できます。
+## Offline use
+
+Fully offline mode cannot retrieve updates. Users can check the release page later or run a manual check when online. The app opens a release page; it does not automatically download, overwrite or execute an update.
+
+Extract new Windows ZIPs completely. Preferences and history remain in `%LOCALAPPDATA%/ModelLibraryOrganizer`; never include that directory in public distribution packages.

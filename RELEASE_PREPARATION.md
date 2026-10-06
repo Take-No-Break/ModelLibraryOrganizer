@@ -1,35 +1,31 @@
-# Publication checklist
+# Release preparation
 
 Repository: https://github.com/Take-No-Break/ModelLibraryOrganizer
-License: MIT. Third-party components keep their own notices.
-Prepared preview version: 1.0.15. Application source has not yet been pushed.
 
-## Ready locally
+Current preview: **v1.0.32**. License: MIT. Third-party notices and model licenses remain separate.
 
-- Curated source with no model weights, caches, personal paths or credentials.
-- README, contribution guidance, issue form and MIT license.
-- Windows tests/build/startup CI with read-only repository permissions.
-- Windows ZIP, source ZIP and SHA256 checksums.
-- Git origin points to the intended Take-No-Break repository.
+## Package contents
 
-## Publishing sequence
+- Curated source, tests, English README and guides.
+- Windows EXE with its complete `_internal` directory.
+- Install.cmd / Install.ps1 and Uninstall.cmd / Uninstall.ps1.
+- LICENSE, README, CONTRIBUTING, SECURITY, publisher.json, templates and dependency notices.
+- Source ZIP and SHA-256 checksums.
 
-1. Push the prepared local commit to origin/main.
-2. Wait for the Windows checks workflow to pass on GitHub.
-3. For a preview, create tag/release v1.0.15 as a prerelease and attach the Windows ZIP,
-   source ZIP and checksums. Use RELEASE_NOTES.md for the description.
-4. Ask a second Windows user to test the package; no VM/second-PC test is claimed.
-5. Before the first stable release, choose its version and synchronize the source,
-   installer and release tag. The owner's intended first stable version is 1.0.0;
-   1.0.15 here is the current development preview, not a stable launch decision.
-6. Verify About support links and update notifications after a stable release exists.
+Model weights, local caches, personal paths, histories, credentials and demonstration datasets are excluded. Settings stay in `%LOCALAPPDATA%/ModelLibraryOrganizer`.
+
+## Verification
+
+Local regression tests and fresh-settings packaged startup were checked. Windows GitHub Actions checks tests and builds. The uninstaller must not be executed during this verification. No separate-PC or virtual-machine test is claimed.
+
+## Publication
+
+Push reviewed source to main. Publish v1.0.32 as a prerelease with Windows/source ZIPs and checksums. Review the Windows workflow result. A later stable launch is a separate version decision; preview releases are excluded from stable update notifications.
 
 ## Build
 
-    python -m pip install -r requirements.txt pyinstaller==6.22.3
-    python run_tests.py
-    python -m PyInstaller --noconfirm ModelLibraryOrganizer.spec
-
-Include LICENSE, README, CONTRIBUTING.md, SECURITY.md, Install.cmd, Install.ps1,
-publisher.json, templates and release-licenses beside the EXE/_internal directory.
-Settings stay outside the package in LocalAppData/ModelLibraryOrganizer.
+```powershell
+python -m pip install -r requirements.txt pyinstaller==6.22.3
+python run_tests.py
+python -m PyInstaller --noconfirm ModelLibraryOrganizer.spec
+```
