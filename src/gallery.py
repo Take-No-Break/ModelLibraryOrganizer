@@ -85,21 +85,59 @@ class Gallery:
   ttk.Button(bar,text='選択…',command=browse).pack(side='left')
   ttk.Button(bar,text='このフォルダーを調査',command=self.scan_gallery).pack(side='left')
   ttk.Button(bar,text='今回の調査結果',command=lambda:self.set_gallery_rows(self.rows)).pack(side='left')
+  filters=ttk.Frame(page);filters.pack(fill='x',pady=(6,0))
+  self.gallery_family=ChoiceVar(value='すべて');self.gallery_kind=ChoiceVar(value='すべて')
+  self.gallery_filters={}
+  for key,label,var in [('family','系統',self.gallery_family),('kind','種類',self.gallery_kind)]:
+   ttk.Label(filters,text=label).pack(side='left',padx=(0,4))
+   box=ttk.Combobox(filters,textvariable=var,state='readonly',width=24);box.pack(side='left',padx=(0,12))
+   box.bind('<<ComboboxSelected>>',lambda event:self.filter_gallery_rows());self.gallery_filters[key]=box
+  ttk.Label(filters,text='ファイル名検索').pack(side='left')
+  self.gallery_search=tk.StringVar();ttk.Entry(filters,textvariable=self.gallery_search,width=24).pack(side='left',fill='x',expand=True,padx=6)
+  self.gallery_search.trace_add('write',lambda *args:self.filter_gallery_rows())
+  self.gallery_sort='name';self.gallery_descending=False
   pane=ttk.Panedwindow(page,orient='horizontal');pane.pack(fill='both',expand=True,pady=8)
   left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
   self.gallery_vertical=ttk.Panedwindow(left,orient='vertical');self.gallery_vertical.pack(fill='both',expand=True)
   upper=ttk.Frame(self.gallery_vertical);lower=ttk.Frame(self.gallery_vertical);self.gallery_vertical.add(upper,weight=1);self.gallery_vertical.add(lower,weight=2)
   self.gallery_list=ttk.Treeview(upper,columns=('name','family'),show='headings',height=9)
-  self.gallery_list.heading('name',text='モデル／ファイル');self.gallery_list.heading('family',text='系統 / 種類');self.gallery_list.column('name',width=320);self.gallery_list.column('family',width=230)
+  self.gallery_list.heading('name',text='モデル／ファイル',command=lambda:self.sort_gallery('name'));self.gallery_list.heading('family',text='系統 / 種類',command=lambda:self.sort_gallery('family'));self.gallery_list.column('name',width=320);self.gallery_list.column('family',width=230)
   self.gallery_list.pack(fill='both',expand=True)
   self.gallery_list.bind('<<TreeviewSelect>>',self.gallery_selected)
   self.gallery_text=LocalizedText(lower,height=14,wrap='word');self.gallery_text.pack(fill='both',expand=True,pady=4)
   self.gallery_photo=ttk.Label(right,text='モデルを選ぶと公開画像を表示します。',anchor='center');self.gallery_photo.pack(fill='both',expand=True)
   self.gallery_rows=[];self.gallery_generation=0
  def set_gallery_rows(self,rows,select=True):
-  self.gallery_rows=list(rows);self.gallery_list.delete(*self.gallery_list.get_children())
-  for i,r in enumerate(self.gallery_rows):self.gallery_list.insert('','end',iid=str(i),values=(Path(r['source']).name,preview_classification(r)))
+  self.gallery_rows=list(rows)
+  for key,var in [('family',self.gallery_family),('kind',self.gallery_kind)]:
+   values=sorted({(r.get('family') or 'Unknown family') if key=='family' else PREVIEW_TYPES.get(r.get('kind'),r.get('kind') or 'Unknown type') for r in self.gallery_rows},key=str.casefold)
+   self.gallery_filters[key].configure(values=['すべて',*values])
+   if var.get() not in values:var.set('すべて')
+  self.filter_gallery_rows()
   if select:self.select_page(self.pages['preview'])
+ def filter_gallery_rows(self):
+  previous=self.gallery_list.selection()
+  self.gallery_list.delete(*self.gallery_list.get_children())
+  family=self.gallery_family.get();kind=self.gallery_kind.get()
+  query=self.gallery_search.get().strip().casefold()
+  def sort_key(item):
+   r=item[1];name=Path(r['source']).name.casefold()
+   return (preview_classification(r).casefold(),name) if self.gallery_sort=='family' else (name,)
+  for i,r in sorted(enumerate(self.gallery_rows),key=sort_key,reverse=self.gallery_descending):
+   if query not in Path(r['source']).name.casefold():continue
+   row_family=r.get('family') or 'Unknown family'
+   row_kind=PREVIEW_TYPES.get(r.get('kind'),r.get('kind') or 'Unknown type')
+   if family!='すべて' and family!=row_family:continue
+   if kind!='すべて' and kind!=row_kind:continue
+   self.gallery_list.insert('','end',iid=str(i),values=(Path(r['source']).name,preview_classification(r)))
+  if previous and self.gallery_list.exists(previous[0]):self.gallery_list.selection_set(previous[0])
+  else:
+   self.gallery_generation+=1
+   self.linked_text(self.gallery_text,'')
+   self.gallery_photo.configure(image='',text=tr('モデルを選ぶと公開画像を表示します。'));self.gallery_photo.image=None
+ def sort_gallery(self,column):
+  self.gallery_descending=not self.gallery_descending if self.gallery_sort==column else False
+  self.gallery_sort=column;self.filter_gallery_rows()
  def scan_gallery(self):
   if not self.ready():return
   p=self.gallery_path.get()
@@ -108,7 +146,10 @@ class Gallery:
   self.work(lambda:self.engine.scan(p,target,online,host,self.stop,lambda x:self.events.put(('status',x))),'gallery_rows')
  def choose_gallery_row(self,row):
   for i,r in enumerate(self.gallery_rows):
-   if r['source']==row['source']:self.gallery_list.selection_set(str(i));self.gallery_list.see(str(i));return
+   if r['source']==row['source']:
+    if not self.gallery_list.exists(str(i)):
+     self.gallery_family.set('すべて');self.gallery_kind.set('すべて');self.gallery_search.set('');self.filter_gallery_rows()
+    self.gallery_list.selection_set(str(i));self.gallery_list.see(str(i));return
  def gallery_selected(self,event=None):
   ids=self.gallery_list.selection()
   if not ids:return
@@ -240,5 +281,5 @@ class Gallery:
   atomic_json(self.engine.data/'compatibility-folders.json',roots);host=self.host.get();online=self.online.get() and not network.OFFLINE;target=self.target_dir.get();self.stop.clear()
   def run():
    for folder in dict.fromkeys(chosen):self.engine.scan(folder,target if target and Path(target).is_dir() else folder,online,host,self.stop,lambda x:self.events.put(('status',x)))
-   return '互換性用の追加調査完了。モデルは移動していません。'
+   return '互換性の調査完了。'
   self.work(run,'compat_scanned')

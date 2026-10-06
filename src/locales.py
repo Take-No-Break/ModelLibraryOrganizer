@@ -335,3 +335,18 @@ register_pt_br(CATALOG, LANGS)
 
 from locale_safety_update import install as install_safety_strings
 install_safety_strings(CATALOG)
+
+
+if 'en' in CATALOG: CATALOG['en'].update({'ファイル名検索': 'Filename search', '互換性の調査完了。': 'Compatibility scan complete.'})
+
+if 'es' in CATALOG: CATALOG['es'].update({'ファイル名検索': 'Buscar nombre', '互換性の調査完了。': 'Análisis de compatibilidad completado.'})
+
+if 'zh-CN' in CATALOG: CATALOG['zh-CN'].update({'ファイル名検索': '搜索文件名', '互換性の調査完了。': '兼容性扫描完成。'})
+
+if 'zh-TW' in CATALOG: CATALOG['zh-TW'].update({'ファイル名検索': '搜尋檔名', '互換性の調査完了。': '相容性掃描完成。'})
+
+if 'pt-BR' in CATALOG: CATALOG['pt-BR'].update({'ファイル名検索': 'Buscar nome do arquivo', '互換性の調査完了。': 'Verificação de compatibilidade concluída.'})
+
+if 'de' in CATALOG: CATALOG['de'].update({'ファイル名検索': 'Dateiname suchen', '互換性の調査完了。': 'Kompatibilitätsprüfung abgeschlossen.'})
+
+if 'th' in CATALOG: CATALOG['th'].update({'ファイル名検索': 'ค้นหาชื่อไฟล์', '互換性の調査完了。': 'ตรวจสอบความเข้ากันได้เสร็จแล้ว'})

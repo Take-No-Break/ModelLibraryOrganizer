@@ -294,3 +294,7 @@ Public lookup sends hashes and HF search filenames, not weights or dataset image
 4. Use `Uninstall.cmd` only when you intend to remove recorded application files.
 
 The uninstaller is included but has not been executed or tested. Model libraries and local user data are retained by its intended behavior. No separate-PC or VM verification is claimed.
+
+### Preview filters and sorting
+
+Choose Family and Type to combine filters. All removes that filter. Filename search matches part of a filename without case sensitivity. Click the Model / file or Family / type column heading to sort; click again to reverse the order. Filtering changes only the visible list, not the files.
