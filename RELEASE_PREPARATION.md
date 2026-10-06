@@ -2,7 +2,7 @@
 
 Repository: https://github.com/Take-No-Break/ModelLibraryOrganizer
 
-Current preview: **v1.0.32**. License: MIT. Third-party notices and model licenses remain separate.
+Current public release: **v1.0.0**. License: MIT. Third-party notices and model licenses remain separate.
 
 ## Package contents
 
@@ -20,7 +20,7 @@ Local regression tests and fresh-settings packaged startup were checked. Windows
 
 ## Publication
 
-Push reviewed source to main. Publish v1.0.32 as a prerelease with Windows/source ZIPs and checksums. Review the Windows workflow result. A later stable launch is a separate version decision; preview releases are excluded from stable update notifications.
+Push reviewed source to main. Publish v1.0.0 as a stable release with Windows/source ZIPs and checksums. Review the Windows workflow result. Preview releases remain excluded from stable update notifications.
 
 ## Build
 

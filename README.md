@@ -1,45 +1,42 @@
 # Model Library Organizer
 
-**Windows preview · v1.0.32 · MIT license**
+**Windows · v1.0.0 · MIT license**
 
-Downloaded too many models to remember what they are, where they came from, or where they belong? Model Library Organizer helps inspect a ComfyUI model collection, identify sources, review folder layouts, and organize files. It also prepares Image to Text workflows and lets you edit training captions.
+Browse your downloaded LoRA and checkpoint models, see available preview images, and retrieve published trigger words and descriptions through public APIs without opening each source website. Model Library Organizer also identifies and organizes files, creates model source notes, prepares Image to Text workflows, and edits training captions and tags.
 
-[Download the Windows preview](https://github.com/Take-No-Break/ModelLibraryOrganizer/releases/tag/v1.0.32) · [Report an issue](https://github.com/Take-No-Break/ModelLibraryOrganizer/issues)
+[Download for Windows](https://github.com/Take-No-Break/ModelLibraryOrganizer/releases/tag/v1.0.0) · [Report an issue](https://github.com/Take-No-Break/ModelLibraryOrganizer/issues)
 
 ## What you can do
 
 | Area | Features |
 | --- | --- |
-| Models | Recursively scan supported files; calculate full SHA-256; match public sources; inspect model types and families; review unidentified files. |
-| Organization | Choose type/category or provider → creator → type → family layouts; review moves and hardlinks; create required folders when approved changes run. |
-| Model inspection | View available descriptions, trigger words, source links and preview images inside the app; resize preview panes. |
-| Compatibility | Select one LoRA and compare its family with all identified checkpoint/diffusion models in the chosen folder; record manual results for individual pairs. |
-| Source TXT | Create readable model information files with available trigger words, source, type, family and hash; choose optional fields or update existing generated notes with backups. |
-| Image to Text | Export Combined or Expanded ComfyUI workflows, install/update required custom nodes, or run against a local ComfyUI server. |
-| Edit Text | Inspect image/TXT pairs or standalone TXT; edit individual captions or bulk prepend, append, remove, replace and wrap text. |
-| Tag editor | Browse image thumbnails and compact tags; search, filter, sort tag counts, select tags, insert/remove tags in bulk and save reviewed edits. |
-| Results and recovery | Review saved operation results, detect duplicates by SHA-256, inspect move history, restore eligible changes and repair supported workflow references. |
-| Appearance and support | Dark/Classic themes, resizable panels, progress display, multilingual guides, local diagnostic reports and optional update checks. |
+| [Models](#organize-a-model-library) | Recursively scan supported files; calculate full SHA-256; match public sources; inspect model types and families; review unidentified files. |
+| [Organization](#organize-a-model-library) | Choose type/category or provider → creator → type → family layouts; review moves and hardlinks; create required folders when approved changes run. |
+| [Model inspection](#preview-a-model) | View available descriptions, trigger words, source links and preview images inside the app; resize preview panes. |
+| [Compatibility](#compatibility) | Select one LoRA and compare its family with all identified checkpoint/diffusion models in the chosen folder; record manual results for individual pairs. |
+| [Source TXT](#model-source-txt) | Create readable model information files with available trigger words, source, type, family and hash; choose optional fields or update existing generated notes with backups. |
+| [Image to Text](#image-to-text) | Export Combined or Expanded ComfyUI workflows, install/update required custom nodes, or run against a local ComfyUI server. |
+| [Edit Text](#edit-text) | Inspect image/TXT pairs or standalone TXT; edit individual captions or bulk prepend, append, remove, replace and wrap text. |
+| [Tag editor](#tag-editor) | Browse image thumbnails and compact tags; search, filter, sort tag counts, select tags, insert/remove tags in bulk and save reviewed edits. |
+| [Results and recovery](#results-history-and-restore) | Review saved operation results, detect duplicates by SHA-256, inspect move history, restore eligible changes and repair supported workflow references. |
 
 The app prepares training data; it does not train LoRA/Embedding models or generate images itself.
 
-Screenshots show the real v1.0.32 interface in Classic mode, with illustrative model records and neutral sample images. Demo paths and preview artwork are examples, not verified downloaded models.
+Screenshots show the application interface in Classic mode, with illustrative model records and neutral sample images. Demo paths and preview artwork are examples, not verified downloaded models.
+
+For every button, field and dialog, see the [Complete control reference](docs/CONTROLS.md). This plain Markdown guide can also be read by an AI assistant.
 
 ## Install on Windows
 
-1. Download and extract the entire **Windows-x64-Preview.zip** from Releases.
+1. Download and extract the entire **Windows-x64.zip** from Releases.
 2. Run `Install.cmd`, or launch `ModelLibraryOrganizer.exe` directly. Keep `_internal` beside the EXE.
 3. Select your own folders. Model weights, personal paths, histories and ComfyUI are not included.
 
-`Uninstall.cmd` is included. It removes recorded application files while leaving model libraries and user data. **The uninstaller has not been executed or tested.** This preview has local tests and packaged startup verification; a separate-PC or virtual-machine test is not claimed.
+`Uninstall.cmd` is included. It removes recorded application files while leaving model libraries and user data. **The uninstaller has not been executed or tested.** This release has local tests and packaged startup verification; a separate-PC or virtual-machine test is not claimed.
 
 ## Organize a model library
 
 ![Models: file types, families and proposed destinations](docs/screenshots/models.jpg)
-
-- **Top:** choose the download folder and destination models folder.
-- **Middle:** inspect each model's type, family and proposed location.
-- **Bottom:** create source notes or review moves before applying them.
 
 
 1. Choose a **scan folder** containing downloaded models. Subfolders are included.
@@ -70,25 +67,30 @@ SeaArt and Tensor.Art are not automatically queried: this app has no verified re
 
 ![Preview: model list, source information and image](docs/screenshots/preview.jpg)
 
-- **Left, top:** select a model and check its family/type.
-- **Left, bottom:** read descriptions, trigger words and available source information.
-- **Right:** see the preview image without leaving the app.
+1. Open **Model inspection → Preview** after scanning.
+2. Select a LoRA, checkpoint or another identified model in the list.
+3. Read available trigger words, type, family and source descriptions below the list.
+4. View the preview image on the right. Open the source link only when you need the original page.
+
+Published metadata must be available from a supported source; unavailable trigger words or images are not invented.
 
 ### Compatibility
 
-Choose checkpoint and LoRA folders and scan them, then select a LoRA. The table compares it with every identified checkpoint/diffusion model within the selected checkpoint folder, including subfolders:
+1. Open **Model inspection → Compatibility** and choose checkpoint and LoRA folders.
+2. Scan those folders, then select one LoRA.
+3. Compare it with all identified checkpoints: **green** = same family, **yellow** = related SDXL families, **gray** = different or unknown.
+4. Click a row to record your own loading/generation test result.
 
-- **Green:** same known family.
-- **Yellow:** related SDXL families.
-- **Gray:** different or unknown families.
-
-These are metadata-based estimates, not actual loading or generation tests. Record successful use, required adjustments or failure separately for each pair. A new computer needs its own folder selection and scans; the app does not know where another user's checkpoints are stored.
+Colors are metadata estimates, not generation tests or guarantees. Each computer needs its own folder selection and scans.
 
 ### Model source TXT
 
-After scanning, **Create source TXT** writes `model-name.safetensors.source.txt` beside the model. With no selection, it uses eligible list items, excluding errors and rejected items. It includes available identity information and published trigger words; optional sections include descriptions and metadata. Field labels are always English. Descriptions retain their source language.
+1. Scan the models, then select the models you want to document.
+2. Open **Text editor → Model source TXT** to choose optional fields. Identity and available published trigger words are always included.
+3. Click **Create source TXT** to create missing `model-name.safetensors.source.txt` notes beside the models.
+4. Use **Update readable TXT** only to rebuild existing app-generated notes with backups.
 
-Creation skips existing files. **Update readable TXT** rebuilds the same generated note with an original backup in application data. Neither action changes model weights. These model information notes are separate from image training captions.
+With no selection, creation uses eligible list items. Existing notes are skipped. Labels are English; descriptions retain their source language. These notes document models, not image training captions. Model weights are unchanged.
 
 ## Image to Text
 
@@ -96,36 +98,25 @@ Supported adapters: **PixAI, JoyCaption, CL Tagger and Taggerine**. Choose the a
 
 ![Image to Text: model settings and workflow preview](docs/screenshots/image-to-text.jpg)
 
-- **Top left:** choose images and the analysis model; check the automatic save location.
-- **Left:** connect to local ComfyUI, export a template, or install required nodes.
-- **Right:** see the Combined/Expanded workflow layout before exporting.
+### Set up custom nodes once
 
-### Set up custom nodes
+1. Click **Install / update custom nodes**.
+2. Click **Detect**, or browse to the `custom_nodes` folder of the ComfyUI instance you use.
+3. Click **Install / update**, install any missing dependencies with ComfyUI's Python, and restart ComfyUI.
+4. Enter the running local ComfyUI URL and click **Check connection**.
 
-1. Open **Install / update custom nodes** in Image to Text.
-2. Detect or browse to the `custom_nodes` directory of the ComfyUI instance you actually use.
-3. Install the bundle and restart ComfyUI. Install missing requirements with that instance's Python environment when necessary.
-4. Check the connection to your running local ComfyUI server, usually `http://127.0.0.1:8188`.
+The same node bundle works with all four supported adapters and both template formats. Changing paths, model selection or template format does not require reinstalling it. Update it when node code changes. The app does not start or restart ComfyUI.
 
-The bundle is shared by all supported adapters and Combined/Expanded templates. Changing image paths, supported model selection or template format does not require reinstalling it. Update it when the app's node implementation changes or install it separately for another ComfyUI instance. The app does not automatically launch or restart ComfyUI.
-
-For manual ZIP setup, extract the node package so `__init__.py` is directly inside:
-
-```text
-ComfyUI/custom_nodes/model_library_organizer_bridge/__init__.py
-```
-
-Do not leave it nested inside another ZIP extraction folder. See [node setup details](comfy_bridge/README.md).
+Manual ZIP setup: extract **Save required custom nodes** so the entry file is at `ComfyUI/custom_nodes/model_library_organizer_bridge/__init__.py`. For step-by-step troubleshooting, see [custom-node setup](docs/CONTROLS.md#custom-node-setup).
 
 ### Run or export
 
-Select the image folder, adapter/model folder and relevant thresholds or prompt settings.
+1. Choose the image folder, model adapter and complete model folder.
+2. Set the relevant thresholds or prompt. Check the automatic save location.
+3. For direct execution, click **Check connection**, then **Run in ComfyUI and save image hardlinks + TXT**.
+4. Alternatively, choose **Combined** or **Expanded**, enable **Save matching TXT in ComfyUI** if needed, and click **Save ComfyUI workflow template**. Open that JSON in ComfyUI and run it there.
 
-- **Run in ComfyUI and save:** submits analysis to the running local server, then saves completed captions and image hardlinks.
-- **Save ComfyUI Workflow Template:** exports the visual graph for opening in ComfyUI. Combined uses fewer nodes; Expanded exposes individual processing steps.
-- **Save Required Custom Nodes:** exports the implementation package for manual setup, not another workflow.
-
-For exported templates, enable **Save matching TXT in ComfyUI** before export when you want files saved. Exporting alone does not run analysis or create captions.
+**Workflow template** = editable visual graph. **Required custom nodes** = code that makes those nodes work. Exporting either file alone does not analyze images or save captions.
 
 Outputs go into an adapter-named subfolder inside the selected image folder:
 
@@ -145,45 +136,38 @@ Old exported workflows with an empty output setting may write TXT beside the ori
 
 ![Text editor: image list, preview and editable caption](docs/screenshots/text-editor.jpg)
 
-- **Left:** select an image/TXT pair.
-- **Right:** preview the image and edit its caption.
-- **Bottom:** prepare bulk changes and review them before saving.
-
-
-Open a dataset folder to view images and matching captions. Select an image or TXT to edit its text. Bulk changes can add prefixes/suffixes, remove or replace text, or wrap selected terms in `< >`. Review changes before saving; originals are backed up. External file changes prevent overwriting stale content.
+1. Choose a dataset folder; its image/TXT list loads automatically.
+2. Select an image/TXT pair, preview the image and edit the caption on the right.
+3. For batch edits, select several files and choose wrap, prepend, append, remove or replace, then **Preview changes**.
+4. Save the current TXT or approve the batch review. Originals are backed up; conflicting external edits block saving.
 
 ### Tag editor
 
 ![Tag editor: thumbnails, tag statistics and caption tags](docs/screenshots/tag-editor.jpg)
 
-- **Left:** scroll through image thumbnails.
-- **Top:** sort tag counts, search and filter your dataset.
-- **Middle:** insert tags or remove unwanted tags in bulk.
-- **Bottom:** click caption tags to edit them; save when ready.
+1. Click **Open Folder** and browse the thumbnails on the left.
+2. Sort tag counts, search or select a tag to filter matching images.
+3. Click caption tags to edit them, or use bulk insertion/removal with the **Selected / Filtered / All** scope.
+4. Click **Save All**, review the changes and confirm saving.
 
-The Tag editor provides a thumbnail sidebar, compact clickable tags, tag-count sorting, search, category filters, bulk insertion and unwanted-tag removal. Changes remain unsaved until saved. Tag counts reflect caption occurrence, not inference confidence scores.
-
-Caption requirements depend on your trainer and settings. Wrapping a word in `< >` does not train an Embedding by itself; match the token/placeholder settings of your training software.
+Counts show how many caption files use a tag, not AI confidence. Category filters use local keyword rules. Edits remain pending until saved. Wrapping a term in `< >` does not train an Embedding; match your trainer's token settings.
 
 ## Results, history and restore
 
-Results stores operation reports for later review. SHA-256 duplicate checks distinguish identical content from filenames; multiple hardlinks can refer to one underlying file.
+1. Open **Results** and select a report to revisit scans, exports or caption changes.
+2. Use **History / Restore** to inspect recorded file moves.
+3. Select an eligible history record, or open its JSON, then choose **Restore this layout**.
+4. Restore the newest operation first and review the confirmation.
 
-A scan-history JSON records the original inventory. **An inventory without a linked move journal cannot restore locations.** Actual organization operations write recovery journals before moving files. Open or select an eligible record in **History / Restore** to undo recorded changes, starting with the newest operation.
-
-Changed/deleted files or destination conflicts can block restoration. History is not a backup of model contents and cannot undo unrelated external changes. Supported workflow-reference repair can adjust changed relative model paths and backs up original workflow JSON; not every custom node is supported.
-
-## Languages and appearance
-
-Interface/guide languages: Japanese, English, Spanish, Simplified Chinese, Traditional Chinese, Brazilian Portuguese, German and Thai. Some technical setup messages remain English. **About** and **Image to Text** retain their English names. Choose **Dark** or nostalgic gray **Classic** in appearance settings.
+**A scan inventory without a linked move journal cannot restore locations.** Changed/deleted files or path conflicts may block restoration. History is not a model-content backup and cannot undo external actions. [Tools and recovery details](docs/CONTROLS.md#tools) explain duplicate checks and workflow-reference repair.
 
 ## Offline mode and privacy
 
-Fully offline mode blocks external public API, preview-image and update requests. Local scans, cached data, organization, TXT editing, workflow export and separately running local ComfyUI remain available. Disabling public API lookup alone stops new source searches; it does not disable other online features.
+- **Online lookup:** sends hashes and HF search filenames, not model weights or dataset images.
+- **Fully offline:** blocks external source, preview and update requests. Local tools, cached data and separately running local ComfyUI remain usable.
+- **Reports and updates:** logs are never submitted automatically; review them before sharing. Update checks open release pages and never install updates.
 
-Lookup sends hashes and, for Hugging Face search, filenames. It does not upload model weights or dataset images. Public preview images are displayed in memory. Logs stay on the device and are never submitted automatically.
-
-Use **About → Support & Updates** to review/save a diagnostic report and open the repository or Issues. Review attachments before posting to public Issues. Optional update checks read GitHub Releases and open a newer stable release page; they do not install or execute updates. Startup checks are off by default. Preview releases are not advertised by stable update checks.
+See the [support controls](docs/CONTROLS.md#about-support-and-updates) for details.
 
 ## Develop and contribute
 
@@ -194,7 +178,7 @@ python -m pip install pyinstaller==6.22.3
 python -m PyInstaller --noconfirm ModelLibraryOrganizer.spec
 ```
 
-Windows CI uses Python 3.12. The prepared local Windows preview was built using Python 3.14.5. Test file organization on disposable data. See [Contributing](CONTRIBUTING.md), [Security](SECURITY.md) and [release preparation](RELEASE_PREPARATION.md).
+Windows CI uses Python 3.12. The prepared local Windows release was built using Python 3.14.5. Test file organization on disposable data. See [Contributing](CONTRIBUTING.md), [Security](SECURITY.md) and [release preparation](RELEASE_PREPARATION.md).
 
 ## License and acknowledgments
 
