@@ -22,11 +22,9 @@ Browse your downloaded LoRA and checkpoint models, see available preview images,
 | [Tag editor](#tag-editor) | Browse image thumbnails and compact tags; search, filter, sort tag counts, select tags, insert/remove tags in bulk and save reviewed edits. |
 | [Results and recovery](#results-history-and-restore) | Review saved operation results, detect duplicates by SHA-256, inspect move history, restore eligible changes and repair supported workflow references. |
 
-The app prepares training data; it does not train LoRA/Embedding models or generate images itself.
+**LoRA / Checkpoint training preparation:** Image to Text, Edit Text and Tag editor prepare and edit dataset captions. Source TXT documents downloaded models. The app prepares training data; it does not train LoRA/Embedding models or generate images itself.
 
-Screenshots show the application interface in Classic mode, with illustrative model records and neutral sample images. Demo paths and preview artwork are examples, not verified downloaded models.
-
-For every button, field and dialog, see the [Complete control reference](docs/CONTROLS.md). This plain Markdown guide can also be read by an AI assistant.
+Use an AI assistant to guide you through this repository or README: [Complete control reference](docs/CONTROLS.md).
 
 ## Install on Windows
 
@@ -175,7 +173,7 @@ See the [support controls](docs/CONTROLS.md#about-support-and-updates) for detai
 
 ```powershell
 python -m pip install -r requirements.txt
-python run_tests.py
+python scripts/run_tests.py
 python -m pip install pyinstaller==6.22.3
 python -m PyInstaller --noconfirm ModelLibraryOrganizer.spec
 ```

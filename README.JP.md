@@ -22,11 +22,9 @@
 | [Tag editor](#tag-editor) | サムネイルとコンパクトなタグ表示。検索、フィルター、使用数の並べ替え、一括挿入・削除、変更確認後の保存。 |
 | [調査結果と復元](#調査結果履歴と復元) | 操作結果、SHA-256による重複検出、移動履歴、復元可能な変更、対応ワークフローの参照修復を確認。 |
 
-このアプリは学習データを準備します。LoRA・Embeddingの学習や画像生成そのものは行いません。
+**LoRA / Checkpointの学習準備：** Image to Text、Edit Text、Tag editorでデータセットのテキストを作成・編集します。配布元TXTはダウンロードしたモデルの情報メモです。このアプリは学習データを準備します。LoRA・Embeddingの学習や画像生成そのものは行いません。
 
-画面は日本語設定・Classicテーマで撮影しています。モデル情報と風景画像は説明用のサンプルです。デモのパスやモデル情報は、実際に配布元と照合したモデルではありません。モデル情報TXTのラベルや、一部の機能名は英語で表示されます。
-
-各ボタン・入力欄・ダイアログについては[全操作ガイド（英語）](docs/CONTROLS.md)をご覧ください。AIアシスタントからも参照できるMarkdown形式です。
+AIアシスタントにこのリポジトリやREADMEの使い方を案内してもらえます：[全操作ガイド（英語）](docs/CONTROLS.md)。
 
 ## Windowsへの導入
 
@@ -174,7 +172,7 @@ Images/
 
 ```powershell
 python -m pip install -r requirements.txt
-python run_tests.py
+python scripts/run_tests.py
 python -m pip install pyinstaller==6.22.3
 python -m PyInstaller --noconfirm ModelLibraryOrganizer.spec
 ```

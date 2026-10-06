@@ -10,7 +10,7 @@ Review diagnostic reports before posting them publicly.
 Use Python 3.12 on Windows:
 
     python -m pip install -r requirements.txt
-    python run_tests.py
+    python scripts/run_tests.py
 
 For a Windows package:
 
@@ -26,3 +26,14 @@ New UI text should support the existing language system.
 By submitting a contribution, you agree that your contribution can be distributed
 under this project's MIT license. Preserve notices for any third-party code.
 MIT does not require submitting your modifications upstream; we welcome it voluntarily.
+
+## Repository layout
+
+- `src/`: application source and bundled ComfyUI nodes.
+- `tests/`: regression tests for model identification, file moves, restoration, caption editing and UI behavior. These protect user files and are not AI-only development artifacts.
+- `scripts/`: test runner.
+- `docs/`: screenshots and control reference.
+- `templates/`: workflow examples.
+- `publishing/`: release documentation.
+
+Run from source with `python src/app.py`. Run all isolated checks with `python scripts/run_tests.py`.

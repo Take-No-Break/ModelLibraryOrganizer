@@ -171,7 +171,7 @@ Paths, thresholds and template options save automatically on this computer. Only
 | Install / update | Copies the bundled nodes into `custom_nodes/model_library_organizer_bridge`; changed managed files are backed up. Does not install weights, pip dependencies or restart ComfyUI. |
 | Close | Closes setup. |
 
-For manual ZIP installation, ensure the entry file is directly at `ComfyUI/custom_nodes/model_library_organizer_bridge/__init__.py`, not inside another nested package directory. Install its `requirements.txt` with ComfyUI's own Python. See [package guidance](../comfy_bridge/README.md).
+For manual ZIP installation, ensure the entry file is directly at `ComfyUI/custom_nodes/model_library_organizer_bridge/__init__.py`, not inside another nested package directory. Install its `requirements.txt` with ComfyUI's own Python. See [package guidance](../src/comfy_bridge/README.md).
 
 Changing images, a supported model or Combined/Expanded does not require another node installation. Update when node code changes, or install separately for another ComfyUI instance. A missing-node message usually means the wrong directory, nested extraction, an import/dependency error or a missing restart. Inspect ComfyUI's startup log; connection success alone does not establish that model weights can load.
 

@@ -22,11 +22,9 @@
 | [Tag editor](#tag-editor) | 浏览缩略图和紧凑标签，搜索、筛选、按出现次数排序，批量插入或删除标签，审核后保存。 |
 | [结果与恢复](#结果历史与恢复) | 查看操作结果，按 SHA-256 检测重复文件，查看移动历史，恢复符合条件的操作，修复支持的工作流引用。 |
 
-本应用用于准备训练数据，不直接训练 LoRA 或 Embedding，也不生成图片。
+**LoRA / Checkpoint 训练准备：** Image to Text、Edit Text 和 Tag editor 用于创建和编辑数据集文本；来源 TXT 用于记录下载模型的信息。本应用用于准备训练数据，不直接训练 LoRA 或 Embedding，也不生成图片。
 
-截图展示 Classic 主题的真实应用界面，模型记录和风景图片为演示样例。演示路径及模型信息不代表经过来源验证的下载模型。本页使用英文界面截图；日语版使用日语界面截图。
-
-每个按钮、输入框和对话框的说明见[完整操作参考（英文）](docs/CONTROLS.md)。这份 Markdown 文档也可供 AI 助手读取。
+使用 AI 助手了解本仓库或 README：[完整操作参考（英文）](docs/CONTROLS.md)。
 
 ## Windows 安装
 
@@ -174,7 +172,7 @@ Images/
 
 ```powershell
 python -m pip install -r requirements.txt
-python run_tests.py
+python scripts/run_tests.py
 python -m pip install pyinstaller==6.22.3
 python -m PyInstaller --noconfirm ModelLibraryOrganizer.spec
 ```

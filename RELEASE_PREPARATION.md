@@ -26,6 +26,6 @@ Push reviewed source to main. Publish v1.0.0 as a stable release with Windows/so
 
 ```powershell
 python -m pip install -r requirements.txt pyinstaller==6.22.3
-python run_tests.py
+python scripts/run_tests.py
 python -m PyInstaller --noconfirm ModelLibraryOrganizer.spec
 ```

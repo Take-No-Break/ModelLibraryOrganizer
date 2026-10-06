@@ -1,7 +1,0 @@
-# Install into the Python environment used by ComfyUI, not the Organizer environment.
-numpy
-Pillow
-safetensors
-transformers>=4.49,<5
-accelerate
-onnxruntime

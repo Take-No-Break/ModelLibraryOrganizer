@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['app.py'],
-    pathex=[],
+    ['src/app.py'],
+    pathex=['src'],
     binaries=[],
-    datas=[('seed_registry.json', '.'), ('comfy_bridge', 'comfy_bridge')],
+    datas=[('src/seed_registry.json', '.'), ('src/comfy_bridge', 'comfy_bridge')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
