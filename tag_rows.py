@@ -45,7 +45,7 @@ class CaptionRows(tk.Frame):
    if y>bottom:break
    self.visible_ids.append(ident);record=self.app.tag_records[int(ident)]
    if ident in selected:
-    c.create_rectangle(0,y,width,y+h,fill='#25263b',outline='');c.create_rectangle(0,y,3*s,y+h,fill=theme.BLUE,outline='')
+    c.create_rectangle(0,y,width,y+h,fill=theme.ROW,outline='');c.create_rectangle(0,y,3*s,y+h,fill=theme.BLUE,outline='')
    c.create_line(0,y+h,width,y+h,fill=theme.LINE)
    name=Path(record['images'][0] if record['images'] else record['text_path']).name
    display=name

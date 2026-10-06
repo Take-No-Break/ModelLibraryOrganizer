@@ -15,7 +15,7 @@ def build_editor(app):
  base=tk.Frame(page,bg=theme.BG);base.pack(fill='both',expand=True);app.tag_editor_surface=base
  def frame(parent,bg=None):return tk.Frame(parent,bg=bg or parent.cget('bg'))
  def label(parent,text,muted=False):return tk.Label(parent,text=text,bg=parent.cget('bg'),fg=theme.MUTED if muted else theme.TEXT,font=('Segoe UI',8),anchor='w')
- def entry(parent,var,width=24):return tk.Entry(parent,textvariable=var,width=width,font=('Segoe UI',9),bg=theme.FIELD,fg=theme.TEXT,insertbackground=theme.TEXT,selectbackground='#496da4',relief='flat',highlightthickness=1,highlightbackground=theme.FIELD,highlightcolor=theme.BLUE)
+ def entry(parent,var,width=24):return tk.Entry(parent,textvariable=var,width=width,font=('Segoe UI',9),bg=theme.FIELD,fg=theme.TEXT,insertbackground=theme.TEXT,selectbackground=theme.SELECT,relief='flat',highlightthickness=1,highlightbackground=theme.FIELD,highlightcolor=theme.BLUE)
  def button(parent,text,action,side='left',small=False):
   b=PillButton(parent,text,action,small=small);b.pack(side=side,padx=3,pady=2);return b
  toolbar=frame(base,theme.PANEL);toolbar.pack(fill='x')

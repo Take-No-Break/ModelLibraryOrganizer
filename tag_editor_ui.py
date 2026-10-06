@@ -1,4 +1,5 @@
 import tkinter as tk
+import tag_theme as theme
 from pathlib import Path
 from PIL import Image,ImageTk,ImageOps
 from i18n import ttk,tr,messagebox,filedialog,LocalizedToplevel,Tooltip
@@ -261,11 +262,11 @@ class TagEditorUI:
   self.tag_selected_chip=(index,tag)
   if self.tag_rows.pending:self.root.after_cancel(self.tag_rows.pending);self.tag_rows.pending=None
   self.tag_rows.draw()
-  entry=tk.Entry(canvas,font=('Segoe UI',9),relief='flat',borderwidth=0,background='#3b405b',foreground='#e1eaff',insertbackground='#e1eaff');self.tag_inline_editor=entry
+  entry=tk.Entry(canvas,font=('Segoe UI',9),relief='flat',borderwidth=0,background=theme.EDIT,foreground=theme.EDIT_TEXT,insertbackground=theme.EDIT_TEXT);self.tag_inline_editor=entry
   entry.insert(0,tag);entry.select_range(0,'end');width=min(260,max(130,canvas.winfo_width()-20));x=min(max(4,event.x),max(4,canvas.winfo_width()-width-4));y=canvas.canvasy(event.y)
   from tag_widgets import rounded
   scale=max(1,canvas.winfo_fpixels('1i')/96);height=round(26*scale)
-  border=rounded(canvas,x,y-height/2,width,height,'#3b405b','#83b1ff',radius=7*scale,tags=('inline-editor',))
+  border=rounded(canvas,x,y-height/2,width,height,theme.EDIT,theme.BLUE,radius=7*scale,tags=('inline-editor',))
   item=canvas.create_window(x+7*scale,y,anchor='w',window=entry,width=width-14*scale,height=height-6*scale,tags=('inline-editor',))
   def cancel(*_):
    if self.tag_inline_editor is entry:self.tag_inline_editor=None

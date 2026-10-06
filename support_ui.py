@@ -18,9 +18,19 @@ class SupportUI:
     self.language=tk.StringVar(value=i18n.LANGS[i18n.LANG])
     choose=ttk.Combobox(head,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=15,font=('Yu Gothic UI',9));choose.pack(side='right',before=self.progress);choose.bind('<<ComboboxSelected>>',self.change_language)
     ttk.Label(head,text='言語',font=('Yu Gothic UI',9)).pack(side='right',before=self.progress,padx=5)
+    self.appearance=tk.StringVar(value='Classic' if self.preferences.get('theme')=='classic' else 'Dark')
+    appearance=ttk.Combobox(head,values=['Dark','Classic'],textvariable=self.appearance,state='readonly',width=8,font=('Yu Gothic UI',9))
+    appearance.pack(side='right',before=self.progress,padx=5);appearance.bind('<<ComboboxSelected>>',self.change_appearance)
     self.root.report_callback_exception=self.callback_error
     if self.preferences.get('auto_updates') and not network.OFFLINE and self.publisher.get('github_repository'):
         self.root.after(1800,lambda:self.check_updates(True))
+ def change_appearance(self,event=None):
+    old=self.preferences.get('theme','dark')
+    mode='classic' if self.appearance.get()=='Classic' else 'dark'
+    if not self.ready() or not self.editor_guard() or not self.tag_guard():
+        self.appearance.set('Classic' if old=='classic' else 'Dark');return
+    self.preferences['theme']=mode;self.save_preferences()
+    self.change_language()
  def save_preferences(self):atomic_json(self.engine.data/'preferences.json',self.preferences)
  def change_language(self,event=None):
     code=next(k for k,v in i18n.LANGS.items() if v==self.language.get())
@@ -28,7 +38,7 @@ class SupportUI:
     root=self.root;data=self.engine.data;geometry=root.geometry()
     page=next((k for k,v in self.pages.items() if str(v)==self.current_page()),'models')
     rows=self.rows;dataset=self.dataset_rows;dataset_path=self.dataset_path.get()
-    state={k:v.get() for k,v in vars(self).items() if isinstance(v,tk.Variable) and k not in ('language','filter','status','editor_status','compat_origin','cap_connection')}
+    state={k:v.get() for k,v in vars(self).items() if isinstance(v,tk.Variable) and k not in ('language','appearance','filter','status','editor_status','compat_origin','cap_connection')}
     groups={k:{name:v.get() for name,v in getattr(self,k).items()} for k in ('cap_thresholds','compat_roots')}
     context={k:getattr(self,k) for k in ['scan_source','scan_target'] if hasattr(self,k)}
     self.save_training_settings()
@@ -94,7 +104,7 @@ class SupportUI:
             ttk.Button(frame,text='GitHub repository',command=self.open_repository).pack(side='left',padx=5)
             repo=self.publisher.get('github_repository','')
             if repo:
-                link=ttk.Label(frame,text='https://github.com/'+valid_repo(repo),foreground='#83b1ff',cursor='hand2');link.pack(anchor='w',pady=5);link.bind('<Button-1>',lambda event:self.open_repository())
+                link=ttk.Label(frame,text='https://github.com/'+valid_repo(repo),foreground=__import__('tag_theme').BLUE,cursor='hand2');link.pack(anchor='w',pady=5);link.bind('<Button-1>',lambda event:self.open_repository())
             auto=tk.BooleanVar(value=self.preferences.get('auto_updates',False))
             def toggle_auto(v=auto):self.preferences['auto_updates']=v.get();self.save_preferences()
             ttk.Checkbutton(frame,text='起動時に更新を確認（任意）',variable=auto,command=toggle_auto,tooltip='最新版の確認にはインターネット接続が必要です。自動インストールはしません。').pack(anchor='w',pady=8)

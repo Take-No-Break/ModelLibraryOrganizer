@@ -4,7 +4,7 @@ from tkinter import ttk
 class ScrollablePage(ttk.Frame):
  def __init__(self,parent,padding=4):
   super().__init__(parent)
-  self.canvas=tk.Canvas(self,highlightthickness=0,borderwidth=0,background='#1f1f30')
+  self.canvas=tk.Canvas(self,highlightthickness=0,borderwidth=0,background=__import__('tag_theme').BG)
   y=ttk.Scrollbar(self,command=self.canvas.yview);x=ttk.Scrollbar(self,orient='horizontal',command=self.canvas.xview)
   self.y_scroll=y;self.x_scroll=x
   self.canvas.configure(yscrollcommand=y.set,xscrollcommand=x.set)

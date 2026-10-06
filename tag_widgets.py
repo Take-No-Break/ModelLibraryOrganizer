@@ -29,11 +29,11 @@ def layout_chips(canvas,items,width,remove=False):
 
 def draw_chip(canvas,item,x0=0,y0=0,remove=False,selected=False):
  tag,badge,display,x,y,w,h,bw=item;scale,f=metrics(canvas);x+=x0;y+=y0
- rounded(canvas,x,y,w,h,theme.FIELD if not selected else '#456797',outline=theme.BLUE if selected else '',radius=(8 if badge is not None else 4)*scale)
+ rounded(canvas,x,y,w,h,theme.FIELD if not selected else theme.SELECT,outline=theme.BLUE if selected else '',radius=(8 if badge is not None else 4)*scale)
  canvas.create_text(x+5*scale,y+h/2,anchor='w',text=display,font=f,fill=theme.TEXT)
  if badge is not None:
   rounded(canvas,x+w-bw-2*scale,y+2*scale,bw,h-4*scale,theme.BLUE,radius=7*scale)
-  canvas.create_text(x+w-bw/2-2*scale,y+h/2,text=str(badge),font=f,fill='#172846')
+  canvas.create_text(x+w-bw/2-2*scale,y+h/2,text=str(badge),font=f,fill=theme.BADGE_TEXT)
  if remove:canvas.create_text(x+w-6*scale,y+h/2,text='×',font=f,fill=theme.RED)
  return (x,y,x+w,y+h)
 
@@ -66,8 +66,8 @@ class PillButton(tk.Canvas):
  def set_active(self,value):self.active=value;self.draw()
  def draw(self,hover=False):
   self.delete('all');w=max(self.winfo_width(),self.winfo_reqwidth());h=max(self.winfo_height(),self.winfo_reqheight())
-  rounded(self,1,1,w-2,h-2,theme.BLUE if self.active else '#3d3d57' if hover else theme.FIELD,radius=8*self.scale)
-  self.create_text(w/2,h/2,text=self.label,font=self.f,fill='#1d2d49' if self.active else theme.RED if self.danger else theme.TEXT)
+  rounded(self,1,1,w-2,h-2,theme.BLUE if self.active else theme.HOVER if hover else theme.FIELD,radius=8*self.scale)
+  self.create_text(w/2,h/2,text=self.label,font=self.f,fill=theme.BADGE_TEXT if self.active else theme.RED if self.danger else theme.TEXT)
 
 class ThumbnailStrip(tk.Frame):
  def __init__(self,parent,records):

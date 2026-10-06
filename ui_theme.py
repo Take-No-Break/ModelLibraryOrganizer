@@ -1,19 +1,20 @@
-"""Shared dark application palette and compact navigation."""
+"""Shared selectable application palette and compact navigation."""
 import tkinter as tk
 from tkinter import ttk
 import tag_theme as colors
 
-def configure_theme(root):
+def configure_theme(root,mode="dark"):
+ colors.set_mode(mode)
  root.configure(background=colors.BG)
- for option,value in [('Background',colors.BG),('Foreground',colors.TEXT),('insertBackground',colors.TEXT),('selectBackground','#456797'),('selectForeground','#ffffff')]:root.option_add('*'+option,value)
+ for option,value in [('Background',colors.BG),('Foreground',colors.TEXT),('insertBackground',colors.TEXT),('selectBackground',colors.SELECT),('selectForeground','#ffffff')]:root.option_add('*'+option,value)
  style=ttk.Style(root);style.theme_use('clam')
  style.configure('.',background=colors.BG,foreground=colors.TEXT,font=('Yu Gothic UI',10),bordercolor=colors.LINE,lightcolor=colors.LINE,darkcolor=colors.LINE,troughcolor=colors.PANEL)
  for name in ('TFrame','TLabel','TLabelframe','TLabelframe.Label'):style.configure(name,background=colors.BG,foreground=colors.TEXT)
  style.configure('TNotebook',background=colors.BG,borderwidth=0,tabmargins=(0,0,0,0))
  style.configure('TNotebook.Tab',font=('Yu Gothic UI',9),padding=(8,3),background=colors.PANEL,foreground=colors.MUTED)
- style.map('TNotebook.Tab',background=[('selected',colors.FIELD),('active','#3b4058')],foreground=[('selected',colors.TEXT),('active',colors.TEXT)])
+ style.map('TNotebook.Tab',background=[('selected',colors.FIELD),('active',colors.HOVER)],foreground=[('selected',colors.TEXT),('active',colors.TEXT)])
  style.configure('TButton',padding=(8,4),background=colors.FIELD,foreground=colors.TEXT)
- style.map('TButton',background=[('active','#414761'),('disabled',colors.PANEL)],foreground=[('disabled',colors.MUTED)])
+ style.map('TButton',background=[('active',colors.HOVER),('disabled',colors.PANEL)],foreground=[('disabled',colors.MUTED)])
  for name in ('TEntry','TCombobox','TSpinbox'):
   style.configure(name,fieldbackground=colors.FIELD,background=colors.FIELD,foreground=colors.TEXT,arrowcolor=colors.TEXT,insertcolor=colors.TEXT)
   style.map(name,fieldbackground=[('readonly',colors.FIELD),('disabled',colors.PANEL)],foreground=[('readonly',colors.TEXT),('disabled',colors.MUTED)],selectbackground=[('readonly',colors.FIELD)],selectforeground=[('readonly',colors.TEXT)])
@@ -22,13 +23,15 @@ def configure_theme(root):
   style.map(name,background=[('active',colors.PANEL)],foreground=[('active',colors.TEXT)])
  style.configure('Treeview',background=colors.BG,fieldbackground=colors.BG,foreground=colors.TEXT,font=('Yu Gothic UI',10))
  style.configure('Treeview.Heading',background=colors.PANEL,foreground=colors.TEXT)
- style.map('Treeview',background=[('selected','#3e5b86')],foreground=[('selected','#ffffff')])
+ style.map('Treeview',background=[('selected',colors.SELECT)],foreground=[('selected',colors.TEXT)])
  for name in ('Vertical.TScrollbar','Horizontal.TScrollbar'):
   style.configure(name,background=colors.FIELD,troughcolor=colors.BG,arrowcolor=colors.MUTED)
-  style.map(name,background=[('active','#414761'),('pressed','#456797')])
+  style.map(name,background=[('active',colors.HOVER),('pressed',colors.SELECT)])
  style.configure('Horizontal.TProgressbar',background=colors.BLUE,troughcolor=colors.FIELD,bordercolor=colors.LINE)
 
 def recolor_existing(parent):
+ if colors.MODE=="classic":
+  return
  # Some older text panes specify light colors explicitly rather than using ttk.
  for widget in parent.winfo_children():
   if widget.winfo_class() in ('Text','Canvas','Frame','Label','Entry','Listbox','Toplevel','TLabel'):

@@ -257,3 +257,7 @@ close in logical DPI units and restored within the current screen bounds.
 Selected statistics tags and image-row tags are visibly highlighted in blue.
 The tag filter is also shown beside Clear filter. File operations and caption
 saving retain their existing confirmation, conflict checks and backups.
+
+## Appearance (1.0.15)
+
+Choose Dark or Classic in the top header. The choice is saved locally and restored on launch. Classic uses neutral light colors.
