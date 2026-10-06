@@ -10,15 +10,18 @@ class CaptionUI:
  def init_captions(self):
   self.training_settings=read_json(self.engine.data/'training-settings.json',{}) or {};self.init_text_editor()
   page=self.pages['captions']
-  ttk.Label(page,text='画像解析でLoRA学習用TXTを作るテンプレートを保存します。Embedding用の語はテキスト編集で追加してください。実行はComfyUIで行います。',wraplength=1000).pack(anchor='w',pady=6)
+  ttk.Label(page,text='Select images, model and output folder, then run in your local ComfyUI. The output contains image hardlinks and matching TXT. Workflow export is also available.',wraplength=1000).pack(anchor='w',pady=6)
   panes=ttk.Panedwindow(page,orient='horizontal');panes.pack(fill='both',expand=True)
   left=ttk.Frame(panes);right=ttk.Frame(panes);panes.add(left,weight=3);panes.add(right,weight=1)
   self.cap_folder=tk.StringVar(value=self.training_settings.get('image_folder',''));self.cap_model=tk.StringVar(value=self.training_settings.get('model_path',''))
+  self.cap_output=tk.StringVar(value=self.training_settings.get('output_folder',''));self.cap_url=tk.StringVar(value=self.training_settings.get('comfy_url','http://127.0.0.1:8188'))
   self.cap_backend=tk.StringVar(value=self.training_settings.get('backend','PixAI'));self.cap_template_mode=ChoiceVar(value=self.training_settings.get('template_mode','一体型'));self.cap_device=tk.StringVar(value='auto');self.cap_recursive=tk.BooleanVar(value=False);self.cap_save_txt=tk.BooleanVar(value=False)
   fields=ttk.Frame(left);fields.pack(fill='x');fields.columnconfigure(1,weight=1)
-  for i,(label,var) in enumerate([('画像フォルダー',self.cap_folder),('Image to Text model folder',self.cap_model)]):
+  for i,(label,var) in enumerate([('画像フォルダー',self.cap_folder),('Image to Text model folder',self.cap_model),('Output folder (image hardlinks + TXT)',self.cap_output)]):
    ttk.Label(fields,text=label).grid(row=i,column=0,sticky='w');ttk.Entry(fields,textvariable=var,width=36).grid(row=i,column=1,sticky='ew',padx=4)
    ttk.Button(fields,text='選択…',command=lambda v=var:self.choose_root(v)).grid(row=i,column=2)
+  ttk.Label(fields,text='Running ComfyUI URL').grid(row=3,column=0,sticky='w');ttk.Entry(fields,textvariable=self.cap_url,width=26).grid(row=3,column=1,sticky='ew')
+  ttk.Button(left,text='Run in ComfyUI and save image hardlinks + TXT',command=self.run_caption_local).pack(anchor='w',pady=5)
   bar=ttk.Frame(left);bar.pack(fill='x',pady=8)
   ttk.Label(bar,text='Model').pack(side='left');combo=ttk.Combobox(bar,textvariable=self.cap_backend,values=['PixAI','JoyCaption','CL Tagger','Taggerine'],state='readonly',width=14);combo.pack(side='left');combo.bind('<<ComboboxSelected>>',lambda e:self.update_template_view())
   ttk.Combobox(bar,textvariable=self.cap_device,values=['auto','cpu'],state='readonly',width=7).pack(side='left',padx=5)
@@ -39,6 +42,7 @@ class CaptionUI:
   ttk.Label(page,text='Copy the exported custom nodes folder into ComfyUI/custom_nodes, install its requirements in the ComfyUI Python environment, then restart ComfyUI. Drag the workflow JSON onto the canvas. Model weights are separate.',wraplength=1000).pack(anchor='w',pady=8)
   self.cap_settings_timer=None
   self.cap_settings_vars={'image_folder':self.cap_folder,'model_path':self.cap_model,'backend':self.cap_backend,'template_mode':self.cap_template_mode,'device':self.cap_device,'recursive':self.cap_recursive,'save_txt':self.cap_save_txt,'cl_threshold':self.cap_cl,'taggerine_threshold':self.cap_tag,'joy_prompt':self.cap_joy,'joy_tokens':self.cap_tokens}
+  self.cap_settings_vars.update(output_folder=self.cap_output,comfy_url=self.cap_url)
   for key,var in self.cap_settings_vars.items():
    if key in self.training_settings:var.set(self.training_settings[key])
   for key,var in self.cap_thresholds.items():
@@ -90,6 +94,23 @@ class CaptionUI:
    path=filedialog.asksaveasfilename(defaultextension='.json',initialfile=f'Image to Text - {backend} - {"Expanded" if expanded else "Combined"}.json',filetypes=[('ComfyUI workflow','*.json')])
    if path:atomic_json(Path(path),graph);self.notify_result('Save ComfyUI workflow template',path)
   except Exception as exc:messagebox.showerror('Export failed',str(exc))
+ def run_caption_local(self):
+  if not self.ready():return
+  try:
+   from caption_output import run_local
+   from comfy_client import base_url
+   folder=self.cap_folder.get().strip();output=self.cap_output.get().strip();backend=self.cap_backend.get()
+   if not Path(folder).is_dir() or not output:raise ValueError('Select image and output folders.')
+   images=[str(p) for row in list_dataset(folder,self.cap_recursive.get(),include_text=False) for p in row['images']]
+   if not images:raise ValueError('No images in the selected folder.')
+   if len({Path(p).stem.casefold() for p in images})!=len(images):raise ValueError('Duplicate image filenames: select folders with unique image names.')
+   model=resolve_model_folder(self.cap_model.get(),backend);url=base_url(self.cap_url.get());device=self.cap_device.get()
+   thresholds={k:float(v.get()) for k,v in self.cap_thresholds.items()}
+   if any(not 0<=v<=1 for v in thresholds.values()):raise ValueError('Thresholds must be between 0 and 1.')
+   settings=[float(self.cap_cl.get()),float(self.cap_tag.get()),self.cap_joy.get(),int(self.cap_tokens.get())]
+   self.stop.clear()
+   self.work(lambda:('Image to Text complete',run_local(url,images,model,backend,thresholds,device,settings,output,self.stop,lambda s:self.events.put(('status',s)),self.report_progress)),'report')
+  except Exception as exc:messagebox.showerror('Image to Text',str(exc))
  def export_caption_nodes(self):
   path=filedialog.asksaveasfilename(defaultextension='.zip',initialfile='Organizer-Image-to-Text-Nodes.zip',filetypes=[('ZIP','*.zip')])
   if not path:return

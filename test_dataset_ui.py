@@ -24,7 +24,7 @@ class DatasetUITests(unittest.TestCase):
   self.app.edit_dirty=True
   with patch('dataset_editor.messagebox.askyesnocancel',return_value=None):self.assertFalse(self.app.editor_guard())
  def test_caption_config_uses_user_paths(self):
-  self.assertFalse(hasattr(self.app,'cap_url'));self.assertEqual(self.app.cap_model.get(),'');self.assertEqual(self.app.cap_folder.get(),'')
+  self.assertEqual(self.app.cap_url.get(),'http://127.0.0.1:8188');self.assertEqual(self.app.cap_output.get(),'');self.assertEqual(self.app.cap_model.get(),'');self.assertEqual(self.app.cap_folder.get(),'')
  def test_compact_header_and_footer(self):
   self.root.deiconify();self.root.geometry('1000x680');self.root.update()
   self.assertLess(self.app.tabs.winfo_rooty()-self.root.winfo_rooty(),65)
