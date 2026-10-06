@@ -22,6 +22,8 @@ class RestoreUI:
   ttk.Button(bar,text='はい（続ける）',command=lambda:finish(True)).pack(side='right',padx=5)
   no=ttk.Button(bar,text='いいえ（中止）',command=lambda:finish(False));no.pack(side='right',padx=5);no.focus_set()
   win.protocol('WM_DELETE_WINDOW',lambda:finish(False));win.bind('<Escape>',lambda e:finish(False))
+  from display import center_popup
+  center_popup(win,self.root)
   try:self.root.wait_window(win)
   finally:self.review_active=False
   return answer[0]
@@ -29,6 +31,10 @@ class RestoreUI:
  def init_restore(self):
   page=self.pages['restore']
   ttk.Label(page,text='変更前の保存場所へ戻します。複数回変更した場合は、新しい履歴から順に戻してください。',wraplength=1100).pack(anchor='w',pady=6)
+  from caption_labels import RESTORE_NOTICE
+  import i18n
+  self.restore_notice=ttk.Label(page,text=RESTORE_NOTICE.get(i18n.LANG,RESTORE_NOTICE['en']),wraplength=1000)
+  self.restore_notice.pack(anchor='w',pady=5)
   bar=ttk.Frame(page);bar.pack(fill='x')
   ttk.Button(bar,text='履歴JSONを開く…',command=self.import_restore).pack(side='left')
   self.restore_action=ttk.Button(bar,text='この配置へ戻す…',command=self.restore_selected,state='disabled');self.restore_action.pack(side='left',padx=6)

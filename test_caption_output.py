@@ -5,9 +5,9 @@ from caption_output import save_output,run_local,output_folder
 
 class OutputTests(unittest.TestCase):
  def test_overview_all_languages(self):
-  from caption_labels import TEXT,labels
+  from caption_labels import TEXT,labels,RESTORE_NOTICE
   from i18n import LANGS
-  self.assertEqual(set(TEXT),set(LANGS))
+  self.assertEqual(set(TEXT),set(LANGS));self.assertEqual(set(RESTORE_NOTICE),set(LANGS))
   for code in LANGS:self.assertGreater(len(labels(code)[0]),60)
  def test_preview_information_order(self):
   from gallery import preview_content

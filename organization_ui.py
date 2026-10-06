@@ -33,5 +33,7 @@ def choose_layout(app):
     ttk.Button(bar,text='続ける',command=lambda:finish(True)).pack(side='right',padx=4)
     ttk.Button(bar,text='キャンセル',command=lambda:finish(False)).pack(side='right',padx=4)
     win.protocol('WM_DELETE_WINDOW',lambda:finish(False))
+    from display import center_popup
+    center_popup(win,app.root)
     app.root.wait_window(win)
     return result[0]

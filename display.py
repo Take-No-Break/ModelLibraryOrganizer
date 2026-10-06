@@ -2,6 +2,13 @@
 import sys
 from tkinter import font
 
+def center_popup(window,parent):
+    window.update_idletasks()
+    width=window.winfo_width();height=window.winfo_height()
+    x=parent.winfo_rootx()+(parent.winfo_width()-width)//2
+    y=parent.winfo_rooty()+(parent.winfo_height()-height)//2
+    window.geometry(f'{width}x{height}{x:+d}{y:+d}')
+
 def enable_dpi():
     if sys.platform != 'win32': return
     import ctypes

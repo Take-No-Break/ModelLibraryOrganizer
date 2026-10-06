@@ -188,7 +188,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         layout=choose_layout(self)
         if layout is None:return
         self.preferences['organization_layout']=layout;self.save_preferences()
-        if not messagebox.askyesno('調査前の配置記録','調査前の全ファイル・フォルダーの場所をJSONに記録します。調査だけでは移動しません。\n\n整理を実行するとファイル・モデルの場所やフォルダーが変わります。実行前に変更履歴も保存し、履歴・復元から元の配置へ戻せます。\n\nこの記録は内容のバックアップではありません。変更・削除されたファイルは復元できない場合があります。\n\n調査を開始しますか？'):return
+        if not messagebox.askyesno('調査前の配置記録','調査前の全ファイル・フォルダーの場所をJSONに記録します。調査だけでは移動しません。\n\n整理を実行するとファイル・モデルの場所やフォルダーが変わります。実行前に変更履歴も保存し、履歴・復元から元の配置へ戻せます。\n\nこの記録は内容のバックアップではありません。変更・削除されたファイルは復元できない場合があります。\n\n調査を開始しますか？',parent=self.root):return
         self.scan_source=str(Path(self.scan_dir.get()).resolve());self.scan_target=str(Path(self.target_dir.get()).resolve())
         atomic_json(self.engine.data/'settings.json',{'scan_root':self.scan_source,'target_root':self.scan_target,'host':self.host.get()})
         self.stop.clear();online=self.online.get() and not network.OFFLINE;host=self.host.get();self.rows=[];self.filter.set('すべて');self.render()

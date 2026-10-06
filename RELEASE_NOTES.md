@@ -39,3 +39,7 @@ Image to Text saves under the selected image folder in a PixAI/JoyCaption/CL-Tag
 Image to Text overview, connection button and automatic save label are translated into all eight supported UI languages. The model preview now has a draggable vertical divider between the model list and information. Preview text places trigger words near the top and evidence/SHA256 at the bottom. Source TXT ordering is unchanged.
 
 History/Restore now keeps its restore action visible at the top. It is enabled for pending move history; otherwise an explanation distinguishes scan-only inventories, already restored changes, empty logs and missing linked history. Opening JSON starts in the move history directory. No restoration was performed automatically.
+
+## 1.0.31: Restore explanation and centered scan dialogs
+
+History/Restore permanently explains, in all eight UI languages, that a scan inventory without linked move history cannot restore files. Organization choice and move warning popups center over the app, and scan confirmation uses the app as its parent.

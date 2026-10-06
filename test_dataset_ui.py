@@ -25,6 +25,17 @@ class DatasetUITests(unittest.TestCase):
   with patch('dataset_editor.messagebox.askyesnocancel',return_value=None):self.assertFalse(self.app.editor_guard())
  def test_caption_config_uses_user_paths(self):
   self.assertEqual(self.app.cap_url.get(),'http://127.0.0.1:8188');self.assertEqual(self.app.cap_output.get(),'');self.assertEqual(self.app.cap_model.get(),'');self.assertEqual(self.app.cap_folder.get(),'')
+ def test_centered_popup(self):
+  from display import center_popup
+  self.root.deiconify();self.root.geometry('1000x700+100+100');self.root.update()
+  win=tk.Toplevel(self.root);win.geometry('400x250');win.update()
+  try:
+   center_popup(win,self.root);win.update()
+   expected_x=self.root.winfo_rootx()+(self.root.winfo_width()-win.winfo_width())//2
+   expected_y=self.root.winfo_rooty()+(self.root.winfo_height()-win.winfo_height())//2
+   self.assertLessEqual(abs(win.winfo_x()-expected_x),2)
+   self.assertLessEqual(abs(win.winfo_y()-expected_y),2)
+  finally:win.destroy()
  def test_preview_vertical_divider(self):
   self.assertEqual(str(self.app.gallery_vertical.cget('orient')),'vertical')
   self.assertEqual(len(self.app.gallery_vertical.panes()),2)

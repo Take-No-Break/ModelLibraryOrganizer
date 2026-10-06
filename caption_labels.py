@@ -10,3 +10,13 @@ TEXT={
 'th':('เลือกโฟลเดอร์ภาพ โมเดลวิเคราะห์ และค่าเกณฑ์ ตรวจสอบการเชื่อมต่อแล้วเริ่มทำงาน ระบบจะสร้างโฟลเดอร์ตามชื่อประเภทโมเดลภายในโฟลเดอร์ภาพ เพื่อบันทึกฮาร์ดลิงก์ของภาพต้นฉบับและไฟล์ TXT ชื่อเดียวกัน ภาพต้นฉบับจะไม่ถูกย้าย และไฟล์ TXT ที่มีอยู่จะไม่ถูกเขียนทับ','ตรวจสอบการเชื่อมต่อ','ตำแหน่งบันทึก (อัตโนมัติ)')}
 
 def labels(language):return TEXT.get(language,TEXT['en'])
+
+RESTORE_NOTICE={
+'ja':'移動履歴が付いていない調査JSONだけでは復元できません。調査JSONは元の配置を記録するものです。復元するには、整理を実行したときの変更履歴、またはその変更履歴が関連付いた調査JSONを選んでください。',
+'en':'A scan JSON without linked move history cannot restore files. It only records the original layout. To restore, select the move history created when organization was executed, or a scan JSON linked to that history.',
+'es':'Un JSON de análisis sin un historial de movimientos asociado no puede restaurar archivos. Solo registra la ubicación original. Para restaurar, seleccione el historial creado al ejecutar la organización o un JSON de análisis vinculado a ese historial.',
+'zh-CN':'没有关联移动历史的扫描JSON无法恢复文件。它只记录原来的布局。要恢复，请选择执行整理时生成的变更历史，或已关联该变更历史的扫描JSON。',
+'zh-TW':'沒有關聯移動歷史的掃描JSON無法還原檔案。它只記錄原本的配置。要還原，請選擇執行整理時產生的變更歷史，或已關聯該變更歷史的掃描JSON。',
+'pt-BR':'Um JSON de análise sem histórico de movimentação vinculado não permite restaurar arquivos. Ele apenas registra a organização original. Para restaurar, selecione o histórico criado ao executar a organização ou um JSON de análise vinculado a esse histórico.',
+'de':'Eine Scan-JSON ohne verknüpften Verschiebeverlauf kann Dateien nicht wiederherstellen. Sie dokumentiert nur die ursprünglichen Speicherorte. Wählen Sie zur Wiederherstellung den beim Organisieren erstellten Änderungsverlauf oder eine damit verknüpfte Scan-JSON.',
+'th':'ไฟล์ JSON ของการตรวจสอบที่ไม่มีประวัติการย้ายเชื่อมโยงอยู่ ไม่สามารถคืนค่าไฟล์ได้ เพราะบันทึกเพียงตำแหน่งเดิม หากต้องการคืนค่า ให้เลือกประวัติการเปลี่ยนแปลงที่สร้างเมื่อจัดระเบียบจริง หรือ JSON ของการตรวจสอบที่เชื่อมโยงกับประวัตินั้น'}
