@@ -15,7 +15,7 @@ Downloaded too many models to remember what they are, where they came from, or w
 | Model inspection | View available descriptions, trigger words, source links and preview images inside the app; resize preview panes. |
 | Compatibility | Select one LoRA and compare its family with all identified checkpoint/diffusion models in the chosen folder; record manual results for individual pairs. |
 | Source TXT | Create readable model information files with available trigger words, source, type, family and hash; choose optional fields or update existing generated notes with backups. |
-| Image to Text | Export Combined or Expanded ComfyUI workflows, export API workflows, install/update required custom nodes, or run against a local ComfyUI server. |
+| Image to Text | Export Combined or Expanded ComfyUI workflows, install/update required custom nodes, or run against a local ComfyUI server. |
 | Edit Text | Inspect image/TXT pairs or standalone TXT; edit individual captions or bulk prepend, append, remove, replace and wrap text. |
 | Tag editor | Browse image thumbnails and compact tags; search, filter, sort tag counts, select tags, insert/remove tags in bulk and save reviewed edits. |
 | Results and recovery | Review saved operation results, detect duplicates by SHA-256, inspect move history, restore eligible changes and repair supported workflow references. |
@@ -100,7 +100,6 @@ Select the image folder, adapter/model folder and relevant thresholds or prompt 
 
 - **Run in ComfyUI and save:** submits analysis to the running local server, then saves completed captions and image hardlinks.
 - **Save ComfyUI Workflow Template:** exports the visual graph for opening in ComfyUI. Combined uses fewer nodes; Expanded exposes individual processing steps.
-- **Export API workflow:** exports the execution format for API clients, rather than the visual editor layout.
 - **Save Required Custom Nodes:** exports the implementation package for manual setup, not another workflow.
 
 For exported templates, enable **Save matching TXT in ComfyUI** before export when you want files saved. Exporting alone does not run analysis or create captions.
