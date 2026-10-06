@@ -30,7 +30,7 @@ class RestoreUI:
 
  def init_restore(self):
   page=self.pages['restore']
-  ttk.Label(page,text='変更前の保存場所へ戻します。複数回変更した場合は、新しい履歴から順に戻してください。',wraplength=1100).pack(anchor='w',pady=6)
+  ttk.Label(page,text='選択した履歴の変更前の配置へ戻します。復元済みの履歴も再確認できます。記録済みの場所から同じファイルを特定できない場合や競合がある場合は停止します。',wraplength=1100).pack(anchor='w',pady=6)
   from caption_labels import RESTORE_NOTICE
   import i18n
   self.restore_notice=ttk.Label(page,text=RESTORE_NOTICE.get(i18n.LANG,RESTORE_NOTICE['en']),wraplength=1000)
@@ -87,13 +87,14 @@ class RestoreUI:
    try:
     if journals_for(path):
      self.restore_action.configure(state='normal');reason('関連する変更履歴を使って復元できます。','Restore is available using linked move history.')
-    elif doc.get('move_journals'):reason('関連する変更はすでに復元されています。','The linked changes have already been restored.')
+    elif doc.get('move_journals'):
+     self.restore_action.configure(state='normal');reason('以前に復元した履歴です。現在の記録済みファイル位置を再確認して復元できます。','Previously restored. The current recorded locations will be checked again.')
     else:reason('このJSONは調査時の配置記録です。移動履歴が関連付いていないため、この記録からは復元できません。実際に整理を実行した日時の変更履歴を選んでください。','This JSON is a scan inventory with no linked moves. Select the move history from when organization was executed.')
    except ValueError as error:
     self.restore_reason.set(str(error))
     self.restore_text.configure(state='normal');tk.Text.insert(self.restore_text,'end','\n\n'+str(error));self.restore_text.configure(state='disabled')
    return
-  if doc.get('ops') and not doc.get('restored'):
+  if doc.get('ops'):
    self.restore_action.configure(state='normal');reason('復元可能な変更履歴です。ボタンで確認してから復元します。','Move history is available. The button asks for confirmation before restoring.')
   elif doc.get('restored'):reason('この履歴はすでに復元されています。','This history has already been restored.')
   else:reason('この履歴には復元する変更がありません。','This history contains no changes to restore.')
@@ -125,16 +126,7 @@ class RestoreUI:
   ids=self.restore_table.selection()
   if not ids:messagebox.showinfo('選択','元に戻す履歴を選択してください。');return
   path,_=self.restore_entries[int(ids[0])];doc=read_json(path)
-  if not doc or doc.get('restored'):messagebox.showinfo('確認','この履歴は復元済み、または読み込めません。');return
+  if not doc:messagebox.showinfo('確認','この履歴は復元済み、または読み込めません。');return
   if not messagebox.askyesno('復元の確認','選択した履歴の配置へ戻しますか？変更後のファイルや元パスに競合がある場合は停止します。今回作成したフォルダーは空の場合だけ削除します。'):return
-  if doc.get('kind')=='scan_snapshot':
-   from scan_history import journals_for
-   try:pending=journals_for(path)
-   except ValueError as error:messagebox.showerror('確認が必要です',str(error));return
-   if not pending:messagebox.showinfo('調査前の配置記録','関連する移動履歴がありません。調査だけでは場所を変更していません。');return
-   def undo_linked():
-    count=0
-    for journal in pending:count+=self.engine.rollback(journal)
-    return count
-   self.work(undo_linked,'undone')
-  else:self.work(lambda:self.engine.rollback(path),'undone')
+  from history_layout import restore_layout
+  self.work(lambda:restore_layout(self.engine,path),'undone')
