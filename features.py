@@ -9,7 +9,8 @@ def enrich(engine,row,host,online=True):
     if host not in ('https://civitai.red','https://civitai.com'):
         origin=urlparse(row.get('url',''))
         host=(origin.scheme+'://'+origin.netloc) if origin.hostname in ('civitai.red','civitai.com') else 'https://civitai.red'
-    if sha in cache:row['info']=cache[sha];return row['info']
+    if sha in cache and (not online or cache[sha].get('status')=='SHA256一致' or urlparse(row.get('url','')).hostname not in ('civitai.red','civitai.com')):
+        row['info']=cache[sha];return row['info']
     info={'status':'公開情報未取得','triggers':[]}
     if sha and online:
         try:

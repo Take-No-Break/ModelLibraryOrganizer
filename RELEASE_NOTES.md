@@ -21,3 +21,7 @@ Compatibility now has separate LoRA and Checkpoint/diffusion model selectors. Se
 ## 1.0.26: One LoRA against every checkpoint
 
 Select a LoRA to compare against all identified checkpoint/diffusion models in the selected folder, including subfolders. Choosing a folder starts a read-only compatibility scan when idle. The checkpoint selector was removed. Automatic family estimates remain untested; each row can separately record successful use, adjustments or failure. No generation test is performed and no models are moved.
+
+## 1.0.27: Source triggers and setup help
+
+Source TXT always includes published trigger words when available, even with older section preferences. Incomplete Civitai details caches are refreshed when online. Japanese and English help now explains ZIP extraction, correct custom_nodes placement, ComfyUI Python dependencies, restarting, workflow export, supported model changes and error diagnosis.

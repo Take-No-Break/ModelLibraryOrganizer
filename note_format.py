@@ -41,6 +41,7 @@ def note_content(row,sections=None):
       '', '[File metadata]',readable(row.get('metadata',{})),
       '', 'A shared model family does not guarantee compatibility or results with every checkpoint.','']
     if sections is not None:
+        sections=set(sections)|{'triggers'}
         markers={'Trigger words: ':'triggers','[Model description]':'description','[Version description]':'description','[Public metadata]':'public','[Lookup results]':'lookup','[File metadata]':'metadata'}
         enabled=True;filtered=[]
         for line in lines:

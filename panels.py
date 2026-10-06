@@ -26,7 +26,7 @@ class Panels(Gallery):
         from core import read_json,atomic_json
         from note_format import note_content
         options=read_json(self.engine.data/'note-options.json',{'sections':['triggers','description','public','lookup','metadata']})
-        self.note_sections=list(options['sections'])
+        self.note_sections=list(dict.fromkeys(['triggers',*options['sections']]))
         self.engine.note_content=lambda row:note_content(row,self.note_sections)
         page=self.pages['source_texts']
         ttk.Label(page,text='これはモデルの配布元TXTの設定です。画像と同名の学習用キャプションとは別です。モデル一覧で対象を選んでから操作してください。',wraplength=1000).pack(anchor='w',pady=10)
@@ -35,9 +35,10 @@ class Panels(Gallery):
         group=ttk.LabelFrame(page,text='TXTに含める情報（基本情報は常に記載）',padding=8);group.pack(fill='x',pady=8)
         self.note_vars={}
         def save_options():
-            self.note_sections=[k for k,v in self.note_vars.items() if v.get()]
+            self.note_sections=['triggers',*[k for k,v in self.note_vars.items() if v.get()]]
             atomic_json(self.engine.data/'note-options.json',{'sections':self.note_sections})
-        for key,label in [('triggers','Trigger words'),('description','Description'),('public','Public metadata'),('lookup','Lookup results'),('metadata','File metadata')]:
+        ttk.Label(group,text='Trigger words (always included)').pack(side='left',padx=5)
+        for key,label in [('description','Description'),('public','Public metadata'),('lookup','Lookup results'),('metadata','File metadata')]:
             var=tk.BooleanVar(value=key in self.note_sections);self.note_vars[key]=var
             ttk.Checkbutton(group,text=label,variable=var,command=save_options).pack(side='left',padx=5)
         self.init_gallery()

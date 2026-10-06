@@ -5,7 +5,7 @@ from datetime import datetime,timezone
 from urllib.parse import urlparse
 from core import atomic_json,read_json
 from network import request_json,diagnostics
-VERSION='1.0.26'
+VERSION='1.0.27'
 
 def valid_repo(repo):
     repo=repo.strip()

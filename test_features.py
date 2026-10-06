@@ -24,6 +24,16 @@ class FeaturesTest(unittest.TestCase):
  def test_changed_workflow_rejected(self):
   p=self.root/'w.json';p.write_text('{}');plan={'path':str(p),'before':digest(p),'changes':[],'document':{'x':1}};p.write_text('{"x":2}')
   with self.assertRaises(ValueError):repair_workflows([plan],self.root/'backup')
+ def test_trigger_words_survive_section_filter(self):
+  from note_format import note_content
+  row={'source':'model.safetensors','info':{'triggers':['example_trigger']}}
+  self.assertIn('Trigger words: example_trigger',note_content(row,[]))
+ def test_partial_source_cache_is_enriched(self):
+  sha='b'*64;row={'sha':sha,'source':'model.safetensors','url':'https://civitai.com/models/1'}
+  self.engine.cache['details']={sha:{'status':'partial','triggers':[]}}
+  version={'files':[{'hashes':{'SHA256':sha}}],'trainedWords':['example_trigger'],'modelId':1}
+  with patch('features.fetch_json',side_effect=[version,{}]):enrich(self.engine,row,'https://civitai.com')
+  self.assertEqual(row['info']['triggers'],['example_trigger'])
  def test_info_and_note(self):
   sha='a'*64;row={'sha':sha,'source':'test.safetensors'};v={'files':[{'hashes':{'SHA256':sha}}],'trainedWords':['my_style'],'modelId':1,'id':2}
   with patch('features.fetch_json',side_effect=[v,{'creator':{'username':'author'}}]):enrich(self.engine,row,'https://civitai.red')
