@@ -5,3 +5,7 @@
 - Fixed callback ownership when closing responsive controls.
 - Existing scan classification tests and all 18 test modules passed. No real models moved.
 - Uninstaller is included but has not been executed or tested. No GitHub push/release performed.
+
+## 1.0.23: Model roles and Image to Text folder
+
+Added conservative StyleAdapter/Redux and supported ModelPatchLoader tensor signatures. Multimodal language layers take priority over their vision encoder component. Recognized caption bundles stay intact and use Image_to_txt_models; generic CLIPVision bundles are not assumed to be caption models. Explicit comfyui.model_type metadata can propose other known model roles, but is self-reported. All 31 existing folder names are supported for preserving placement; this does not verify every model type. ONNX is a format, and repository tags do not establish per-file roles. Unknown models remain unchanged for review. Classification changes invalidate incremental scan fingerprints. No user models were moved.

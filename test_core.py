@@ -16,6 +16,22 @@ class Tests(unittest.TestCase):
     def test_detection(self):
         for keys,expected in [(['lora_unet_a.lora_down.weight'],'loras'),(['clip_l','clip_g'],'embeddings'),(['controlnet_cond_embedding.conv_in.weight'],'controlnet'),(['encoder.conv_in.weight','decoder.conv_out.weight'],'vae'),(['net.blocks.0.weight'],'diffusion_models'),(['blocks.0.attn.wq.weight_scale','blocks.0.mod.lin'],'diffusion_models'),(['model.diffusion_model.x','first_stage_model.x'],'checkpoints'),(['text_model.embeddings.x'],'text_encoders')]:
             p=model(self.root/'x.safetensors',keys);h,m=header(p);self.assertEqual(infer(h,m,p.name)[0],expected)
+    def test_specialized_roles(self):
+        cases=[(['redux_down.weight','redux_up.weight'],'style_models'),
+               (['controlnet_blocks.0.y_rms.weight','img_in.weight'],'model_patches'),
+               (['controlnet_blocks.0.weight'],'controlnet'),
+               (['vision_model.x','language_model.model.layers.0.x'],'Image_to_txt_models'),
+               (['vision_model.x'],'clip_vision'),
+               (['weight'],'')]
+        for keys,expected in cases:
+            self.assertEqual(infer(dict.fromkeys(keys),{},'style.onnx')[0],expected)
+    def test_image_package_and_vision_encoder(self):
+        for folder,arch,expected in [('caption','LlavaForConditionalGeneration','Image_to_txt_models'),('encoder','CLIPVisionModel','')]:
+            p=model(self.root/folder/'model.safetensors',['weight'])
+            (p.parent/'config.json').write_text(json.dumps({'architectures':[arch]}))
+        rows=self.scan()
+        self.assertEqual(next(r for r in rows if r['title']=='caption')['kind'],'Image_to_txt_models')
+        self.assertEqual(next(r for r in rows if r['title']=='encoder')['kind'],'')
     def test_bad_header_blocked(self):
         (self.root/'bad.safetensors').write_bytes(b'version https://git-lfs.github.com/spec/v1\n')
         r=self.scan()[0];self.assertTrue(r['blocked']);self.assertEqual(r['decision'],'保留')

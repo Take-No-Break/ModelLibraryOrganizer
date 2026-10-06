@@ -16,9 +16,15 @@ CATEGORIES=['checkpoints','loras','embeddings','workflows','diffusion_models','d
  'text_encoders','clip','clip_vision','controlnet','background_removal','upscale_models',
  'latent_upscale_models','style_models','model_patches','audio_encoders','detection','sams',
  'ultralytics','frame_interpolation','geometry_estimation','optical_flow','gligen',
- 'hypernetworks','classifiers','photomaker','Img2txtModels','onnx','unet','Not Found']
+ 'hypernetworks','classifiers','photomaker','Image_to_txt_models','Img2txtModels','onnx','unet','configs','Not Found']
 API_TYPES={'Checkpoint':'checkpoints','LORA':'loras','LoCon':'loras','TextualInversion':'embeddings',
  'Controlnet':'controlnet','VAE':'vae','Upscaler':'upscale_models','Hypernetwork':'hypernetworks'}
+
+def declared_category(meta):
+    # Only an explicit ComfyUI role, never arbitrary repository tags or filenames.
+    value=str(meta.get('comfyui.model_type',meta.get('comfyui_model_type',''))).strip()
+    if value=='Img2txtModels':return 'Image_to_txt_models'
+    return value if value in CATEGORIES and value not in {'Not Found','configs'} else ''
 
 class Cancelled(Exception): pass
 
@@ -80,6 +86,17 @@ def infer(h,meta,name):
     if any(s in lower for s in ['lora_down','lora_up','lora_a.','lora_b.','lokr_','hada_w']):return 'loras','adapterテンソルを検出'
     if keys and len(keys)<=16 and (set(keys)<={'clip_l','clip_g','emb_params'} or 'emb_params' in keys or any(k.startswith('string_to_param') for k in keys)):
         return 'embeddings','少数の埋め込みテンソルを検出'
+    if {'redux_down.weight','redux_up.weight'} <= set(keys) or ('style_embedding' in keys and any('transformer' in k for k in keys)):
+        return 'style_models','ComfyUI StyleAdapter／Redux専用層を検出'
+    patch_pairs=[('controlnet_blocks.0.y_rms.weight','img_in.weight'),
+                 ('control_img_in.weight','control_blocks.0.img_mlp.out.weight'),
+                 ('audio_proj.proj1.weight','blocks.0.audio_cross_attn.proj.weight')]
+    if any(set(pair)<=set(keys) for pair in patch_pairs) or any(k in keys for k in (
+            'lllite_conditioning1.conv1.weight','feature_embedder.mid_layer_norm.bias',
+            'control_all_x_embedder.2-1.weight','controlnet_patch_embedding.weight')):
+        return 'model_patches','ComfyUI ModelPatchLoader専用層を検出'
+    if 'multi_modal_projector' in lower or 'language_model.model.' in lower:
+        return 'Image_to_txt_models','マルチモーダル言語モデル層を検出'
     if any(s in lower for s in ['controlnet_cond_embedding','controlnet_down_blocks','control_model.zero_convs','controlnet_blocks','controlnet_x_embedder']):return 'controlnet','ControlNet専用層を検出'
     diffusion=any(s in lower for s in ['model.diffusion_model.','diffusion_model.','double_blocks.','joint_blocks.','net.blocks.','input_blocks.','down_blocks.0.attentions']) or (
         any(k.startswith('blocks.0.attn.wq.') for k in keys) and 'blocks.0.mod.lin' in keys)
@@ -87,12 +104,12 @@ def infer(h,meta,name):
     if diffusion:return 'diffusion_models','単独の拡散モデル層を検出'
     if 'encoder.conv_in.weight' in keys and 'decoder.conv_out.weight' in keys:return 'vae','VAEのencoder／decoder層を検出'
     if any(k.startswith(('vision_model.','visual.','model.vision_model.')) for k in keys):return 'clip_vision','画像エンコーダー層を検出'
-    if 'multi_modal_projector' in lower or 'language_model.model.' in lower:return 'Img2txtModels','マルチモーダル言語モデル層を検出'
     if any(k.startswith(('text_model.','transformer.text_model.')) for k in keys) or ('shared.weight' in keys and 'encoder.block.0.layer.0.SelfAttention.q.weight' in keys):return 'text_encoders','テキストエンコーダー専用層を検出'
     if 'model.embed_tokens.weight' in keys and any(k.startswith('model.layers.') for k in keys):return 'text_encoders','言語モデル層。用途は配布情報と照合が必要'
     if any('rdb1.conv1' in k.lower() or 'rrdb_trunk.' in k.lower() for k in keys):return 'upscale_models','RRDBアップスケーラー層を検出'
     if 'birefnet' in name.lower() and any(k.startswith('bb.layers.') for k in keys):return 'background_removal','BiRefNet名とbackbone構造（推定）'
     if 'lora' in title:return 'loras','modelspec.architecture（自己申告情報）'
+    if declared_category(meta):return declared_category(meta),'明示的なComfyUI種類メタデータ（自己申告・要確認）'
     return '', '内部構造だけでは種類を確定できません'
 
 def enumerate_units(root,stop):
@@ -169,7 +186,7 @@ class Engine:
         seen=self.cache.setdefault('seen',{});catalog=self.cache.setdefault('catalog',{})
         for n,(p,bundle) in enumerate(units,1):
             if stop.is_set():raise Cancelled()
-            identity=str(p.resolve());fingerprint={'files':snapshot(p),'online':online,'host':host,'target':str(target_root),'layout':layout}
+            identity=str(p.resolve());fingerprint={'files':snapshot(p),'online':online,'host':host,'target':str(target_root),'layout':layout,'classification_version':2}
             if only_new and seen.get(identity)==fingerprint:
                 progress(n,len(units));continue
             notify(f'{n}/{len(units)} 調査: {p.name}')
@@ -183,8 +200,8 @@ class Engine:
                 current=p.relative_to(target_root).parts[0] if p.is_relative_to(target_root) and p!=target_root else ''
                 if bundle:
                     config=read_json(p/'config.json',{}) or {};arch=str(config.get('architectures','')).lower()
-                    kind='diffusers' if (p/'model_index.json').exists() else 'Img2txtModels' if any(x in arch for x in ['mlama','llava','vision','pixai','tagger']) else ''
-                    row.update(kind=kind or current,evidence='設定・重み・分割ファイルをまとめたパッケージ。個別ファイルには分解しません。')
+                    kind='diffusers' if (p/'model_index.json').exists() else 'Image_to_txt_models' if any(x in arch for x in ['mlama','llava','qwen2vl','qwen2_5vl','idefics','pixai','tagger']) or (p/'tagger_vocab.json').exists() else ''
+                    row.update(kind=kind or (current if current in CATEGORIES else ''),evidence='設定・重み・分割ファイルをまとめたパッケージ。個別ファイルには分解しません。')
                     if current in CATEGORIES:row['destination']=str(p);row['confidence']='配置維持'
                     elif kind:row['destination']=str(target_root/kind/p.name)
                 else:
@@ -230,6 +247,7 @@ class Engine:
                         if info.get('details'):
                             row['info']=info['details'];self.cache.setdefault('details',{})[sha]=info['details']
                     kind=(info or {}).get('kind') or inferred
+                    if kind=='Img2txtModels':kind='Image_to_txt_models'
                     reason=[why,status]
                     conflict=False
                     if inferred=='diffusion_models' and kind=='checkpoints':kind=inferred;reason.append('公開分類はCheckpointですが、実体は単独の拡散モデルです')
@@ -238,6 +256,8 @@ class Engine:
                     if saved:
                         relative=Path(saved['relative'])
                         if relative.is_absolute() or '..' in relative.parts:raise ValueError('保存済みルールのパス不正')
+                        if relative.parts and relative.parts[0]=='Img2txtModels':
+                            relative=Path('Image_to_txt_models',*relative.parts[1:])
                         dest=target_root/relative/p.name
                         # Prefer actual tensor role over historical checkpoint placement.
                         if inferred=='diffusion_models' and relative.parts[0]=='checkpoints':
@@ -247,6 +267,7 @@ class Engine:
                         row['url']=saved.get('url') or row['url'];reason.append('同一SHA256の確認済み配置')
                         row['family']=saved.get('family') or row['family']
                         row['kind']=saved.get('kind') or str(dest.relative_to(target_root).parts[0])
+                        if row['kind']=='Img2txtModels':row['kind']='Image_to_txt_models'
                     elif kind:
                         dest=target_root/kind/p.name
                         if kind in {'checkpoints','loras'} and info:

@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.22 — Windows preview
+# Model Library Organizer 1.0.23 — Windows preview
 
 ## Run or install
 
@@ -245,7 +245,7 @@ Save All still opens the before/after review. TXT writes, encoding preservation,
 conflict checks and backups follow the existing process. Other application tabs
 retain their appearance. No image analysis or inference was added to the editor.
 
-## Compact unified navigation (1.0.22)
+## Compact unified navigation (1.0.23)
 
 The application now shares the Tag editor's dark palette, with compact navigation
 tabs and smaller outer margins. Progress, percent and operation status appear in
@@ -258,7 +258,7 @@ Selected statistics tags and image-row tags are visibly highlighted in blue.
 The tag filter is also shown beside Clear filter. File operations and caption
 saving retain their existing confirmation, conflict checks and backups.
 
-## Appearance (1.0.22)
+## Appearance (1.0.23)
 
 Choose Dark or Classic in the top header. The choice is saved locally and restored on launch. Classic uses neutral light colors.
 
@@ -266,10 +266,14 @@ Choose Dark or Classic in the top header. The choice is saved locally and restor
 
 [TagFilter — LoRA Dataset Tag Editor](https://github.com/unaya-git/TagFilter), by unaya-git, was used as a visual reference for the Tag editor layout. This acknowledgement credits the design reference; it does not state that TagFilter source code was incorporated.
 
-## Guide languages (1.0.22)
+## Guide languages (1.0.23)
 
 Detailed guides are provided in Japanese, English, Simplified Chinese, Traditional Chinese (Taiwan) and Brazilian Portuguese. Spanish, Thai and German currently display the full English guide with an explicit language notice.
 
 ## Uninstall
 
 Close the application and run Uninstall.cmd from an installation made with Install.cmd. Type YES to confirm. Recorded application files and the matching desktop shortcut are removed; additional files, models, captions, settings and restoration history are preserved. Portable copies are removed manually. The uninstaller has not been executed or tested.
+
+## 1.0.23: Model roles and Image to Text folder
+
+Added conservative StyleAdapter/Redux and supported ModelPatchLoader tensor signatures. Multimodal language layers take priority over their vision encoder component. Recognized caption bundles stay intact and use Image_to_txt_models; generic CLIPVision bundles are not assumed to be caption models. Explicit comfyui.model_type metadata can propose other known model roles, but is self-reported. All 31 existing folder names are supported for preserving placement; this does not verify every model type. ONNX is a format, and repository tags do not establish per-file roles. Unknown models remain unchanged for review. Classification changes invalidate incremental scan fingerprints. No user models were moved.
