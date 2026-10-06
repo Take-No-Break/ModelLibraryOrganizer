@@ -89,7 +89,7 @@ class TtkProxy:
  def __getattr__(self,name):
   if name=='Treeview':return LocalizedTreeview
   original=getattr(native_ttk,name)
-  if name not in ('Button','Label','Checkbutton','Combobox','Entry','LabelFrame'):return original
+  if name not in ('Button','Label','Checkbutton','Radiobutton','Combobox','Entry','LabelFrame'):return original
   def factory(*args,**kw):
    text=kw.get('text','');tooltip=kw.pop('tooltip',None)
    if 'text' in kw:kw['text']=tr(kw['text'])
