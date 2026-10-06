@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.19 — Windows preview
+# Model Library Organizer 1.0.20 — Windows preview
 
 ## Run or install
 
@@ -245,7 +245,7 @@ Save All still opens the before/after review. TXT writes, encoding preservation,
 conflict checks and backups follow the existing process. Other application tabs
 retain their appearance. No image analysis or inference was added to the editor.
 
-## Compact unified navigation (1.0.19)
+## Compact unified navigation (1.0.20)
 
 The application now shares the Tag editor's dark palette, with compact navigation
 tabs and smaller outer margins. Progress, percent and operation status appear in
@@ -258,7 +258,7 @@ Selected statistics tags and image-row tags are visibly highlighted in blue.
 The tag filter is also shown beside Clear filter. File operations and caption
 saving retain their existing confirmation, conflict checks and backups.
 
-## Appearance (1.0.19)
+## Appearance (1.0.20)
 
 Choose Dark or Classic in the top header. The choice is saved locally and restored on launch. Classic uses neutral light colors.
 
@@ -266,6 +266,6 @@ Choose Dark or Classic in the top header. The choice is saved locally and restor
 
 [TagFilter — LoRA Dataset Tag Editor](https://github.com/unaya-git/TagFilter), by unaya-git, was used as a visual reference for the Tag editor layout. This acknowledgement credits the design reference; it does not state that TagFilter source code was incorporated.
 
-## Guide languages (1.0.19)
+## Guide languages (1.0.20)
 
 Detailed guides are provided in Japanese, English, Simplified Chinese, Traditional Chinese (Taiwan) and Brazilian Portuguese. Spanish, Thai and German currently display the full English guide with an explicit language notice.

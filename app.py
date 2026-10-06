@@ -60,7 +60,9 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
             else:
                 notebook=ttk.Notebook(parent);notebook.pack(fill='both',expand=True)
                 for key,label in children:
-                    host=ScrollablePage(notebook);notebook.add(host,text=tr(label));self.pages[key]=host.body;self.page_hosts[key]=host
+                    host=ScrollablePage(notebook)
+                    if key!='tag_ranking':notebook.add(host,text=tr(label))
+                    self.pages[key]=host.body;self.page_hosts[key]=host
                     self.page_notebooks[key]=(parent,notebook)
         outer=self.pages['models']
         fields=ttk.Frame(outer);fields.pack(fill='x');fields.columnconfigure(1,weight=1)
