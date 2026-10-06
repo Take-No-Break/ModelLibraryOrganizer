@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.10 — Windows preview
+# Model Library Organizer 1.0.11 — Windows preview
 
 ## Run or install
 
@@ -174,3 +174,27 @@ hard-link alias is deleted. Same-name destination conflicts require review. Fold
 removal is journaled and source folders are recreated during restoration.
 Recognized ComfyUI UI/API workflow JSON is scanned; arbitrary JSON settings are not.
 Workflows whose creator is not known remain in place in creator mode.
+
+## Tag rankings and Tag editor (1.0.11)
+
+Training data now has two additional tabs beside Text editor:
+- Tag rankings: ranks tags by the number of caption TXT files containing them,
+  with count and percentage. Repetition within a file counts once. This is usage
+  frequency, not an AI confidence score; 100 of 200 TXT files means 50%.
+- Tag editor: previews the selected image and its clickable tags, filters images
+  by tag, removes a tag with × and adds/removes tags across selected images.
+
+Choose a dataset folder in either tab; they share its data. The folder loads
+automatically. Ranking includes existing TXT (even empty files) and pending new
+caption drafts. Images without TXT and without edits are excluded from the
+denominator. Model source-information .source.txt files are excluded. Comma/newline
+separated tags are recognized; bracketed prompt groups remain together. It does
+not invent tags or split natural-language captions into individual words.
+
+Edits are staged in memory. Save all changes opens a before/after review and only
+then writes original TXT. Existing TXT encoding is preserved and backups go to
+LocalAppData/ModelLibraryOrganizer/caption-backups. External TXT changes stop saving;
+the Text editor's restore action can restore its backup manifest. Closing or
+reloading checks unsaved edits. Image bytes are never written. There is no direct
+model inference or automatic tagging in these tabs. The existing Image to Text
+workflow exporter is unchanged.

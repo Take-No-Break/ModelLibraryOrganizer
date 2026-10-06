@@ -21,9 +21,10 @@ from dataset_editor import DatasetEditor
 from caption_ui import CaptionUI
 from restore_ui import RestoreUI
 from result_ui import ResultUI
+from tag_editor_ui import TagEditorUI
 import network
 
-class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI):
+class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,TagEditorUI):
     def __init__(self,root,data=DATA):
         self.root=root;self.engine=Engine(data);self.rows=[];self.events=queue.Queue();self.stop=threading.Event();self.busy=False
         seed=read_json(Path(getattr(sys,'_MEIPASS',Path(__file__).parent))/'seed_registry.json',{})
@@ -45,7 +46,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI)
         self.pages={};self.page_notebooks={};self.page_hosts={}
         from scroll_pages import ScrollablePage,scroll_wheel
         root.bind_all('<MouseWheel>',scroll_wheel)
-        groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性')]),('training','学習データ',[('captions','Image to Text'),('texts','テキスト編集')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('restore','履歴・復元',[('restore','履歴・復元')])]
+        groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性')]),('training','学習データ',[('captions','Image to Text'),('texts','テキスト編集'),('tag_ranking','Tag rankings'),('tag_editor','Tag editor')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('restore','履歴・復元',[('restore','履歴・復元')])]
         for group,title,children in groups:
             parent=ttk.Frame(self.tabs,padding=4);self.tabs.add(parent,text=tr(title))
             if len(children)==1:
@@ -112,6 +113,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI)
         ttk.Label(footer,textvariable=self.status,wraplength=1050).pack(side='left',fill='x',expand=True)
         self.init_panels()
         self.init_captions()
+        self.init_tag_editor()
         self.install_interactions()
         self.setup_support(shell)
         self.init_restore()
@@ -305,6 +307,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI)
     def close(self):
         if self.busy:messagebox.showinfo('処理中','処理の完了を待ってください。調査は「調査を停止」で中止できます。');return
         if hasattr(self,'editor_guard') and not self.editor_guard():return
+        if hasattr(self,'tag_guard') and not self.tag_guard():return
         self.save_training_settings()
         for timer in self.root.tk.splitlist(self.root.tk.call('after','info')):self.root.after_cancel(timer)
         self.root.destroy()

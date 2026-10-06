@@ -1,10 +1,9 @@
-# Windows preview 1.0.10
+# Windows preview 1.0.11
 
-- New scan layout selector: existing categories or provider / creator / type / family.
-- Proposes reorganizing existing libraries; keeps confirmed routing separately per layout.
-- Verified Civitai creators and Hugging Face namespaces; unknown creator/type stays in place for review.
-- Recognizes ComfyUI workflow JSON alongside supported model files.
-- Existing source TXT moves with its model; missing notes can be generated without duplicate TXT.
-- Removes only empty former source folders after approved creator-layout moves and records changes for restoration. Models, unrelated data, independent duplicate copies and existing hard-link aliases are preserved. Conflicts are not overwritten.
+- Tag rankings beside Text editor: caption-file frequency, count and percentage, descending by count. It is not model confidence.
+- Tag editor: selected-image preview, clickable tags, frequency filters, per-image × removal and selected-image batch addition/removal.
+- Shared auto-loaded dataset folder and rankings that update with pending edits.
+- Before/after save preview, encoding preservation, caption backups and external-change checks; original images are never edited.
+- Existing Image to Text workflow export is unchanged. These tabs do not run inference.
 
-ComfyUI model-search settings may need adjustment for provider-first layouts. Source metadata availability limits creator identification. Unsigned Windows preview; no second-PC/VM validation claimed. MIT project license. No personal model data included; no GitHub push or release performed.
+Extract the complete Windows ZIP and run the EXE with _internal beside it. Unsigned preview; no independent PC/VM validation claimed. MIT license. No personal models, user history or cache included. No GitHub push/release performed.
