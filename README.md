@@ -1,313 +1,53 @@
-# Model Library Organizer 1.0.31 — Windows preview
-
-## Run or install
-
-Extract the entire ZIP. Double-click `ModelLibraryOrganizer.exe` to run it directly.
-Keep `_internal` beside the EXE. Python installation is not required.
-Alternatively double-click `Install.cmd`: it installs under your LocalAppData Programs
-folder and creates a desktop shortcut. Administrator access is not required.
-This preview is unsigned; Windows may display an unknown-publisher message.
-
-Select your own scan folder and destination models folder. No author's model paths,
-model weights or personal classification database are included.
+# Model Library Organizer 1.0.32 — Windows preview
 
-## Tabs
+A model library organizer for ComfyUI: inspect downloaded models, review destinations, organize files and prepare image captions.
 
-- Results: persistent operation history and past model/caption results. Completion notifications appear as popups without switching tabs.
-- Models: scan and review proposed changes.
-- Model inspection: preview and compatibility.
-- Training data: Image to Text workflow templates and TXT editing.
-- Tools: duplicate detection, workflow references, networking and maintenance.
-- About: guide, privacy, Support & Updates.
-- History / Restore: recorded file changes and restoration.
+## Install
 
-The progress bar counts completed files for scans, duplicate checks, moves and other file operations. Preparation or
-operations without intermediate counts stay at 0% until they complete. Failure or
-cancellation does not mark the operation as successfully completed.
+Extract the entire Windows ZIP. Run Install.cmd or use ModelLibraryOrganizer.exe directly; keep _internal beside the EXE. Uninstall.cmd removes recorded application files and leaves model libraries and user data.
 
-## Image to Text templates
+## Usage
 
-Choose PixAI, JoyCaption, CL Tagger or Taggerine, then select the image and model folders.
-Save a Combined or Expanded ComfyUI workflow JSON. The diagram previews its structure.
-Combined uses fewer nodes; Expanded separates model loading, settings and analysis.
-Only the selected model's settings apply. Arbitrary model architectures are not supported.
-Save required custom nodes as a ZIP, extract its folder into ComfyUI/custom_nodes,
-install its requirements using ComfyUI's Python environment and restart ComfyUI.
-Model weights and GPU/runtime dependencies are installed separately.
-Drag the workflow JSON onto ComfyUI's canvas and run it there. This app does not connect,
-start ComfyUI, submit API jobs or analyze images directly.
-TXT saving in ComfyUI is opt-in; existing TXT files are skipped. Each new TXT uses its
-image's folder and filename. Use Text editor to review/edit the captions afterward.
-Selecting a valid image/TXT folder automatically loads the list. Unsaved edits are checked.
-Pages scroll vertically and horizontally when the window is small.
-
-## File changes
-
-Review destination proposals before executing. A warning and final confirmation
-precede changes. History records affected paths before changing files. Restoration
-refuses conflicts or files changed since the operation. It is not a full model backup.
+GETTING STARTED
+1. Choose the scan folder and destination models folder, then Scan all. Subfolders are included. Before scanning, original file and folder paths are recorded in scan-history JSON. Scanning does not move files.
+2. Choose organization by type/category or provider / creator / type / family. Review identification and destinations. Answer Yes, No or Later for proposed moves and hard links. No changes are applied at this stage.
+3. Review and organize proposed moves opens final confirmation. Only approved proposals are applied. Required folders are created then. Models already at the right destination need no move.
 
-## Privacy and support
+CONTROLS AND DISPLAY
+Use Ctrl/Shift to select multiple items. Hover over a button for about 0.6 seconds for help. Table locations are relative to the selected folder; right-click to copy the full path or open its folder. Select a model in Preview to see its description and public images. Click a source URL to open it. The upper-right progress bar shows 0–100% and status. Dark / Classic are saved for the next launch.
 
-Online lookup sends model hashes and sometimes search names to Civitai/Hugging Face.
-Model weights and training images are not uploaded. Diagnostics are not sent
-automatically. The app no longer connects to or launches ComfyUI.
-Support: https://github.com/Take-No-Break/ModelLibraryOrganizer/issues
-No GitHub login is needed to run the app. Posting an issue requires a GitHub account.
+MODEL SOURCE TXT
+After scanning, Create source TXT writes model-name.safetensors.source.txt beside the model. With nothing selected, the list is used, excluding errors and rejected items. It records type, family, source, SHA256, trigger words, author description and other available information. Missing information cannot be included. Choose optional fields in Model source TXT. Field names are always English; author descriptions stay in their original language. Creation does not overwrite existing TXT. Update readable TXT rebuilds the same file and backs up the original in application data. Model weights are not updated.
 
-For a friend's test: try startup with no saved settings, an offline scan of copied
-sample files, preview and TXT editing, then a small move and restore using disposable
-files. Do not start by reorganizing the only copy of a valuable library.
+IDENTIFICATION AND COMPATIBILITY
+Supported files are enumerated and their full SHA256 calculated. Identical contents have the same hash even with different filenames. Unchanged files use cached results. Civitai is checked through its public hash API. Hugging Face searches filename candidates and verifies public SHA256; a matching name alone is not verification. Source metadata, classification rules, tensor names/shapes and embedded metadata help identify type and family. Unidentified models remain visible for review.
+SeaArt and Tensor.Art have no automatic reverse-hash API verified for this app and are not queried automatically. Add the original page manually. Tensor.Art website search accepts @sha256 followed by a hash. Even a verified hash does not guarantee runtime success.
+Compatibility compares LoRA and checkpoint source families: green for the same family, yellow for related SDXL families, gray for unknown or different families. It does not guarantee loading or output quality. Candidates come from this computer's scan history and current results. On a new PC, select checkpoint/LoRA folders and scan them. The app does not search every drive.
 
-## Verification limits
+IMAGE TO TEXT AND EDIT TEXT
+Select the image folder, analysis model and thresholds, check the connection, then run. A folder named after the model type is created inside the image folder, containing image hardlinks and matching TXT. Original images stay in place; existing TXT is not overwritten.
+Use Install / update custom nodes, choose the actual ComfyUI/custom_nodes folder, confirm and install. Restart ComfyUI, then check connection. Model weights and dependencies are separate. Combined and Expanded share nodes. ZIP remains available for manual setup. Both direct execution and exported workflows can save into the automatic model-type output folder.
+Edit Text displays and edits training TXT with the same name as an image, and can also edit TXT without an image. Multiple-selection prepend, append, remove, replace and wrapping in < > are reviewed before saving. Brackets alone do not train an Embedding; match OneTrainer placeholder settings. External changes stop overwriting. Supported original encodings are preserved and originals are backed up in caption-backups. Training TXT and model source TXT serve different purposes.
 
-Automated local tests and isolated fresh-settings EXE startup are tested. A second
-computer or Windows VM is not yet verified. The development host does not have
-VirtualBox or Windows Sandbox installed. The project uses the MIT license. Application source upload and a public binary
-release are still pending. Third-party runtime licenses accompany this package.
+HISTORY AND WORKFLOW REFERENCES
+Before moving, a history journal is saved and linked to the pre-scan inventory. Select a record or open its JSON in History / Restore to undo linked moves. Undo newest changes first. Edited/deleted files or path conflicts stop restoration. This is not a model-content backup or a general undo of external actions. Only unused empty folders are removed, never their files. Hiding the warning does not skip the journal or final confirmation. Workflow references repair changed ComfyUI relative paths for supported standard loaders and back up original JSON; not every custom node is supported.
 
-## Verification of new adapters
+OFFLINE AND PRIVACY
+Fully offline mode blocks external requests for public APIs, updates and public preview images. Local scans, cached information, organization, template export, TXT editing and log saving remain available.
+Turning off public API lookup stops only new source searches. Use fully offline mode to stop preview and update requests too. Public API lookup is normally enabled.
+Online lookup sends hashes and filenames for HF search, not model weights or images. Previews are displayed in memory and are not saved beside models. Internal structure can suggest type/family but cannot recover unrecorded authors, source pages or trigger words. Previously collected information can be reused. Local scanning does not run an LLM or image generation AI.
 
-All four template variants are checked against registered node input/output schemas.
-PixAI inference was tested previously on the development GPU. Actual inference for
-JoyCaption, CL Tagger and Taggerine is not verified in this release; their model-specific
-requirements and supported model formats must match the supplied adapters.
+SUPPORT AND DIAGNOSTICS
+Diagnostic logs stay on the device and are never sent automatically. Support reports omit personal paths, model names, credentials and detailed exception messages. Review and save a report in About → Support & Updates, then share it yourself when needed. GitHub Issues are public; inspect attachments before posting. Reports can be saved without a configured support destination. You do not need to attach models, images or private files to a support request.
 
-## Saved settings and exports
+UPDATES AND PUBLICATION
+GitHub repository in About → Support & Updates opens the project. Update checks read public GitHub Releases. Startup checks are off by default; manual checks are available. Offline mode cannot detect new releases. A newer version offers its release page, never automatic installation or execution.
+Distributors include publisher.json beside the EXE and publish a stable tag and ZIP in GitHub Releases. Posting source alone does not produce an update notification. Extract the entire ZIP and keep _internal beside the EXE. Models, personal paths and histories are excluded from distribution packages.
 
-Image to Text remembers paths, model, device, thresholds, instructions and template
-options automatically on this PC. This does not overwrite a saved workflow JSON.
-The separate API request export and manual settings-save button have been removed.
-Combined Civitai/Hugging Face lookup is the default in Models. The separate single-file HF lookup button has been removed. Duplicate Preview/Compatibility buttons and the CSV
-export button have been removed from Tools.
-Compatibility is a checkpoint/LoRA loading estimate based on known architecture
-families; this app does not load a checkpoint to test it or guarantee generation quality.
+## License and reference
 
-## License and contributions
+MIT license. Tag editor interface reference: [unaya-git/TagFilter](https://github.com/unaya-git/TagFilter). Model licenses are separate.
 
-Our project source is provided under the MIT license; see LICENSE. You may use,
-modify and redistribute it, including commercially, while retaining the required
-copyright and license notice. Third-party dependencies retain their own licenses.
-Downloaded model weights are not covered by our license and are not bundled.
-
-Improvements are welcome through GitHub issues and pull requests. Returning changes
-upstream is encouraged, not required by MIT. See CONTRIBUTING.md.
-
-## Project links
-
-Repository: https://github.com/Take-No-Break/ModelLibraryOrganizer
-Support: https://github.com/Take-No-Break/ModelLibraryOrganizer/issues
-
-About / Support & Updates points to this repository.
-Update checks require a published stable GitHub Release. Preview releases do not
-trigger automatic stable-update notifications.
-No GitHub account token is included in the package.
-
-Brazilian Portuguese (Português (Brasil)) is available in the language selector.
-About and Image to Text retain their English names.
-
-## Build from source
-
-Use Python 3.12 on Windows:
-
-    python -m pip install -r requirements.txt pyinstaller==6.22.3
-    python run_tests.py
-    python -m PyInstaller --noconfirm ModelLibraryOrganizer.spec
-
-Keep the entire dist/ModelLibraryOrganizer directory together. Include the runtime
-license notices and the documents listed in RELEASE_PREPARATION.md when packaging.
-GitHub Actions runs Windows tests, builds the EXE and checks fresh-settings startup.
-
-
-## Scan records, restore and duplicate results (1.0.8)
-
-Starting a full scan asks for confirmation and saves a read-only inventory of file
-and folder locations under LocalAppData/ModelLibraryOrganizer/scan-history. A scan
-does not move files. Applying approved changes writes a separate move journal
-before the first change and links it to that inventory. If recording fails, the
-operation stops. History / Restore automatically lists records and shows a restore
-action only when recorded moves are available. Missing move journals are reported
-as requiring review. Inventory JSON is not a backup of file contents and cannot
-undo external edits or deletions. Undo the newest moves first.
-
-Saved SHA256 duplicate reports display a table with file count, physical copy count,
-extra storage and hard-link/copy status. Selecting a group shows its paths and hash.
-Existing saved reports use the same presentation. Detection does not delete files.
-
-Automatic source lookup checks Civitai (with .com fallback when .red has no match)
-and bounded Hugging Face filename candidates verified by SHA256. Hugging Face is
-not a global reverse-hash index. SeaArt has no verified public reverse-SHA256 API
-for this app. Tensor.Art's website supports @sha256 followed by the hash:
-https://tensor.art/updates . A public automatic reverse-hash API has not been
-verified for Tensor.Art; no automatic Tensor.Art or SeaArt query is performed.
-Reports show these limitations explicitly. Add known source URLs manually when
-needed. Safetensors is a file format, not a source website.
-
-This local Windows preview was built with Python 3.14.5. Source CI uses Python 3.12.
-Neither an independent PC/VM test nor code signing is claimed.
-
-## Preview classification (1.0.9)
-
-Preview lists show base family / file type, for example Illustrious / LoRA or SDXL / Checkpoint. Recognized embeddings, Image to Text packages and other model types keep their own type labels. Unknown classification is displayed explicitly; this display change does not expand scanning to workflow JSON files or infer model identity from filenames.
-
-## Organization layouts (1.0.10)
-
-Starting Scan all (or a new-only scan) opens a layout selector:
-
-1. Existing type/category/family placement.
-2. Provider / creator / type / family, for example models/Civitai/Creator/loras/Illustrious/model.safetensors.
-
-Scan an already organized library again to propose another layout. Each layout
-remembers its routing separately. Review and approve proposals before applying.
-Creator names come from source metadata; Hugging Face uses the repository account
-or organization namespace. Unknown creators/types stay in place for review.
-ComfyUI may require model-search configuration for provider-first hierarchies.
-
-Existing model-name.source.txt moves with its model. Applying changes creates this
-TXT only if absent. Create source TXT fills missing notes for scanned models without
-moving them; existing TXT is skipped. It documents identity, source URL, creator,
-family, trigger words and selected metadata, not image training captions.
-
-Only empty former source ancestors are removed after approved creator-layout moves,
-within the selected scan root. No model, unrelated file, duplicate copy or old
-hard-link alias is deleted. Same-name destination conflicts require review. Folder
-removal is journaled and source folders are recreated during restoration.
-Recognized ComfyUI UI/API workflow JSON is scanned; arbitrary JSON settings are not.
-Workflows whose creator is not known remain in place in creator mode.
-
-## Tag rankings and Tag editor (1.0.11)
-
-Training data now has two additional tabs beside Text editor:
-- Tag rankings: ranks tags by the number of caption TXT files containing them,
-  with count and percentage. Repetition within a file counts once. This is usage
-  frequency, not an AI confidence score; 100 of 200 TXT files means 50%.
-- Tag editor: previews the selected image and its clickable tags, filters images
-  by tag, removes a tag with × and adds/removes tags across selected images.
-
-Choose a dataset folder in either tab; they share its data. The folder loads
-automatically. Ranking includes existing TXT (even empty files) and pending new
-caption drafts. Images without TXT and without edits are excluded from the
-denominator. Model source-information .source.txt files are excluded. Comma/newline
-separated tags are recognized; bracketed prompt groups remain together. It does
-not invent tags or split natural-language captions into individual words.
+## Support and updates
 
-Edits are staged in memory. Save all changes opens a before/after review and only
-then writes original TXT. Existing TXT encoding is preserved and backups go to
-LocalAppData/ModelLibraryOrganizer/caption-backups. External TXT changes stop saving;
-the Text editor's restore action can restore its backup manifest. Closing or
-reloading checks unsaved edits. Image bytes are never written. There is no direct
-model inference or automatic tagging in these tabs. The existing Image to Text
-workflow exporter is unchanged.
-
-## Compact thumbnail Tag editor (1.0.12)
-
-- The left pane is a scrollable image thumbnail strip. Ctrl/Shift selects multiple
-  images. Only visible thumbnails are decoded, with a bounded image cache.
-- Statistics and image tags are small rounded chips. Statistics scroll through all
-  tags, sort by count/name and support text search. Click a statistics chip to
-  filter images containing that exact tag. Search filenames above the thumbnails.
-- Category filters: All, Face, Body, Outfit, Pose, BG, Style, Expr, Chara, Title,
-  Artist and Other. These filter tags using local keyword rules, not image
-  recognition. Unknown names remain Other. Right-click a chip to set its category;
-  category overrides are stored in app settings, not caption TXT.
-- Click an image's chip to edit its text. Enter stages the change; Esc cancels it.
-  The chip's × stages removal from that image.
-- Bulk Insert / Remove accepts multiple comma-separated tags. Scope Selected means
-  highlighted thumbnails; Filtered means all results currently in the thumbnail
-  strip; All means the entire loaded dataset. Delete category, Delete all tags and
-  Remove unwanted use the same scope. Whole-category/all-tag removal asks first.
-- Unwanted Tag / Register stores exact tags in a persistent list; registration
-  alone does not delete existing tags. Registered tags are excluded from Bulk
-  Insert. Remove unwanted explicitly stages their removal from the chosen scope.
-  The registry chip's × unregisters the tag without changing captions.
-
-All caption edits remain drafts until Save all changes and the before/after review
-are confirmed. Existing encoding, conflict checks and caption backups are retained.
-Changing language, switching dataset folders or closing checks unsaved drafts.
-The app does not modify images or run automatic tagging in this editor.
-
-## Reference-style Tag editor (1.0.13)
-
-The Tag editor now follows the supplied dataset-editor reference:
-- Local dark theme, dense rounded tags and separate blue count badges.
-- Scrollable large thumbnails on the left, tag statistics above the editing area,
-  category pills and compact Bulk Insert / Unwanted Tag controls in between.
-- Multiple image/caption rows below, each with its own thumbnail, filename, tag
-  count, Copy view tags button and editable tags. Selecting a left thumbnail brings
-  that image's row into view instead of replacing every other row.
-- Click an image-row tag and press Enter to stage an edit; Escape cancels. Its ×
-  removes that tag only from that image's draft. Category filters affect which tags
-  are displayed in each row; clicking a statistics tag filters dataset images.
-- Both image panes render only nearby visible rows and share a bounded thumbnail
-  cache. Large datasets do not create a widget for every tag in every image.
-
-Save All still opens the before/after review. TXT writes, encoding preservation,
-conflict checks and backups follow the existing process. Other application tabs
-retain their appearance. No image analysis or inference was added to the editor.
-
-## Compact unified navigation (1.0.31)
-
-The application now shares the Tag editor's dark palette, with compact navigation
-tabs and smaller outer margins. Progress, percent and operation status appear in
-the top header instead of occupying a separate footer. The status can be read in
-full by hovering over it. Page scrollbars appear only when content overflows.
-
-The window is resizable down to a smaller minimum. Its size is saved on normal
-close in logical DPI units and restored within the current screen bounds.
-Selected statistics tags and image-row tags are visibly highlighted in blue.
-The tag filter is also shown beside Clear filter. File operations and caption
-saving retain their existing confirmation, conflict checks and backups.
-
-## Appearance (1.0.31)
-
-Choose Dark or Classic in the top header. The choice is saved locally and restored on launch. Classic uses neutral light colors.
-
-## Design reference
-
-[TagFilter — LoRA Dataset Tag Editor](https://github.com/unaya-git/TagFilter), by unaya-git, was used as a visual reference for the Tag editor layout. This acknowledgement credits the design reference; it does not state that TagFilter source code was incorporated.
-
-## Guide languages (1.0.31)
-
-Detailed guides are provided in Japanese, English, Simplified Chinese, Traditional Chinese (Taiwan) and Brazilian Portuguese. Spanish, Thai and German currently display the full English guide with an explicit language notice.
-
-## Uninstall
-
-Close the application and run Uninstall.cmd from an installation made with Install.cmd. Type YES to confirm. Recorded application files and the matching desktop shortcut are removed; additional files, models, captions, settings and restoration history are preserved. Portable copies are removed manually. The uninstaller has not been executed or tested.
-
-## 1.0.31: Model roles and Image to Text folder
-
-Added conservative StyleAdapter/Redux and supported ModelPatchLoader tensor signatures. Multimodal language layers take priority over their vision encoder component. Recognized caption bundles stay intact and use Image_to_txt_models; generic CLIPVision bundles are not assumed to be caption models. Explicit comfyui.model_type metadata can propose other known model roles, but is self-reported. All 31 existing folder names are supported for preserving placement; this does not verify every model type. ONNX is a format, and repository tags do not establish per-file roles. Unknown models remain unchanged for review. Classification changes invalidate incremental scan fingerprints. No user models were moved.
-
-## 1.0.31: Per-file classification correction
-
-Reliable tensor structure takes priority over the distribution page category. A VAE bundled in a Checkpoint publication stays a VAE. Conflicting remembered routes are not reused; the corrected destination is proposed for review. Incremental scans revisit previous classifications. No real model files were moved.
-
-## 1.0.31: Select a specific LoRA and Checkpoint
-
-Compatibility now has separate LoRA and Checkpoint/diffusion model selectors. Select both files to display the assessment for that exact pair and save a pair-specific manual evaluation. Folder selection filters previously scanned models; use Scan selected folders for models not investigated yet. This comparison estimates compatibility from known families and does not load models or perform image generation. No files are moved.
-
-## 1.0.31: One LoRA against every checkpoint
-
-Select a LoRA to compare against all identified checkpoint/diffusion models in the selected folder, including subfolders. Choosing a folder starts a read-only compatibility scan when idle. The checkpoint selector was removed. Automatic family estimates remain untested; each row can separately record successful use, adjustments or failure. No generation test is performed and no models are moved.
-
-## 1.0.31: Source triggers and setup help
-
-Source TXT always includes published trigger words when available, even with older section preferences. Incomplete Civitai details caches are refreshed when online. Japanese and English help now explains ZIP extraction, correct custom_nodes placement, ComfyUI Python dependencies, restarting, workflow export, supported model changes and error diagnosis.
-
-## 1.0.31: Run local Image to Text and save to a chosen folder
-
-Select images, a supported model folder/type, thresholds, an output folder and the running ComfyUI URL. Run in ComfyUI and save creates image hardlinks and matching captions in the chosen output folder after successful inference. Hardlinks require the same drive. Existing TXT and differing images are protected. Required nodes must be installed directly in the custom_nodes directory of the actual running instance, then ComfyUI must be restarted. Workflow exports remain available. The app does not launch or restart ComfyUI automatically.
-
-## 1.0.31: Automatic caption output and connection check
-
-Image to Text saves under the selected image folder in a PixAI/JoyCaption/CL-Tagger/Taggerine subfolder. The separate output entry was removed; automatic save location is displayed. Check connection beside the ComfyUI URL verifies that the required nodes are loaded. Recursive runs exclude generated output folders. Exported templates also use the automatic output folder when TXT saving is enabled. The updated save node must be installed and ComfyUI restarted for new templates; direct app execution only needs the existing analysis nodes.
-
-## 1.0.31: Localized caption overview and resizable model preview
-
-Image to Text overview, connection button and automatic save label are translated into all eight supported UI languages. The model preview now has a draggable vertical divider between the model list and information. Preview text places trigger words near the top and evidence/SHA256 at the bottom. Source TXT ordering is unchanged.
-
-History/Restore now keeps its restore action visible at the top. It is enabled for pending move history; otherwise an explanation distinguishes scan-only inventories, already restored changes, empty logs and missing linked history. Opening JSON starts in the move history directory. No restoration was performed automatically.
-
-## 1.0.31: Restore explanation and centered scan dialogs
-
-History/Restore permanently explains, in all eight UI languages, that a scan inventory without linked move history cannot restore files. Organization choice and move warning popups center over the app, and scan confirmation uses the app as its parent.
+[Project repository](https://github.com/Take-No-Break/ModelLibraryOrganizer). Reports stay local until you choose to share them. This preview is prepared locally; no release has been published by this preparation.

@@ -42,6 +42,8 @@ class CaptionUI:
   ttk.Label(left,text='テンプレート形式').pack(anchor='w')
   combo=ttk.Combobox(left,textvariable=self.cap_template_mode,values=['一体型','分解版'],state='readonly',width=20);combo.pack(anchor='w');combo.bind('<<ComboboxSelected>>',lambda e:self.update_template_view())
   for label,fn in [('Save ComfyUI workflow template',self.export_caption_ui_workflow),('Save required custom nodes',self.export_caption_nodes)]:ttk.Button(left,text=label,command=fn).pack(anchor='w',pady=5)
+  ttk.Button(left,text='カスタムノードを導入・更新…' if i18n.LANG=='ja' else 'Install / update custom nodes…',command=self.install_caption_nodes).pack(anchor='w',pady=5)
+  ttk.Label(left,text='初回とノード更新時のみ必要です。一体型・分解版・対応モデルで共通です。導入後はComfyUIを再起動し、接続確認してください。' if i18n.LANG=='ja' else 'Install initially or when nodes are updated. Shared by Combined, Expanded and supported models. Restart ComfyUI after installation, then check the connection.',wraplength=520).pack(anchor='w')
   ttk.Label(right,text='Workflow preview').pack(anchor='w');self.cap_canvas=tk.Canvas(right,width=320,height=290,background='#202329',highlightthickness=0);self.cap_canvas.pack(anchor='nw');self.cap_canvas.bind('<Configure>',lambda e:self.draw_template_preview())
   ttk.Label(right,text='Combined: fewer nodes. Expanded: each stage is visible. Both export an editable ComfyUI workflow JSON, not an API request.',wraplength=320).pack(anchor='w',pady=8)
   ttk.Label(page,text='Copy the exported custom nodes folder into ComfyUI/custom_nodes, install its requirements in the ComfyUI Python environment, then restart ComfyUI. Drag the workflow JSON onto the canvas. Model weights are separate.',wraplength=1000).pack(anchor='w',pady=8)
@@ -82,6 +84,7 @@ class CaptionUI:
  def save_training_settings(self):
   if self.cap_settings_timer:self.root.after_cancel(self.cap_settings_timer);self.cap_settings_timer=None
   settings={key:var.get() for key,var in self.cap_settings_vars.items()}
+  if self.training_settings.get('node_directory'):settings['node_directory']=self.training_settings['node_directory']
   settings['thresholds']={key:var.get() for key,var in self.cap_thresholds.items()}
   atomic_json(self.engine.data/'training-settings.json',settings)
  def export_caption_ui_workflow(self):
@@ -90,7 +93,8 @@ class CaptionUI:
    folder=self.cap_folder.get().strip();images=[]
    if folder:
     if not Path(folder).is_dir():raise ValueError('Select an existing image folder.')
-    images=[p for row in list_dataset(folder,self.cap_recursive.get(),include_text=False) for p in row['images']]
+    from caption_output import collect_images
+    images=collect_images(folder,self.cap_recursive.get())
    backend=self.cap_backend.get()
    thresholds={k:float(v.get()) for k,v in self.cap_thresholds.items()} if backend=='PixAI' else dict(general=.17,character=.27,style=.15,copyright=.24,meta=.17,rating=.41)
    settings=[float(self.cap_cl.get()) if backend=='CL Tagger' else .55,float(self.cap_tag.get()) if backend=='Taggerine' else .4,self.cap_joy.get() if backend=='JoyCaption' else PROMPT,int(self.cap_tokens.get()) if backend=='JoyCaption' else 512]
@@ -122,10 +126,9 @@ class CaptionUI:
    folder=self.cap_folder.get().strip();output=self.cap_output.get().strip();backend=self.cap_backend.get()
    if not Path(folder).is_dir() or not output:raise ValueError('Select image and output folders.')
    from caption_output import output_folder
-   from core import read_json
    output=str(output_folder(folder,backend))
-   generated_roots={output_folder(folder,b) for b in ('PixAI','JoyCaption','CL Tagger','Taggerine')}
-   images=[str(p) for row in list_dataset(folder,self.cap_recursive.get(),include_text=False) for p in row['images'] if not any(Path(p).resolve().is_relative_to(r) for r in generated_roots)]
+   from caption_output import collect_images
+   images=collect_images(folder,self.cap_recursive.get())
    if not images:raise ValueError('No images in the selected folder.')
    if len({Path(p).stem.casefold() for p in images})!=len(images):raise ValueError('Duplicate image filenames: select folders with unique image names.')
    model=resolve_model_folder(self.cap_model.get(),backend);url=base_url(self.cap_url.get());device=self.cap_device.get()
@@ -143,3 +146,33 @@ class CaptionUI:
    for file in source.iterdir():
     if file.is_file() and file.suffix in ('.py','.txt','.md'):archive.write(file,'model_library_organizer_bridge/'+file.name)
   self.notify_result('Saved custom nodes',path)
+ def install_caption_nodes(self):
+  if not self.ready():return
+  from i18n import LocalizedToplevel
+  from node_setup import install,candidates
+  from display import center_popup
+  import i18n
+  win=LocalizedToplevel(self.root);win.title('ComfyUI custom nodes');win.transient(self.root)
+  chosen=tk.StringVar(value=self.training_settings.get('node_directory',''))
+  ttk.Label(win,text='使用中のComfyUI、またはcustom_nodesフォルダーを確認してください。自動検出の候補には別のComfyUIが含まれる場合があります。' if i18n.LANG=='ja' else 'Choose the ComfyUI instance you actually run, or its custom_nodes folder. Detected candidates may include other installations.',wraplength=650).pack(padx=15,pady=12)
+  combo=ttk.Combobox(win,textvariable=chosen,width=75);combo.pack(fill='x',padx=15)
+  found=tk.StringVar();ttk.Label(win,textvariable=found,wraplength=650).pack(padx=15,pady=8)
+  def detect():
+   paths=candidates(chosen.get());combo.configure(values=paths)
+   found.set(('候補: ' if i18n.LANG=='ja' else 'Candidates: ')+str(len(paths)))
+   if paths and not chosen.get():chosen.set(paths[0])
+  def browse():
+   path=filedialog.askdirectory(parent=win)
+   if path:chosen.set(path)
+  def apply():
+   try:
+    source=Path(getattr(sys,'_MEIPASS',Path(__file__).parent))/'comfy_bridge'
+    target=install(chosen.get(),source)
+    self.training_settings['node_directory']=str(Path(target).parent)
+    settings=read_json(self.engine.data/'training-settings.json',{}) or {};settings['node_directory']=self.training_settings['node_directory'];atomic_json(self.engine.data/'training-settings.json',settings)
+    found.set(target)
+    messagebox.showinfo('ComfyUI custom nodes',('導入完了。配置先:\n'+target+'\n\nComfyUIを再起動し、このアプリで接続確認してください。モデル本体と必要ライブラリは別途必要です。' if i18n.LANG=='ja' else 'Installed:\n'+target+'\n\nRestart ComfyUI, then check the connection in this app. Model weights and runtime dependencies are separate.'),parent=win)
+   except Exception as exc:messagebox.showerror('ComfyUI custom nodes',str(exc),parent=win)
+  bar=ttk.Frame(win);bar.pack(fill='x',padx=15,pady=12)
+  for label,fn in [(('自動検出' if i18n.LANG=='ja' else 'Detect'),detect),(('選択…' if i18n.LANG=='ja' else 'Browse…'),browse),(('導入・更新' if i18n.LANG=='ja' else 'Install / update'),apply)]:ttk.Button(bar,text=label,command=fn).pack(side='left',padx=4)
+  win.geometry('720x280');center_popup(win,self.root)

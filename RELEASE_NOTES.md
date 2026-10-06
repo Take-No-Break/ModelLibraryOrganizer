@@ -43,3 +43,7 @@ History/Restore now keeps its restore action visible at the top. It is enabled f
 ## 1.0.31: Restore explanation and centered scan dialogs
 
 History/Restore permanently explains, in all eight UI languages, that a scan inventory without linked move history cannot restore files. Organization choice and move warning popups center over the app, and scan confirmation uses the app as its parent.
+
+## 1.0.32: Direct node setup and two appearance modes
+
+Install/update nodes from Image to Text: detect candidates or choose the actual custom_nodes folder and install directly. Restart ComfyUI and check the connection. Generated output folders are excluded from both exported templates and direct runs. Guides and README now describe the current automatic caption output. Appearance offers only Dark and Classic; Classic uses a nostalgic gray palette. Old accent preferences no longer affect the app.

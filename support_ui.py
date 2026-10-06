@@ -23,9 +23,6 @@ class SupportUI:
     self.appearance=tk.StringVar(value='Classic' if self.preferences.get('theme','classic')=='classic' else 'Dark')
     appearance=ttk.Combobox(controls,values=['Dark','Classic'],textvariable=self.appearance,state='readonly',width=8,font=('Yu Gothic UI',9))
     appearance.pack(side='right',padx=5);appearance.bind('<<ComboboxSelected>>',self.change_appearance)
-    self.theme_color=tk.StringVar(value=__import__('tag_theme').ACCENT)
-    color=ttk.Combobox(controls,values=['Neutral','Pink','Blue','Purple'],textvariable=self.theme_color,state='readonly',width=8,font=('Yu Gothic UI',9))
-    color.pack(side='right',padx=5);color.bind('<<ComboboxSelected>>',self.change_appearance)
     self.operation_progress.pack_forget();head.columnconfigure(1,weight=1)
     def fit_header(event=None):
         compact=head.winfo_width()<version.winfo_reqwidth()+controls.winfo_reqwidth()+self.operation_progress.winfo_reqwidth()+30
@@ -39,8 +36,8 @@ class SupportUI:
     old=self.preferences.get('theme','classic')
     mode='classic' if self.appearance.get()=='Classic' else 'dark'
     if not self.ready() or not self.editor_guard() or not self.tag_guard():
-        self.appearance.set('Classic' if old=='classic' else 'Dark');self.theme_color.set(self.preferences.get('theme_color','Neutral'));return
-    self.preferences['theme']=mode;self.preferences['theme_color']=self.theme_color.get();self.save_preferences()
+        self.appearance.set('Classic' if old=='classic' else 'Dark');return
+    self.preferences['theme']=mode;self.preferences.pop('theme_color',None);self.save_preferences()
     self.change_language()
  def save_preferences(self):atomic_json(self.engine.data/'preferences.json',self.preferences)
  def change_language(self,event=None):

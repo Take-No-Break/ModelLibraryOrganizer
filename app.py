@@ -44,7 +44,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         configure_fonts(root)
         from ui_theme import configure_theme,recolor_existing
         theme_preferences=read_json(self.engine.data/'preferences.json',{}) or {}
-        configure_theme(root,theme_preferences.get('theme','classic'),theme_preferences.get('theme_color','Neutral'))
+        configure_theme(root,theme_preferences.get('theme','classic'))
         style=ttk.Style();style.configure('Treeview',rowheight=scaled_window_size(root,27,27)[0])
         outer=ttk.Frame(root,padding=4);outer.pack(fill='both',expand=True)
         shell=outer

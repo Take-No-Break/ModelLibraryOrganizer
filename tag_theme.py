@@ -1,6 +1,6 @@
 """Application palettes; styling only."""
 DARK=dict(BG='#1f1f30',PANEL='#29293e',FIELD='#323249',CHIP='#34344b',TEXT='#c2d5ff',MUTED='#8292b8',BLUE='#83b1ff',LINE='#39394f',RED='#d8788c',SELECT='#456797',HOVER='#414761',ROW='#25263b',EDIT='#3b405b',EDIT_TEXT='#e1eaff',BADGE_TEXT='#172846')
-CLASSIC=dict(BG='#e8e6e1',PANEL='#f0eeea',FIELD='#ffffff',CHIP='#e2dfd9',TEXT='#222222',MUTED='#666666',BLUE='#696660',LINE='#b7b3ac',RED='#a33e42',SELECT='#d8d5cf',HOVER='#dedbd5',ROW='#e0ddd7',EDIT='#ffffff',EDIT_TEXT='#222222',BADGE_TEXT='#ffffff')
+CLASSIC=dict(BG='#d9d8d2',PANEL='#cfcec7',FIELD='#f4f3ee',CHIP='#c9c8c1',TEXT='#202020',MUTED='#62615d',BLUE='#676762',LINE='#9e9d96',RED='#a33e42',SELECT='#b9bab4',HOVER='#e2e1da',ROW='#d3d2cb',EDIT='#f4f3ee',EDIT_TEXT='#202020',BADGE_TEXT='#ffffff')
 MODE='dark'
 ACCENT='Neutral'
 PALETTES={

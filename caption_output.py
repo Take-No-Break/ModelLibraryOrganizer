@@ -7,6 +7,12 @@ def output_folder(images, backend):
     if backend not in names:raise ValueError('Unsupported model type.')
     return Path(images).resolve()/names[backend]
 
+def collect_images(folder, recursive=False):
+    from dataset_files import list_dataset
+    outputs=[output_folder(folder,b) for b in ('PixAI','JoyCaption','CL Tagger','Taggerine')]
+    return [str(p) for row in list_dataset(folder,recursive,include_text=False) for p in row['images']
+            if not any(Path(p).resolve().is_relative_to(out) for out in outputs)]
+
 def save_output(records, output, expected_images):
     expected={str(Path(p).resolve()) for p in expected_images}
     root=Path(output).resolve()
