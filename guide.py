@@ -6,3 +6,7 @@ GUIDE["en"].append("Image to Text setup: export Save required custom nodes, extr
 
 GUIDE["ja"].append("【起動中のComfyUIで直接実行】画像フォルダー、対応モデルの種類とフォルダー、閾値、出力フォルダー、ComfyUI URLを指定してRun in ComfyUI and save image hardlinks + TXTを押します。必要なノードは実際に起動するComfyUIのcustom_nodes直下に配置し、初回はComfyUIを再起動してください。解析後、出力フォルダーに画像のハードリンクと同名TXTを作ります。画像と出力先は同じドライブが必要です。既存TXTは上書きせず、元画像は移動しません。ComfyUIを起動・再起動する操作は自動で行いません。テンプレート書き出しも引き続き利用できます。")
 GUIDE["en"].append("Run directly: select images, supported model folder/type, thresholds, output folder and running local ComfyUI URL. Click Run in ComfyUI and save image hardlinks + TXT. Install nodes directly in the actual running instance custom_nodes folder and restart it initially. After inference, matching TXT and image hardlinks are saved in the selected output folder. Images and output must be on the same drive. Existing captions are preserved. The app does not launch or restart ComfyUI automatically. Export-only workflows remain available.")
+
+from caption_labels import TEXT as CAPTION_OVERVIEWS
+for _language, _labels in CAPTION_OVERVIEWS.items():
+    GUIDE.setdefault(_language, list(GUIDE["en"]))[-1] += "\n\n" + _labels[0]

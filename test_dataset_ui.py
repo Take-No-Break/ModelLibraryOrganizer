@@ -25,6 +25,9 @@ class DatasetUITests(unittest.TestCase):
   with patch('dataset_editor.messagebox.askyesnocancel',return_value=None):self.assertFalse(self.app.editor_guard())
  def test_caption_config_uses_user_paths(self):
   self.assertEqual(self.app.cap_url.get(),'http://127.0.0.1:8188');self.assertEqual(self.app.cap_output.get(),'');self.assertEqual(self.app.cap_model.get(),'');self.assertEqual(self.app.cap_folder.get(),'')
+ def test_preview_vertical_divider(self):
+  self.assertEqual(str(self.app.gallery_vertical.cget('orient')),'vertical')
+  self.assertEqual(len(self.app.gallery_vertical.panes()),2)
  def test_automatic_model_output_location(self):
   self.app.cap_folder.set(str(self.folder))
   self.assertEqual(self.app.cap_output.get(),str(self.folder/'PixAI'))

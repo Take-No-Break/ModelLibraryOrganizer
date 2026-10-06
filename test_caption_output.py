@@ -4,6 +4,17 @@ from unittest.mock import patch
 from caption_output import save_output,run_local,output_folder
 
 class OutputTests(unittest.TestCase):
+ def test_overview_all_languages(self):
+  from caption_labels import TEXT,labels
+  from i18n import LANGS
+  self.assertEqual(set(TEXT),set(LANGS))
+  for code in LANGS:self.assertGreater(len(labels(code)[0]),60)
+ def test_preview_information_order(self):
+  from gallery import preview_content
+  text=preview_content({'source':'test.safetensors','sha':'sample_hash','evidence':'sample_evidence','info':{'triggers':['trigger_example'],'description':'readable_description'}})
+  self.assertLess(text.index('Trigger words:'),text.index('[Model description]'))
+  self.assertGreater(text.index('Evidence:'),text.index('[File metadata]'))
+  self.assertGreater(text.index('SHA256:'),text.index('[File metadata]'))
  def test_model_named_output(self):
   self.assertEqual(output_folder(Path.cwd(),"PixAI"),Path.cwd()/"PixAI")
   with self.assertRaises(ValueError):output_folder(Path.cwd(),"../unsafe")

@@ -33,3 +33,9 @@ Select images, a supported model folder/type, thresholds, an output folder and t
 ## 1.0.29: Automatic caption output and connection check
 
 Image to Text saves under the selected image folder in a PixAI/JoyCaption/CL-Tagger/Taggerine subfolder. The separate output entry was removed; automatic save location is displayed. Check connection beside the ComfyUI URL verifies that the required nodes are loaded. Recursive runs exclude generated output folders. Exported templates also use the automatic output folder when TXT saving is enabled. The updated save node must be installed and ComfyUI restarted for new templates; direct app execution only needs the existing analysis nodes.
+
+## 1.0.30: Localized caption overview and resizable model preview
+
+Image to Text overview, connection button and automatic save label are translated into all eight supported UI languages. The model preview now has a draggable vertical divider between the model list and information. Preview text places trigger words near the top and evidence/SHA256 at the bottom. Source TXT ordering is unchanged.
+
+History/Restore now keeps its restore action visible at the top. It is enabled for pending move history; otherwise an explanation distinguishes scan-only inventories, already restored changes, empty logs and missing linked history. Opening JSON starts in the move history directory. No restoration was performed automatically.

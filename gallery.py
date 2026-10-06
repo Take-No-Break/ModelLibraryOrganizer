@@ -10,7 +10,7 @@ import network
 PREVIEW_TYPES={
  'checkpoints':'Checkpoint','loras':'LoRA','embeddings':'Embedding',
  'diffusion_models':'Diffusion model','diffusers':'Diffusers',
- 'Img2txtModels':'Image to Text model','workflows':'Workflow','workflow':'Workflow',
+ 'Img2txtModels':'Image to Text model','Image_to_txt_models':'Image to Text model','workflows':'Workflow','workflow':'Workflow',
  'text_encoders':'Text encoder','clip_vision':'CLIP Vision','clip':'CLIP',
  'vae':'VAE','vae_approx':'VAE approximation','controlnet':'ControlNet',
  'background_removal':'Background removal','upscale_models':'Upscale model',
@@ -26,6 +26,15 @@ def preview_classification(row):
  family=row.get('family') or 'Unknown family'
  kind=row.get('kind') or ''
  return family+' / '+PREVIEW_TYPES.get(kind,kind or 'Unknown type')
+
+def preview_content(row):
+ lines=note_content(row).splitlines()
+ triggers=[line for line in lines if line.startswith('Trigger words: ')]
+ details=[line for line in lines if line.startswith(('Evidence: ','SHA256: '))]
+ lines=[line for line in lines if not line.startswith(('Trigger words: ','Evidence: ','SHA256: '))]
+ index=next((i+1 for i,line in enumerate(lines) if line.startswith('Model: ')),0)
+ lines[index:index]=triggers+['']
+ return '\n'.join(lines+['',*details])
 
 class Gallery:
  def short_path(self,path,root):
@@ -78,11 +87,13 @@ class Gallery:
   ttk.Button(bar,text='今回の調査結果',command=lambda:self.set_gallery_rows(self.rows)).pack(side='left')
   pane=ttk.Panedwindow(page,orient='horizontal');pane.pack(fill='both',expand=True,pady=8)
   left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
-  self.gallery_list=ttk.Treeview(left,columns=('name','family'),show='headings',height=9)
+  self.gallery_vertical=ttk.Panedwindow(left,orient='vertical');self.gallery_vertical.pack(fill='both',expand=True)
+  upper=ttk.Frame(self.gallery_vertical);lower=ttk.Frame(self.gallery_vertical);self.gallery_vertical.add(upper,weight=1);self.gallery_vertical.add(lower,weight=2)
+  self.gallery_list=ttk.Treeview(upper,columns=('name','family'),show='headings',height=9)
   self.gallery_list.heading('name',text='モデル／ファイル');self.gallery_list.heading('family',text='系統 / 種類');self.gallery_list.column('name',width=320);self.gallery_list.column('family',width=230)
   self.gallery_list.pack(fill='both',expand=True)
   self.gallery_list.bind('<<TreeviewSelect>>',self.gallery_selected)
-  self.gallery_text=LocalizedText(left,height=14,wrap='word');self.gallery_text.pack(fill='both',expand=True,pady=8)
+  self.gallery_text=LocalizedText(lower,height=14,wrap='word');self.gallery_text.pack(fill='both',expand=True,pady=4)
   self.gallery_photo=ttk.Label(right,text='モデルを選ぶと公開画像を表示します。',anchor='center');self.gallery_photo.pack(fill='both',expand=True)
   self.gallery_rows=[];self.gallery_generation=0
  def set_gallery_rows(self,rows,select=True):
@@ -103,7 +114,7 @@ class Gallery:
   if not ids:return
   row=self.gallery_rows[int(ids[0])];self.gallery_generation+=1;generation=self.gallery_generation
   self.gallery_photo.configure(image='',text=tr('読み込み中…'));self.gallery_photo.image=None
-  self.linked_text(self.gallery_text,note_content(row))
+  self.linked_text(self.gallery_text,preview_content(row))
   def begin():
    if generation!=self.gallery_generation:return
    if self.busy:self.root.after(150,begin);return
@@ -128,7 +139,7 @@ class Gallery:
   if generation!=self.gallery_generation:return
   self.display_gallery(row,info,image,error)
  def display_gallery(self,row,info,image,error=''):
-  text=note_content({**row,'info':info});self.linked_text(self.gallery_text,text)
+  text=preview_content({**row,'info':info});self.linked_text(self.gallery_text,text)
   if image:
    photo=ImageTk.PhotoImage(image,master=self.gallery_photo);self.gallery_photo.configure(image=photo,text='');self.gallery_photo.image=photo
   else:self.gallery_photo.configure(image='',text=tr(error),wraplength=380);self.gallery_photo.image=None

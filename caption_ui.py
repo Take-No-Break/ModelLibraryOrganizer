@@ -11,7 +11,8 @@ class CaptionUI:
   self.training_settings=read_json(self.engine.data/'training-settings.json',{}) or {};self.init_text_editor()
   page=self.pages['captions']
   import i18n
-  explanation='画像フォルダーと解析モデル・閾値を選び、接続確認後に実行します。画像フォルダー内にモデル種類名のフォルダーを作り、元画像のハードリンクと同名TXTを保存します。元画像は移動しません。' if i18n.LANG=='ja' else 'Select images, model and thresholds, check the ComfyUI connection, then run. A folder named after the model type is created inside the image folder, containing image hardlinks and matching TXT. Original images stay in place.'
+  from caption_labels import labels
+  explanation,connection_label,location_label=labels(i18n.LANG)
   ttk.Label(page,text=explanation,wraplength=1000).pack(anchor='w',pady=6)
   panes=ttk.Panedwindow(page,orient='horizontal');panes.pack(fill='both',expand=True)
   left=ttk.Frame(panes);right=ttk.Frame(panes);panes.add(left,weight=3);panes.add(right,weight=1)
@@ -23,8 +24,8 @@ class CaptionUI:
    ttk.Label(fields,text=label).grid(row=i,column=0,sticky='w');ttk.Entry(fields,textvariable=var,width=36).grid(row=i,column=1,sticky='ew',padx=4)
    ttk.Button(fields,text='選択…',command=lambda v=var:self.choose_root(v)).grid(row=i,column=2)
   ttk.Label(fields,text='Running ComfyUI URL').grid(row=3,column=0,sticky='w');ttk.Entry(fields,textvariable=self.cap_url,width=26).grid(row=3,column=1,sticky='ew')
-  ttk.Button(fields,text='接続確認' if i18n.LANG=='ja' else 'Check connection',command=self.check_caption_connection).grid(row=3,column=2)
-  ttk.Label(fields,text='保存先（自動）' if i18n.LANG=='ja' else 'Save location (automatic)').grid(row=2,column=0,sticky='w');ttk.Label(fields,textvariable=self.cap_output,wraplength=480).grid(row=2,column=1,columnspan=2,sticky='w')
+  ttk.Button(fields,text=connection_label,command=self.check_caption_connection).grid(row=3,column=2)
+  ttk.Label(fields,text=location_label).grid(row=2,column=0,sticky='w');ttk.Label(fields,textvariable=self.cap_output,wraplength=480).grid(row=2,column=1,columnspan=2,sticky='w')
   ttk.Button(left,text='Run in ComfyUI and save image hardlinks + TXT',command=self.run_caption_local).pack(anchor='w',pady=5)
   bar=ttk.Frame(left);bar.pack(fill='x',pady=8)
   ttk.Label(bar,text='Model').pack(side='left');combo=ttk.Combobox(bar,textvariable=self.cap_backend,values=['PixAI','JoyCaption','CL Tagger','Taggerine'],state='readonly',width=14);combo.pack(side='left');combo.bind('<<ComboboxSelected>>',lambda e:self.update_template_view())

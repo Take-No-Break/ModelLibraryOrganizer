@@ -31,13 +31,15 @@ class RestoreUI:
   ttk.Label(page,text='変更前の保存場所へ戻します。複数回変更した場合は、新しい履歴から順に戻してください。',wraplength=1100).pack(anchor='w',pady=6)
   bar=ttk.Frame(page);bar.pack(fill='x')
   ttk.Button(bar,text='履歴JSONを開く…',command=self.import_restore).pack(side='left')
+  self.restore_action=ttk.Button(bar,text='この配置へ戻す…',command=self.restore_selected,state='disabled');self.restore_action.pack(side='left',padx=6)
+  self.restore_reason=tk.StringVar(value='')
+  ttk.Label(page,textvariable=self.restore_reason,wraplength=1000).pack(anchor='w',pady=4)
   self.show_move_warning=tk.BooleanVar(value=not self.preferences.get('skip_move_warning',False))
   def toggle():self.preferences['skip_move_warning']=not self.show_move_warning.get();self.save_preferences()
   ttk.Checkbutton(bar,text='移動前の警告を表示',variable=self.show_move_warning,command=toggle).pack(side='right')
   self.restore_table=ttk.Treeview(page,columns=('time','count','status'),show='headings',height=8)
   for name,label,width in [('time','実行日時',260),('count','記録件数',100),('status','状態',240)]:self.restore_table.heading(name,text=label);self.restore_table.column(name,width=width)
   self.restore_table.pack(fill='both',expand=True,pady=8);self.restore_table.bind('<<TreeviewSelect>>',self.restore_details)
-  self.restore_action=ttk.Button(page,text='この配置へ戻す…',command=self.restore_selected)
   self.restore_text=LocalizedText(page,height=12,wrap='word');self.restore_text.pack(fill='both',expand=True)
   ttk.Label(page,text=tr('履歴の保存場所：')+' '+str(self.engine.data/'scan-history')+' / '+str(self.engine.data/'history'),wraplength=1100).pack(anchor='w',pady=5)
   self.refresh_restore()
@@ -49,7 +51,7 @@ class RestoreUI:
    doc=read_json(p)
    if not isinstance(doc,dict) or not isinstance(doc.get('ops'),list):continue
    self.add_restore_entry(p,doc)
-  self.restore_action.pack_forget()
+  self.restore_action.configure(state='disabled');self.restore_reason.set(tr('元に戻す履歴を選択してください。'))
   self.restore_text.configure(state='normal');self.restore_text.delete('1.0','end');self.restore_text.configure(state='disabled')
 
  def add_restore_entry(self,path,doc):
@@ -66,7 +68,9 @@ class RestoreUI:
   ids=self.restore_table.selection()
   if not ids:return
   path,doc=self.restore_entries[int(ids[0])]
-  self.restore_action.pack_forget()
+  self.restore_action.configure(state='disabled')
+  import i18n
+  def reason(ja,en):self.restore_reason.set(ja if i18n.LANG=='ja' else en)
   if doc.get('kind')=='scan_snapshot':
    from scan_history import journals_for
    text=tr('調査前の配置記録')+'\n'+str(path)+'\n\n'+tr('ファイル数：')+str(len(doc['files']))+' / '+tr('フォルダー数：')+str(len(doc['folders']))+'\n\n'
@@ -75,11 +79,18 @@ class RestoreUI:
    text+='\n\n'+tr('関連する変更履歴：')+'\n'+'\n'.join(doc.get('move_journals',[]))
    self.restore_text.configure(state='normal');self.restore_text.delete('1.0','end');tk.Text.insert(self.restore_text,'1.0',text);self.restore_text.configure(state='disabled')
    try:
-    if journals_for(path):self.restore_action.pack(anchor='w',before=self.restore_text,pady=6)
+    if journals_for(path):
+     self.restore_action.configure(state='normal');reason('関連する変更履歴を使って復元できます。','Restore is available using linked move history.')
+    elif doc.get('move_journals'):reason('関連する変更はすでに復元されています。','The linked changes have already been restored.')
+    else:reason('このJSONは調査時の配置記録です。移動履歴が関連付いていないため、この記録からは復元できません。実際に整理を実行した日時の変更履歴を選んでください。','This JSON is a scan inventory with no linked moves. Select the move history from when organization was executed.')
    except ValueError as error:
+    self.restore_reason.set(str(error))
     self.restore_text.configure(state='normal');tk.Text.insert(self.restore_text,'end','\n\n'+str(error));self.restore_text.configure(state='disabled')
    return
-  if doc.get('ops') and not doc.get('restored'):self.restore_action.pack(anchor='w',before=self.restore_text,pady=6)
+  if doc.get('ops') and not doc.get('restored'):
+   self.restore_action.configure(state='normal');reason('復元可能な変更履歴です。ボタンで確認してから復元します。','Move history is available. The button asks for confirmation before restoring.')
+  elif doc.get('restored'):reason('この履歴はすでに復元されています。','This history has already been restored.')
+  else:reason('この履歴には復元する変更がありません。','This history contains no changes to restore.')
   plans=doc.get('before_state',doc['ops']);lines=[tr('履歴ファイル：')+' '+str(path),tr('変更前 → 変更後'), '']
   for op in plans:
    lines.extend([op['source'],' → '+op['destination']])
@@ -95,7 +106,7 @@ class RestoreUI:
 
  def import_restore(self):
   if not self.ready():return
-  filename=filedialog.askopenfilename(initialdir=self.engine.data/'scan-history',filetypes=[('Move history','*.json')])
+  filename=filedialog.askopenfilename(initialdir=self.engine.data/'history',filetypes=[('Move history','*.json')])
   if not filename:return
   doc=read_json(filename)
   if not isinstance(doc,dict) or not isinstance(doc.get('ops'),list) or 'root' not in doc:messagebox.showerror('確認が必要です','復元できる履歴ではありません');return

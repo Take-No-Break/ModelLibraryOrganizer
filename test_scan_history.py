@@ -43,10 +43,10 @@ class HistoryTests(unittest.TestCase):
     app=App(root,base/'data');root.update();model(base/'models/a.safetensors',['clip_l'])
     rows=app.engine.scan(base/'models',base/'models',False);app.refresh_restore()
     self.assertEqual(len(app.restore_entries),1);app.restore_table.selection_set('0');app.restore_details()
-    self.assertIn('調査前の配置記録',app.restore_text.get('1.0','end'));self.assertFalse(app.restore_action.winfo_manager())
+    self.assertIn('調査前の配置記録',app.restore_text.get('1.0','end'));self.assertEqual(app.restore_action.winfo_manager(),'pack');self.assertIn('disabled',app.restore_action.state())
     rows[0]['decision']='承認';app.engine.execute(rows,base/'models');app.refresh_restore()
     index=next(str(i) for i,(_,doc) in enumerate(app.restore_entries) if doc.get('kind')=='scan_snapshot')
-    app.restore_table.selection_set(index);app.restore_details();self.assertEqual(app.restore_action.winfo_manager(),'pack')
+    app.restore_table.selection_set(index);app.restore_details();self.assertEqual(app.restore_action.winfo_manager(),'pack');self.assertNotIn('disabled',app.restore_action.state())
     g=[{'sha256':'a'*64,'files':[{'path':'A','identity':[1,2],'size':4},{'path':'B','identity':[1,2],'size':4}], 'physical_copies':1,'extra_bytes':0}]
     app.record_result('SHA256による重複検出',json.dumps(g));self.assertEqual(len(app.duplicate_table.get_children()),1)
     self.assertIn('ハードリンクのみ',app.result_body.get('1.0','end'))
