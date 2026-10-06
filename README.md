@@ -2,9 +2,11 @@
 
 **Windows · v1.0.0 · MIT license**
 
-Browse your downloaded LoRA and checkpoint models, see available preview images, and retrieve published trigger words and descriptions through public APIs without opening each source website. Model Library Organizer also identifies and organizes files, creates model source notes, prepares Image to Text workflows, and edits training captions and tags.
+**English** · [日本語](README.JP.md) · [简体中文](README.ZH.md)
 
-[Download for Windows](https://github.com/Take-No-Break/ModelLibraryOrganizer/releases/tag/v1.0.0) · [Report an issue](https://github.com/Take-No-Break/ModelLibraryOrganizer/issues)
+[Download for Windows](https://github.com/Take-No-Break/ModelLibraryOrganizer/releases/tag/v1.0.0) · [Interface preview](#organize-a-model-library) · [Report an issue](https://github.com/Take-No-Break/ModelLibraryOrganizer/issues)
+
+Browse your downloaded LoRA and checkpoint models, see available preview images, and retrieve published trigger words and descriptions through public APIs without opening each source website. Model Library Organizer also identifies and organizes files, creates model source notes, prepares Image to Text workflows, and edits training captions and tags.
 
 ## What you can do
 
