@@ -36,12 +36,13 @@ class SplitCaptionTests(unittest.TestCase):
    root=Path(folder);(root/'main.py').touch();(root/'custom_nodes').mkdir()
    target=Path(install_bridge(root,Path(__file__).parent/'comfy_bridge'))
    for name in ('__init__.py','stages.py','backend.py','tag_order.py'):self.assertTrue((target/name).is_file())
- def test_template_only_has_no_server_controls(self):
+ def test_local_execution_keeps_template_export_and_no_launcher(self):
   with tempfile.TemporaryDirectory() as folder:
    root=tk.Tk();root.withdraw()
    try:
     app=App(root,Path(folder));root.update()
-    for name in ('cap_url','cap_comfy','cap_launcher','cap_open_mode'):self.assertFalse(hasattr(app,name))
+    self.assertTrue(hasattr(app,'cap_url'));self.assertTrue(hasattr(app,'cap_output'))
+    for name in ('cap_comfy','cap_launcher','cap_open_mode'):self.assertFalse(hasattr(app,name))
     self.assertTrue(hasattr(app,'export_caption_ui_workflow'))
    finally:
     for timer in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(timer)
