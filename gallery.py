@@ -143,13 +143,16 @@ class Gallery:
    var=tk.StringVar(value=saved.get(key,''));self.compat_roots[key]=var;ttk.Entry(bar,textvariable=var).pack(side='left',fill='x',expand=True)
    def choose(v=var):
     path=filedialog.askdirectory()
-    if path:v.set(path)
+    if path:v.set(path);self.populate_compatibility()
    ttk.Button(bar,text='選択…',command=choose).pack(side='left')
   ttk.Button(page,text='指定フォルダーを追加調査',command=self.scan_compatibility_folders).pack(anchor='w')
   self.compat_origin=StatusVar(value='候補はこのPCの調査履歴と今回の結果のみです。未調査のPCでは空です。全ドライブを自動探索しません。')
   ttk.Label(page,textvariable=self.compat_origin,wraplength=1100).pack(anchor='w',pady=5)
   ttk.Button(page,text='調査済みモデルから一覧を更新',command=self.populate_compatibility).pack(anchor='w',pady=8)
+  ttk.Label(page,text='LoRA').pack(anchor='w')
   self.compat_choice=ttk.Combobox(page,state='readonly',width=90);self.compat_choice.pack(fill='x');self.compat_choice.bind('<<ComboboxSelected>>',self.compat_selected)
+  ttk.Label(page,text='Checkpoint / diffusion model').pack(anchor='w')
+  self.compat_checkpoint_choice=ttk.Combobox(page,state='readonly',width=90);self.compat_checkpoint_choice.pack(fill='x');self.compat_checkpoint_choice.bind('<<ComboboxSelected>>',self.compat_selected)
   self.compat_summary=LocalizedText(page,height=5,wrap='word');self.compat_summary.pack(fill='x',pady=8)
   self.compat_table=ttk.Treeview(page,columns=('model','family','result'),show='headings')
   for key,label,width in [('model','チェックポイント',450),('family','系統',120),('result','判定',400)]:self.compat_table.heading(key,text=label);self.compat_table.column(key,width=width)
@@ -164,6 +167,8 @@ class Gallery:
   ttk.Label(edit,text='メモ').pack(side='left');ttk.Entry(edit,textvariable=self.compat_note).pack(side='left',fill='x',expand=True)
   ttk.Button(edit,text='評価を保存',command=self.save_compat_pair).pack(side='left')
  def populate_compatibility(self):
+  old_cp=self.compat_checkpoint_choice.current()
+  previous_cp=self.compat_checkpoints[old_cp]['source'] if hasattr(self,'compat_checkpoints') and 0<=old_cp<len(self.compat_checkpoints) else None
   catalog={r['source']:r for r in self.engine.cache.get('catalog',{}).values()};catalog.update({r['source']:r for r in self.rows})
   roots={k:v.get().strip() for k,v in self.compat_roots.items()}
   def allowed(row):
@@ -171,6 +176,16 @@ class Gallery:
    return not roots[key] or Path(row['source']).resolve().is_relative_to(Path(roots[key]).resolve())
   self.compat_catalog=[r for r in catalog.values() if Path(r['source']).exists() and allowed(r)];self.compat_loras=[r for r in self.compat_catalog if r.get('kind')=='loras' and Path(r['source']).exists()]
   self.compat_choice.configure(values=[Path(r['source']).name+' / '+r.get('family','') for r in self.compat_loras])
+  self.compat_checkpoints=[r for r in self.compat_catalog if r.get('kind') in ('checkpoints','diffusion_models')]
+  def caption(r,key):
+   path=Path(r['source']);root=self.compat_roots[key].get().strip()
+   return (str(path.relative_to(Path(root))) if root and path.is_relative_to(Path(root)) else str(path))+' / '+(r.get('family') or 'Unknown')
+  self.compat_choice.configure(values=[caption(r,'loras') for r in self.compat_loras])
+  self.compat_checkpoint_choice.configure(values=[caption(r,'checkpoints') for r in self.compat_checkpoints])
+  if self.compat_checkpoints:
+   self.compat_checkpoint_choice.current(next((i for i,r in enumerate(self.compat_checkpoints) if r['source']==previous_cp),0))
+  else:self.compat_checkpoint_choice.set('')
+  self.compat_pairs=[]
   self.compat_table.delete(*self.compat_table.get_children())
   self.compat_origin.set('このPCの調査履歴＋今回の結果 / LoRA: '+str(len(self.compat_loras))+' / Checkpoint: '+str(sum(r.get('kind') in ('checkpoints','diffusion_models') for r in self.compat_catalog))+' — 入力したフォルダー内に候補を限定します。空欄では過去の調査全体です。')
   if self.compat_loras:self.compat_choice.current(0);self.compat_selected()
@@ -178,14 +193,23 @@ class Gallery:
  def compat_selected(self,event=None):
   index=self.compat_choice.current()
   if index<0:return
-  row=self.compat_loras[index];self.linked_text(self.compat_summary,'Model: '+row.get('title','')+'\nBase family: '+(row.get('family') or 'Unknown')+'\n'+row.get('evidence','')+'\n'+row.get('url',''))
+  row=self.compat_loras[index]
+  checkpoint_index=self.compat_checkpoint_choice.current()
+  checkpoint=self.compat_checkpoints[checkpoint_index] if 0<=checkpoint_index<len(self.compat_checkpoints) else None
+  summary='LoRA: '+row['source']+'\nBase family: '+(row.get('family') or 'Unknown')+'\n'
+  if checkpoint:summary+='Checkpoint: '+checkpoint['source']+'\nBase family: '+(checkpoint.get('family') or 'Unknown')+'\n'
+  else:summary+='No checkpoint available. Scan the selected checkpoint folder first.\n'
+  summary+='Family estimate only; no model loading or image generation is performed.\n'+row.get('url','')
+  self.linked_text(self.compat_summary,summary)
   self.compat_table.delete(*self.compat_table.get_children())
-  self.compat_pairs=compatibility(row,self.compat_catalog)
+  self.compat_pairs=compatibility(row,[checkpoint] if checkpoint else [])
+  self.compat_rating.set('自動判定');self.compat_note.set('')
   for i,r in enumerate(self.compat_pairs):
    override=self.compat_overrides.get(r['pair_key'],{});rating=override.get('rating','自動判定')
    tag={'使用できた（緑）':'same','要調整（黄）':'related','使用不可（灰）':'different'}.get(rating,r['relation'])
    assessment=tr(r['assessment']) if rating=='自動判定' else tr('手動評価')+': '+tr(rating)
    self.compat_table.insert('','end',iid=str(i),values=(Path(r['checkpoint']).name,r['family'],row.get('family','?')+' → '+r['family']+' / '+assessment),tags=(tag,))
+  if self.compat_pairs:self.compat_table.selection_set('0');self.select_compat_pair()
  def select_compat_pair(self,event=None):
   ids=self.compat_table.selection()
   if not ids:return

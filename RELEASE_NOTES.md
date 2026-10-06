@@ -13,3 +13,7 @@ Added conservative StyleAdapter/Redux and supported ModelPatchLoader tensor sign
 ## 1.0.24: Per-file classification correction
 
 Reliable tensor structure takes priority over the distribution page category. A VAE bundled in a Checkpoint publication stays a VAE. Conflicting remembered routes are not reused; the corrected destination is proposed for review. Incremental scans revisit previous classifications. No real model files were moved.
+
+## 1.0.25: Select a specific LoRA and Checkpoint
+
+Compatibility now has separate LoRA and Checkpoint/diffusion model selectors. Select both files to display the assessment for that exact pair and save a pair-specific manual evaluation. Folder selection filters previously scanned models; use Scan selected folders for models not investigated yet. This comparison estimates compatibility from known families and does not load models or perform image generation. No files are moved.
