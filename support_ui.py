@@ -24,7 +24,7 @@ class SupportUI:
  def save_preferences(self):atomic_json(self.engine.data/'preferences.json',self.preferences)
  def change_language(self,event=None):
     code=next(k for k,v in i18n.LANGS.items() if v==self.language.get())
-    if not self.ready() or not self.editor_guard():self.language.set(i18n.LANGS[i18n.LANG]);return
+    if not self.ready() or not self.editor_guard() or not self.tag_guard():self.language.set(i18n.LANGS[i18n.LANG]);return
     root=self.root;data=self.engine.data;geometry=root.geometry()
     page=next((k for k,v in self.pages.items() if str(v)==self.current_page()),'models')
     rows=self.rows;dataset=self.dataset_rows;dataset_path=self.dataset_path.get()
@@ -127,7 +127,7 @@ Folder organization: Starting a scan offers the existing type/category layout or
 
 Create source TXT fills in missing model information files. A scan alone does not create these TXT files. Applying organization creates a TXT if missing and moves an existing source TXT with its model. The button skips existing TXT rather than creating extra copies or overwriting edits. Update readable TXT is a separate explicit operation with backup.
 
-Tag rankings counts how many caption TXT files contain each comma-separated tag, counting a tag once per file. The denominator includes existing TXT, including empty files, and new captions with pending edits; images without a TXT and without edits are excluded. This is dataset usage frequency, not rating/tag confidence from an AI model. Source-information .source.txt files are excluded. Tag editor shares the folder and frequency statistics, filters images by tag, previews the selected image, and stages per-image removal or multi-image addition/removal. Save all changes opens a before/after review, then updates original TXT with conflict checks and caption-backups. Images are never edited. No auto-tagging or model inference is performed by these tabs.
+Tag rankings counts how many caption TXT files contain each comma-separated tag, counting a tag once per file. The denominator includes existing TXT, including empty files, and new captions with pending edits; images without a TXT and without edits are excluded. This is dataset usage frequency, not rating/tag confidence from an AI model. Source-information .source.txt files are excluded. Tag editor shares the folder and frequency statistics. Scroll the left-hand image thumbnails and select them with Ctrl/Shift. Compact rounded tags can be sorted by count/name, searched and filtered by category; clicking a statistics tag filters the images containing it. Category filters show matching tags, not image recognition: local keyword rules assign categories, and right-click offers manual overrides. Click an image's tag to edit it, then Enter to apply or Esc to cancel; × removes it from that image. Bulk Insert, Remove, Remove unwanted, Delete category and Delete all tags use the Selected / Filtered / All scope. Registering an unwanted tag alone does not remove existing tags; it excludes that exact tag from future Bulk Insert, and Remove unwanted stages explicit removal. Save all changes opens a before/after review, then updates original TXT with conflict checks and caption-backups. Images are never edited. No auto-tagging or model inference is performed by these tabs.
 ''');body.configure(state='disabled')
  def publisher_settings(self):
     win=self.open_panel('help','更新・サポート設定')

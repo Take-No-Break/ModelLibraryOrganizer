@@ -1,9 +1,12 @@
 import tkinter as tk
 from pathlib import Path
 from PIL import Image,ImageTk,ImageOps
-from i18n import ttk,tr,messagebox,filedialog,LocalizedToplevel
+from i18n import ttk,tr,messagebox,filedialog,LocalizedToplevel,Tooltip
 from dataset_files import apply_changes
 from tag_dataset import load_tags,split_tags,frequencies,edit_tags,tag_changes
+from tag_widgets import ThumbnailStrip,chip_flow
+from tag_categories import CATEGORIES,category_of
+from core import read_json,atomic_json
 from locales import CATALOG
 
 TAG_STRINGS={
@@ -17,6 +20,8 @@ TAG_STRINGS={
  'ランキングからこのタグで絞り込む':'Filter Tag editor by this tag',
  'ランキングはモデルの確信度ではありません。例：200個のTXTのうち100個に登場＝50%。':'This is usage frequency, not model confidence. Example: present in 100 of 200 TXT files = 50%.',
  '再読み込み':'Reload',
+ 'カテゴリーはローカルの語句ルールによる分類です。右クリックで変更できます。':'Categories use local keyword rules. Right-click a tag to change its category.',
+ 'タグを変更':'Edit tag','カテゴリーを変更':'Set category',
 }
 CATALOG['en'].update(TAG_STRINGS)
 PT={
@@ -30,6 +35,8 @@ PT={
  'ランキングからこのタグで絞り込む':'Filtrar por esta tag no editor',
  'ランキングはモデルの確信度ではありません。例：200個のTXTのうち100個に登場＝50%。':'É frequência de uso, não confiança do modelo. Exemplo: em 100 de 200 TXT = 50%.',
  '再読み込み':'Recarregar',
+ 'カテゴリーはローカルの語句ルールによる分類です。右クリックで変更できます。':'As categorias usam regras locais de palavras. Clique com o botão direito para alterá-las.',
+ 'タグを変更':'Editar tag','カテゴリーを変更':'Definir categoria',
 }
 for key,english in TAG_STRINGS.items():
  CATALOG['pt-BR'][key]=PT[key];CATALOG['pt-BR'][english]=PT[key]
@@ -39,6 +46,13 @@ class TagEditorUI:
   self.tag_records=[];self.tag_loaded_key=None;self.tag_load_timer=None;self.tag_filter='';self.tag_selected_index=None
   self.tag_folder=tk.StringVar(value=self.dataset_path.get());self.tag_recursive=tk.BooleanVar(value=False)
   self.tag_search=tk.StringVar();self.tag_value=tk.StringVar()
+  settings=read_json(self.engine.data/'tag-editor-settings.json',{}) or {}
+  if not isinstance(settings,dict):settings={}
+  overrides=settings.get('categories',{});unwanted=settings.get('unwanted',[])
+  self.tag_category_overrides={k:v for k,v in overrides.items() if isinstance(k,str) and v in CATEGORIES[1:]} if isinstance(overrides,dict) else {}
+  self.tag_unwanted={v for v in unwanted if isinstance(v,str)} if isinstance(unwanted,list) else set()
+  self.tag_category=tk.StringVar(value='All');self.tag_sort=tk.StringVar(value='By count');self.tag_scope=tk.StringVar(value='Selected');self.tag_cloud_search=tk.StringVar();self.tag_image_search=tk.StringVar();self.tag_unwanted_value=tk.StringVar();self.tag_inline_editor=None
+  style=ttk.Style();style.configure('TagCompact.TButton',font=('Yu Gothic UI',9),padding=(5,2));style.configure('TagCompact.TRadiobutton',font=('Yu Gothic UI',9),padding=(3,2))
   for key in ('tag_ranking','tag_editor'):
    page=self.pages[key];bar=ttk.Frame(page);bar.pack(fill='x',pady=6)
    ttk.Entry(bar,textvariable=self.tag_folder).pack(side='left',fill='x',expand=True)
@@ -60,33 +74,61 @@ class TagEditorUI:
   ttk.Button(page,text='ランキングからこのタグで絞り込む',command=self.filter_ranked_tag).pack(anchor='w',pady=6)
   ttk.Label(page,text='ランキングはモデルの確信度ではありません。例：200個のTXTのうち100個に登場＝50%。',wraplength=1100).pack(anchor='w',pady=6)
   page=self.pages['tag_editor']
-  ttk.Label(page,text='タグをクリックして画像を絞り込み、×で削除できます。変更は保存するまで元のTXTに反映されません。',wraplength=1100).pack(anchor='w')
+  ttk.Label(page,text='タグをクリックして画像を絞り込み、×で削除できます。変更は保存するまで元のTXTに反映されません。',wraplength=1100,font=('Yu Gothic UI',9)).pack(anchor='w')
   actions=ttk.Frame(page);actions.pack(fill='x',pady=6)
-  ttk.Entry(actions,textvariable=self.tag_value,width=30).pack(side='left')
-  ttk.Button(actions,text='選択した画像に追加',command=lambda:self.bulk_tag_edit(False)).pack(side='left',padx=4)
-  ttk.Button(actions,text='選択した画像から削除',command=lambda:self.bulk_tag_edit(True)).pack(side='left')
-  ttk.Button(actions,text='すべて選択',command=lambda:self.tag_image_list.selection_set(self.tag_image_list.get_children())).pack(side='left',padx=4)
-  ttk.Button(actions,text='すべての変更を保存',command=self.preview_tag_save).pack(side='right')
-  self.tag_stats=ttk.Label(page,text='—');self.tag_stats.pack(anchor='w')
-  self.tag_cloud=ttk.Frame(page);self.tag_cloud.pack(fill='x',pady=6)
-  filter_bar=ttk.Frame(page);filter_bar.pack(fill='x')
-  self.tag_filter_label=ttk.Label(filter_bar,text='All');self.tag_filter_label.pack(side='left')
-  ttk.Button(filter_bar,text='絞り込みを解除',command=lambda:self.set_tag_filter('')).pack(side='left',padx=8)
+  ttk.Button(actions,text='すべて選択',style='TagCompact.TButton',command=lambda:self.tag_image_list.selection_set(self.tag_image_list.get_children())).pack(side='left')
+  ttk.Label(actions,text='Ctrl / Shift: multiple images',font=('Yu Gothic UI',9)).pack(side='left',padx=8)
+  ttk.Button(actions,text='すべての変更を保存',style='TagCompact.TButton',command=self.preview_tag_save).pack(side='right')
   panes=ttk.Panedwindow(page,orient='horizontal');panes.pack(fill='both',expand=True,pady=6)
-  left=ttk.Frame(panes);right=ttk.Frame(panes);panes.add(left,weight=2);panes.add(right,weight=4)
-  self.tag_image_list=ttk.Treeview(left,columns=('file','tags','status'),show='headings',height=13,selectmode='extended')
-  for c,label,w in [('file','画像／TXT',240),('tags','タグ',55),('status','状態',95)]:self.tag_image_list.heading(c,text=label);self.tag_image_list.column(c,width=w)
-  self.tag_image_list.pack(fill='both',expand=True);scroll=ttk.Scrollbar(left,command=self.tag_image_list.yview);scroll.pack(side='right',fill='y');self.tag_image_list.configure(yscrollcommand=scroll.set)
+  left=ttk.Frame(panes);right=ttk.Frame(panes);panes.add(left,weight=0);panes.add(right,weight=1)
+  ttk.Entry(left,textvariable=self.tag_image_search,width=22,font=('Yu Gothic UI',9)).pack(fill='x',pady=(0,4))
+  self.tag_image_list=ThumbnailStrip(left,lambda:self.tag_records);self.tag_image_list.pack(fill='both',expand=True)
   self.tag_image_list.bind('<<TreeviewSelect>>',self.select_tag_image)
-  self.tag_photo=ttk.Label(right,text=tr('画像を選択'));self.tag_photo.pack(anchor='center')
-  self.tag_chip_canvas=tk.Canvas(right,height=300,highlightthickness=0,background='#edf1f6');self.tag_chip_canvas.pack(side='left',fill='both',expand=True)
-  scroll=ttk.Scrollbar(right,command=self.tag_chip_canvas.yview);scroll.pack(side='right',fill='y');self.tag_chip_canvas.configure(yscrollcommand=scroll.set)
+  stats_bar=ttk.Frame(right);stats_bar.pack(fill='x')
+  self.tag_stats=ttk.Label(stats_bar,text='—',font=('Yu Gothic UI',9));self.tag_stats.pack(side='left')
+  sort=ttk.Combobox(stats_bar,textvariable=self.tag_sort,values=['By count','By name'],state='readonly',width=11,font=('Yu Gothic UI',9));sort.pack(side='right');sort.bind('<<ComboboxSelected>>',lambda _:self.refresh_tag_views())
+  self.tag_cloud=ttk.Frame(right);self.tag_cloud.pack(fill='x',pady=4)
+  self.tag_cloud_canvas=tk.Canvas(self.tag_cloud,height=140,highlightthickness=0,background='#f1f4f9');self.tag_cloud_canvas.pack(side='left',fill='x',expand=True)
+  scroll=ttk.Scrollbar(self.tag_cloud,command=self.tag_cloud_canvas.yview);scroll.pack(side='right',fill='y');self.tag_cloud_canvas.configure(yscrollcommand=scroll.set)
+  self.tag_cloud_canvas.bind('<Configure>',lambda _:self.draw_tag_cloud());self.tag_cloud_canvas.bind('<MouseWheel>',lambda e:(self.tag_cloud_canvas.yview_scroll(-int(e.delta/120),'units'),'break')[-1])
+  categories=ttk.Frame(right);categories.pack(fill='x',pady=3)
+  for i,category in enumerate(CATEGORIES):
+   ttk.Radiobutton(categories,text=category,variable=self.tag_category,value=category,style='TagCompact.TRadiobutton',command=self.refresh_tag_views).grid(row=i//12,column=i%12,padx=1)
+  ttk.Label(right,text='カテゴリーはローカルの語句ルールによる分類です。右クリックで変更できます。',font=('Yu Gothic UI',8),wraplength=900).pack(anchor='w')
+  filter_bar=ttk.Frame(right);filter_bar.pack(fill='x',pady=3)
+  self.tag_filter_label=ttk.Label(filter_bar,text='All',font=('Yu Gothic UI',9));self.tag_filter_label.pack(side='left')
+  ttk.Button(filter_bar,text='絞り込みを解除',style='TagCompact.TButton',command=lambda:self.set_tag_filter('')).pack(side='left',padx=6)
+  ttk.Entry(filter_bar,textvariable=self.tag_cloud_search,font=('Yu Gothic UI',9),width=22).pack(side='left',fill='x',expand=True)
+  ttk.Button(filter_bar,text='Delete selected tag',style='TagCompact.TButton',command=self.delete_filtered_tag).pack(side='right')
+  tools=ttk.Frame(right);tools.pack(fill='x',pady=3)
+  ttk.Label(tools,text='Bulk Insert',font=('Yu Gothic UI',9)).grid(row=0,column=0,sticky='w')
+  ttk.Entry(tools,textvariable=self.tag_value,width=24,font=('Yu Gothic UI',9)).grid(row=0,column=1,padx=4,sticky='ew')
+  ttk.Button(tools,text='Insert',style='TagCompact.TButton',command=lambda:self.bulk_tag_edit(False)).grid(row=0,column=2,padx=3)
+  ttk.Button(tools,text='Remove',style='TagCompact.TButton',command=lambda:self.bulk_tag_edit(True)).grid(row=0,column=3,padx=3)
+  scope=ttk.Combobox(tools,textvariable=self.tag_scope,values=['Selected','Filtered','All'],state='readonly',width=10,font=('Yu Gothic UI',9));scope.grid(row=0,column=4,padx=3)
+  Tooltip(scope,'Selected: highlighted thumbnails. Filtered: currently visible results. All: every image/TXT in this dataset. Applies to bulk operations.')
+  ttk.Button(tools,text='Delete category',style='TagCompact.TButton',command=lambda:self.clear_scoped_tags(True)).grid(row=0,column=5,padx=3)
+  ttk.Label(tools,text='Unwanted Tag',font=('Yu Gothic UI',9)).grid(row=1,column=0,sticky='w',pady=3)
+  ttk.Entry(tools,textvariable=self.tag_unwanted_value,width=24,font=('Yu Gothic UI',9)).grid(row=1,column=1,padx=4,sticky='ew')
+  ttk.Button(tools,text='Register',style='TagCompact.TButton',command=self.register_unwanted).grid(row=1,column=2,padx=3)
+  ttk.Button(tools,text='Remove unwanted',style='TagCompact.TButton',command=self.remove_unwanted).grid(row=1,column=3,columnspan=2,padx=3)
+  ttk.Button(tools,text='Delete all tags',style='TagCompact.TButton',command=lambda:self.clear_scoped_tags(False)).grid(row=1,column=5,padx=3)
+  tools.columnconfigure(1,weight=1)
+  self.tag_unwanted_canvas=tk.Canvas(right,height=28,highlightthickness=0,background='#edf1f6');self.tag_unwanted_canvas.pack(fill='x');self.tag_unwanted_canvas.bind('<Configure>',lambda _:self.draw_unwanted())
+  header=ttk.Frame(right);header.pack(fill='x',pady=4)
+  self.tag_photo=ttk.Label(header,text=tr('画像を選択'),font=('Yu Gothic UI',9));self.tag_photo.pack(side='left')
+  ttk.Label(header,text='Click: edit · Enter: apply · Esc: cancel · ×: remove',font=('Yu Gothic UI',9)).pack(side='right')
+  chip_area=ttk.Frame(right);chip_area.pack(fill='both',expand=True)
+  self.tag_chip_canvas=tk.Canvas(chip_area,height=260,highlightthickness=0,background='#edf1f6');self.tag_chip_canvas.pack(side='left',fill='both',expand=True)
+  scroll=ttk.Scrollbar(chip_area,command=self.tag_chip_canvas.yview);scroll.pack(side='right',fill='y');self.tag_chip_canvas.configure(yscrollcommand=scroll.set)
   self.tag_chip_canvas.bind('<Configure>',lambda _:self.draw_tag_chips());self.tag_chip_canvas.bind('<MouseWheel>',lambda e:(self.tag_chip_canvas.yview_scroll(-int(e.delta/120),'units'),'break')[-1])
   self.tag_folder.trace_add('write',lambda *_:self.schedule_tags());self.tag_recursive.trace_add('write',lambda *_:self.schedule_tags())
   def follow_text_folder(*_):
    if not tag_changes(self.tag_records):self.tag_folder.set(self.dataset_path.get())
   self.dataset_path.trace_add('write',follow_text_folder)
   self.tag_search.trace_add('write',lambda *_:self.render_tag_ranking())
+  self.tag_cloud_search.trace_add('write',lambda *_:self.draw_tag_cloud());self.tag_image_search.trace_add('write',lambda *_:self.refresh_tag_views())
+  self.draw_unwanted()
   self.root.after(700,self.schedule_tags)
 
  def schedule_tags(self):
@@ -117,12 +159,12 @@ class TagEditorUI:
   total,counts=frequencies(self.tag_records);dirty=len(tag_changes(self.tag_records))
   self.tag_stats.configure(text=f'{len(self.tag_records)} images/TXT | {total} TXT | {len(counts)} tags | {dirty} unsaved files')
   self.render_tag_ranking()
-  for w in self.tag_cloud.winfo_children():w.destroy()
-  for i,(tag,count) in enumerate(counts[:30]):ttk.Button(self.tag_cloud,text=f'{tag[:35]}{"…" if len(tag)>35 else ""}  {count}',command=lambda t=tag:self.set_tag_filter(t)).grid(row=i//5,column=i%5,sticky='w',padx=3,pady=2)
+  self.draw_tag_cloud()
   selected=self.tag_image_list.selection();self.tag_image_list.delete(*self.tag_image_list.get_children())
   for i,r in enumerate(self.tag_records):
    tags=split_tags(r['draft'])
    if self.tag_filter and self.tag_filter not in tags:continue
+   if self.tag_image_search.get().casefold() not in Path(r['text_path']).name.casefold():continue
    changed=r['draft']!=r['state']['text'];label=self.short_path(r['images'][0] if r['images'] else r['text_path'],self.tag_folder.get())
    self.tag_image_list.insert('','end',iid=str(i),values=(label,len(tags),'未保存' if changed else 'あり' if r['state']['raw'] is not None else '未作成'))
   self.tag_filter_label.configure(text=self.tag_filter or 'All')
@@ -156,32 +198,135 @@ class TagEditorUI:
   self.tag_photo.configure(image='',text=Path(record['text_path']).name);self.tag_photo.image=None
   if record['images']:
    try:
-    with Image.open(record['images'][0]) as im:image=ImageOps.exif_transpose(im).convert('RGB');image.thumbnail((380,200))
+    with Image.open(record['images'][0]) as im:image=ImageOps.exif_transpose(im).convert('RGB');image.thumbnail((90,65))
     photo=ImageTk.PhotoImage(image,master=self.tag_photo);self.tag_photo.configure(image=photo,text='');self.tag_photo.image=photo
    except Exception:self.tag_photo.configure(text=tr('画像を表示できません'))
   self.draw_tag_chips()
 
  def draw_tag_chips(self):
-  canvas=self.tag_chip_canvas;canvas.delete('all');index=self.tag_selected_index
-  if index is None:return
-  tags=split_tags(self.tag_records[index]['draft']);width=max(330,canvas.winfo_width());x=8;y=8
-  for tag in tags:
-   display=tag[:70]+('…' if len(tag)>70 else '')
-   text=canvas.create_text(x+6,y+14,anchor='w',text=display,font=('Yu Gothic UI',10),fill='#26364d');box=canvas.bbox(text);w=min(width-16,box[2]-box[0]+34)
-   if x+w>width-8:x=8;y+=34;canvas.coords(text,x+6,y+14)
-   rect=canvas.create_rectangle(x,y,x+w,y+28,fill='#dce7f5',outline='#b4c6dd');canvas.tag_lower(rect,text)
-   close=canvas.create_text(x+w-12,y+14,text='×',fill='#a33535',font=('Yu Gothic UI',11,'bold'))
-   canvas.tag_bind(close,'<Button-1>',lambda e,t=tag,i=index:self.remove_one_tag(i,t));canvas.tag_bind(text,'<Button-1>',lambda e,t=tag:self.set_tag_filter(t));x+=w+6
-  canvas.configure(scrollregion=(0,0,width,y+40))
+  if self.tag_inline_editor:self.tag_inline_editor.destroy();self.tag_inline_editor=None
+  canvas=self.tag_chip_canvas;index=self.tag_selected_index
+  if index is None:chip_flow(canvas,[],lambda *_:None);return
+  tags=[tag for tag in split_tags(self.tag_records[index]['draft']) if self.matches_tag_category(tag)]
+  chip_flow(canvas,[(tag,None) for tag in tags],lambda tag,event:self.inline_tag_edit(index,tag,event),lambda tag:self.remove_one_tag(index,tag),self.tag_category_menu)
 
  def remove_one_tag(self,index,tag):
   edit_tags(self.tag_records[index],tag,True);self.refresh_tag_views()
 
+ def matches_tag_category(self,tag):
+  return self.tag_category.get()=='All' or category_of(tag,self.tag_category_overrides)==self.tag_category.get()
+
+ def draw_tag_cloud(self):
+  _,counts=frequencies(self.tag_records);query=self.tag_cloud_search.get().casefold()
+  counts=[pair for pair in counts if self.matches_tag_category(pair[0]) and query in pair[0].casefold()]
+  if self.tag_sort.get()=='By name':counts.sort(key=lambda pair:pair[0].casefold())
+  chip_flow(self.tag_cloud_canvas,counts,lambda tag,event:self.set_tag_filter(tag),context=self.tag_category_menu)
+
+ def tag_scope_indices(self):
+  scope=self.tag_scope.get()
+  if scope=='All':return tuple(str(i) for i in range(len(self.tag_records)))
+  if scope=='Filtered':return self.tag_image_list.get_children()
+  return self.tag_image_list.selection()
+
+ def save_tag_options(self):
+  atomic_json(self.engine.data/'tag-editor-settings.json',{'categories':self.tag_category_overrides,'unwanted':sorted(self.tag_unwanted)})
+
+ def tag_category_menu(self,tag,event):
+  previous=getattr(self,'tag_context_menu',None)
+  if previous:previous.destroy()
+  menu=tk.Menu(self.root,tearoff=False);menu.add_command(label=tag,state='disabled')
+  self.tag_context_menu=menu
+  choices=tk.Menu(menu,tearoff=False)
+  for category in CATEGORIES[1:]:
+   choices.add_command(label=category,command=lambda c=category:self.assign_tag_category(tag,c))
+  choices.add_separator();choices.add_command(label='Automatic',command=lambda:self.assign_tag_category(tag,None))
+  menu.add_cascade(label=tr('カテゴリーを変更'),menu=choices)
+  menu.add_command(label='Register unwanted',command=lambda:self.register_unwanted(tag))
+  try:menu.tk_popup(event.x_root,event.y_root)
+  finally:menu.grab_release()
+
+ def assign_tag_category(self,tag,category):
+  if category:self.tag_category_overrides[tag]=category
+  else:self.tag_category_overrides.pop(tag,None)
+  self.save_tag_options();self.refresh_tag_views()
+
+ def register_unwanted(self,value=None):
+  values=split_tags(self.tag_unwanted_value.get() if value is None else value)
+  if not values:return
+  self.tag_unwanted.update(values);self.tag_unwanted_value.set('');self.save_tag_options();self.draw_unwanted()
+
+ def unregister_unwanted(self,tag):
+  self.tag_unwanted.discard(tag);self.save_tag_options();self.draw_unwanted()
+
+ def draw_unwanted(self):
+  chip_flow(self.tag_unwanted_canvas,[(tag,None) for tag in sorted(self.tag_unwanted)],lambda tag,event:None,self.unregister_unwanted)
+  bounds=self.tag_unwanted_canvas.bbox('all');self.tag_unwanted_canvas.configure(height=min(80,max(28,bounds[3]+5 if bounds else 28)))
+  self.tag_unwanted_canvas.bind('<MouseWheel>',lambda e:(self.tag_unwanted_canvas.yview_scroll(-int(e.delta/120),'units'),'break')[-1])
+
+ def remove_unwanted(self):
+  ids=self.tag_scope_indices()
+  if not ids or not self.tag_unwanted:return
+  for ident in ids:edit_tags(self.tag_records[int(ident)],', '.join(sorted(self.tag_unwanted)),True)
+  self.refresh_tag_views()
+
+ def delete_filtered_tag(self):
+  if not self.tag_filter:return
+  ids=self.tag_scope_indices()
+  for ident in ids:edit_tags(self.tag_records[int(ident)],self.tag_filter,True)
+  self.refresh_tag_views()
+
+ def clear_scoped_tags(self,only_category):
+  ids=self.tag_scope_indices()
+  if not ids:return
+  category=self.tag_category.get()
+  if only_category and category=='All':messagebox.showinfo('Category','Choose a category first.');return
+  action='category '+category if only_category else 'all tags'
+  if not messagebox.askyesno('Delete tags',f'Remove {action} from {len(ids)} images/TXT in scope {self.tag_scope.get()}? This stages edits only; files are changed after save review.'):return
+  for ident in ids:
+   record=self.tag_records[int(ident)]
+   if only_category:
+    tags=[tag for tag in split_tags(record['draft']) if category_of(tag,self.tag_category_overrides)==category]
+    if tags:edit_tags(record,', '.join(tags),True)
+   else:record['draft']=''
+  self.refresh_tag_views()
+
+ def replace_image_tag(self,index,old,new):
+  requested=split_tags(new)
+  if not requested:raise ValueError('Enter a non-empty tag; use × to remove a tag.')
+  record=self.tag_records[index];original=split_tags(record['draft']);updated=[]
+  for tag in original:
+   for value in (requested if tag==old else [tag]):
+    if value not in updated:updated.append(value)
+  if updated!=original:record['draft']=', '.join(updated)+'\n';self.refresh_tag_views()
+
+ def inline_tag_edit(self,index,tag,event):
+  canvas=self.tag_chip_canvas
+  if self.tag_inline_editor:self.tag_inline_editor.destroy()
+  entry=tk.Entry(canvas,font=('Yu Gothic UI',9),relief='flat',borderwidth=0,background='white');self.tag_inline_editor=entry
+  entry.insert(0,tag);entry.select_range(0,'end');width=min(260,max(130,canvas.winfo_width()-20));x=min(max(4,event.x),max(4,canvas.winfo_width()-width-4));y=canvas.canvasy(event.y)
+  from tag_widgets import rounded
+  scale=max(1,canvas.winfo_fpixels('1i')/96);height=round(26*scale)
+  border=rounded(canvas,x,y-height/2,width,height,'white','#729bd3',radius=7*scale)
+  item=canvas.create_window(x+7*scale,y,anchor='w',window=entry,width=width-14*scale,height=height-6*scale)
+  def cancel(*_):
+   if self.tag_inline_editor is entry:self.tag_inline_editor=None
+   entry.destroy();canvas.delete(item);canvas.delete(border)
+  def commit(*_):
+   value=entry.get()
+   try:cancel();self.replace_image_tag(index,tag,value)
+   except Exception as error:messagebox.showerror('確認が必要です',str(error))
+   return 'break'
+  entry.bind('<Return>',commit);entry.bind('<Escape>',lambda e:(cancel(),'break')[-1]);entry.focus_set()
+
  def bulk_tag_edit(self,remove):
-  ids=self.tag_image_list.selection()
+  ids=self.tag_scope_indices()
   if not ids:messagebox.showinfo('選択','一括編集するTXTを選択してください。Ctrl/Shiftまたは「すべて選択」が使えます。');return
   try:
-   for ident in ids:edit_tags(self.tag_records[int(ident)],self.tag_value.get(),remove)
+   value=self.tag_value.get()
+   if not remove:
+    value=', '.join(t for t in split_tags(value) if t not in self.tag_unwanted)
+    if not value:messagebox.showinfo('Unwanted tags','All entered tags are registered as unwanted, or the field is empty.');return
+   for ident in ids:edit_tags(self.tag_records[int(ident)],value,remove)
    self.refresh_tag_views()
   except Exception as error:messagebox.showerror('確認が必要です',str(error))
 

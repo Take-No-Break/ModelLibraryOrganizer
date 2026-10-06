@@ -38,10 +38,10 @@ class StatusVar(tk.StringVar):
 
 class Tooltip:
  def __init__(self,widget,text):
-  self.widget=widget;self.text=text;self.timer=None;self.win=None
+  self.widget=widget;self.scheduler=widget._root();self.text=text;self.timer=None;self.win=None
   widget.bind('<Enter>',self.schedule,add='+');widget.bind('<Leave>',self.hide,add='+');widget.bind('<ButtonPress>',self.hide,add='+');widget.bind('<Destroy>',self.hide,add='+')
  def schedule(self,event=None):
-  self.hide();self.timer=self.widget.after(600,self.show)
+  self.hide();self.timer=self.scheduler.after(600,self.show)
  def show(self):
   self.timer=None
   if not self.widget.winfo_exists():return
@@ -51,7 +51,7 @@ class Tooltip:
   native_ttk.Label(self.win,text=tr(self.text),wraplength=420,padding=10,background='#fff7cf',foreground='#161616',relief='solid').pack()
  def hide(self,event=None):
   if self.timer:
-   try:self.widget.after_cancel(self.timer)
+   try:self.scheduler.after_cancel(self.timer)
    except tk.TclError:pass
    self.timer=None
   if self.win:

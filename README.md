@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.11 — Windows preview
+# Model Library Organizer 1.0.12 — Windows preview
 
 ## Run or install
 
@@ -198,3 +198,30 @@ the Text editor's restore action can restore its backup manifest. Closing or
 reloading checks unsaved edits. Image bytes are never written. There is no direct
 model inference or automatic tagging in these tabs. The existing Image to Text
 workflow exporter is unchanged.
+
+## Compact thumbnail Tag editor (1.0.12)
+
+- The left pane is a scrollable image thumbnail strip. Ctrl/Shift selects multiple
+  images. Only visible thumbnails are decoded, with a bounded image cache.
+- Statistics and image tags are small rounded chips. Statistics scroll through all
+  tags, sort by count/name and support text search. Click a statistics chip to
+  filter images containing that exact tag. Search filenames above the thumbnails.
+- Category filters: All, Face, Body, Outfit, Pose, BG, Style, Expr, Chara, Title,
+  Artist and Other. These filter tags using local keyword rules, not image
+  recognition. Unknown names remain Other. Right-click a chip to set its category;
+  category overrides are stored in app settings, not caption TXT.
+- Click an image's chip to edit its text. Enter stages the change; Esc cancels it.
+  The chip's × stages removal from that image.
+- Bulk Insert / Remove accepts multiple comma-separated tags. Scope Selected means
+  highlighted thumbnails; Filtered means all results currently in the thumbnail
+  strip; All means the entire loaded dataset. Delete category, Delete all tags and
+  Remove unwanted use the same scope. Whole-category/all-tag removal asks first.
+- Unwanted Tag / Register stores exact tags in a persistent list; registration
+  alone does not delete existing tags. Registered tags are excluded from Bulk
+  Insert. Remove unwanted explicitly stages their removal from the chosen scope.
+  The registry chip's × unregisters the tag without changing captions.
+
+All caption edits remain drafts until Save all changes and the before/after review
+are confirmed. Existing encoding, conflict checks and caption backups are retained.
+Changing language, switching dataset folders or closing checks unsaved drafts.
+The app does not modify images or run automatic tagging in this editor.
