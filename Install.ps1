@@ -14,6 +14,8 @@ $shortcut = $shellObject.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = Join-Path $installRoot 'ModelLibraryOrganizer.exe'
 $shortcut.WorkingDirectory = $installRoot
 $shortcut.Save()
+$installedFiles = @(Get-ChildItem -LiteralPath $installRoot -File -Recurse -Force | ForEach-Object { $_.FullName.Substring($installRoot.Length + 1) })
+@{ application = 'ModelLibraryOrganizer'; installPath = $installRoot; files = $installedFiles } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $installRoot '.installation.json') -Encoding UTF8
 Write-Host "Installed: $installRoot"
 Write-Host 'Models were not moved. User settings remain in LocalAppData\ModelLibraryOrganizer.'
 Read-Host 'Press Enter to close'

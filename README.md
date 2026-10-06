@@ -269,3 +269,7 @@ Choose Dark or Classic in the top header. The choice is saved locally and restor
 ## Guide languages (1.0.20)
 
 Detailed guides are provided in Japanese, English, Simplified Chinese, Traditional Chinese (Taiwan) and Brazilian Portuguese. Spanish, Thai and German currently display the full English guide with an explicit language notice.
+
+## Uninstall
+
+Close the application and run Uninstall.cmd from an installation made with Install.cmd. Type YES to confirm. Recorded application files and the matching desktop shortcut are removed; additional files, models, captions, settings and restoration history are preserved. Portable copies are removed manually. The uninstaller has not been executed or tested.
