@@ -21,7 +21,7 @@ class TemplateOnlyTests(unittest.TestCase):
      self.assertEqual(len(widgets),len(node['widgets_values']),node['type'])
     for ident,source,slot,target,input_slot,typ in graph['links']:
      self.assertIn(ident,nodes[source]['outputs'][slot]['links']);self.assertEqual(nodes[target]['inputs'][input_slot]['link'],ident)
-    writer=next(n for n in nodes.values() if n['type']=='OrganizerSaveCaptionTXT');self.assertEqual(writer['widgets_values'],[False])
+    writer=next(n for n in nodes.values() if n['type']=='OrganizerSaveCaptionTXT');self.assertEqual(writer['widgets_values'],[False,''])
  def test_writer_opt_in_and_existing_caption_protection(self):
   with tempfile.TemporaryDirectory() as folder:
    image=Path(folder)/'one.png';Image.new('RGB',(8,8)).save(image);txt=image.with_suffix('.txt')

@@ -98,7 +98,7 @@ def install_bridge(comfy_root,bundle):
  target=root/'custom_nodes'/'model_library_organizer_bridge'
  if target.exists() and not (target/'.organizer-bridge').exists():raise ValueError('Existing unmanaged bridge directory; refusing to overwrite.')
  target.mkdir(exist_ok=True)
- for name in ('__init__.py','tag_order.py','backend.py','stages.py','other_models.py','model_sessions.py','save_text.py','requirements.txt','README.md'):
+ for name in ('__init__.py','tag_order.py','backend.py','stages.py','other_models.py','model_sessions.py','save_text.py','caption_output.py','requirements.txt','README.md'):
   destination=target/name
   if destination.exists() and destination.read_bytes()!=(Path(bundle)/name).read_bytes():shutil.copy2(destination,destination.with_suffix('.py.bak'))
   shutil.copy2(Path(bundle)/name,destination)

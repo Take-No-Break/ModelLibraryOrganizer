@@ -10,17 +10,21 @@ class CaptionUI:
  def init_captions(self):
   self.training_settings=read_json(self.engine.data/'training-settings.json',{}) or {};self.init_text_editor()
   page=self.pages['captions']
-  ttk.Label(page,text='Select images, model and output folder, then run in your local ComfyUI. The output contains image hardlinks and matching TXT. Workflow export is also available.',wraplength=1000).pack(anchor='w',pady=6)
+  import i18n
+  explanation='画像フォルダーと解析モデル・閾値を選び、接続確認後に実行します。画像フォルダー内にモデル種類名のフォルダーを作り、元画像のハードリンクと同名TXTを保存します。元画像は移動しません。' if i18n.LANG=='ja' else 'Select images, model and thresholds, check the ComfyUI connection, then run. A folder named after the model type is created inside the image folder, containing image hardlinks and matching TXT. Original images stay in place.'
+  ttk.Label(page,text=explanation,wraplength=1000).pack(anchor='w',pady=6)
   panes=ttk.Panedwindow(page,orient='horizontal');panes.pack(fill='both',expand=True)
   left=ttk.Frame(panes);right=ttk.Frame(panes);panes.add(left,weight=3);panes.add(right,weight=1)
   self.cap_folder=tk.StringVar(value=self.training_settings.get('image_folder',''));self.cap_model=tk.StringVar(value=self.training_settings.get('model_path',''))
-  self.cap_output=tk.StringVar(value=self.training_settings.get('output_folder',''));self.cap_url=tk.StringVar(value=self.training_settings.get('comfy_url','http://127.0.0.1:8188'))
+  self.cap_output=tk.StringVar();self.cap_url=tk.StringVar(value=self.training_settings.get('comfy_url','http://127.0.0.1:8188'))
   self.cap_backend=tk.StringVar(value=self.training_settings.get('backend','PixAI'));self.cap_template_mode=ChoiceVar(value=self.training_settings.get('template_mode','一体型'));self.cap_device=tk.StringVar(value='auto');self.cap_recursive=tk.BooleanVar(value=False);self.cap_save_txt=tk.BooleanVar(value=False)
   fields=ttk.Frame(left);fields.pack(fill='x');fields.columnconfigure(1,weight=1)
-  for i,(label,var) in enumerate([('画像フォルダー',self.cap_folder),('Image to Text model folder',self.cap_model),('Output folder (image hardlinks + TXT)',self.cap_output)]):
+  for i,(label,var) in enumerate([('画像フォルダー',self.cap_folder),('Image to Text model folder',self.cap_model)]):
    ttk.Label(fields,text=label).grid(row=i,column=0,sticky='w');ttk.Entry(fields,textvariable=var,width=36).grid(row=i,column=1,sticky='ew',padx=4)
    ttk.Button(fields,text='選択…',command=lambda v=var:self.choose_root(v)).grid(row=i,column=2)
   ttk.Label(fields,text='Running ComfyUI URL').grid(row=3,column=0,sticky='w');ttk.Entry(fields,textvariable=self.cap_url,width=26).grid(row=3,column=1,sticky='ew')
+  ttk.Button(fields,text='接続確認' if i18n.LANG=='ja' else 'Check connection',command=self.check_caption_connection).grid(row=3,column=2)
+  ttk.Label(fields,text='保存先（自動）' if i18n.LANG=='ja' else 'Save location (automatic)').grid(row=2,column=0,sticky='w');ttk.Label(fields,textvariable=self.cap_output,wraplength=480).grid(row=2,column=1,columnspan=2,sticky='w')
   ttk.Button(left,text='Run in ComfyUI and save image hardlinks + TXT',command=self.run_caption_local).pack(anchor='w',pady=5)
   bar=ttk.Frame(left);bar.pack(fill='x',pady=8)
   ttk.Label(bar,text='Model').pack(side='left');combo=ttk.Combobox(bar,textvariable=self.cap_backend,values=['PixAI','JoyCaption','CL Tagger','Taggerine'],state='readonly',width=14);combo.pack(side='left');combo.bind('<<ComboboxSelected>>',lambda e:self.update_template_view())
@@ -42,12 +46,14 @@ class CaptionUI:
   ttk.Label(page,text='Copy the exported custom nodes folder into ComfyUI/custom_nodes, install its requirements in the ComfyUI Python environment, then restart ComfyUI. Drag the workflow JSON onto the canvas. Model weights are separate.',wraplength=1000).pack(anchor='w',pady=8)
   self.cap_settings_timer=None
   self.cap_settings_vars={'image_folder':self.cap_folder,'model_path':self.cap_model,'backend':self.cap_backend,'template_mode':self.cap_template_mode,'device':self.cap_device,'recursive':self.cap_recursive,'save_txt':self.cap_save_txt,'cl_threshold':self.cap_cl,'taggerine_threshold':self.cap_tag,'joy_prompt':self.cap_joy,'joy_tokens':self.cap_tokens}
-  self.cap_settings_vars.update(output_folder=self.cap_output,comfy_url=self.cap_url)
+  self.cap_settings_vars.update(comfy_url=self.cap_url)
   for key,var in self.cap_settings_vars.items():
    if key in self.training_settings:var.set(self.training_settings[key])
   for key,var in self.cap_thresholds.items():
    if key in self.training_settings.get('thresholds',{}):var.set(self.training_settings['thresholds'][key])
   for var in [*self.cap_settings_vars.values(),*self.cap_thresholds.values()]:var.trace_add('write',lambda *args:self.schedule_training_settings())
+  for var in (self.cap_folder,self.cap_backend):var.trace_add('write',lambda *args:self.update_caption_output())
+  self.update_caption_output()
   ttk.Label(left,text='Paths, model, thresholds and template options are saved automatically on this PC.',wraplength=520).pack(anchor='w',pady=5)
   self.update_template_view()
  def schedule_training_settings(self):
@@ -90,10 +96,23 @@ class CaptionUI:
    if any(not 0<=v<=1 for v in settings[:2]) or not 1<=settings[3]<=4096:raise ValueError('Check threshold and token values.')
    backend=self.cap_backend.get();expanded=self.cap_template_mode.get()=='分解版'
    model_path=resolve_model_folder(self.cap_model.get(),backend)
-   graph=build_template(images,model_path,backend,expanded,thresholds,self.cap_device.get(),settings,self.cap_save_txt.get())
+   graph=build_template(images,model_path,backend,expanded,thresholds,self.cap_device.get(),settings,self.cap_save_txt.get(),self.cap_output.get())
    path=filedialog.asksaveasfilename(defaultextension='.json',initialfile=f'Image to Text - {backend} - {"Expanded" if expanded else "Combined"}.json',filetypes=[('ComfyUI workflow','*.json')])
    if path:atomic_json(Path(path),graph);self.notify_result('Save ComfyUI workflow template',path)
   except Exception as exc:messagebox.showerror('Export failed',str(exc))
+ def update_caption_output(self):
+  from caption_output import output_folder
+  self.cap_output.set(str(output_folder(self.cap_folder.get(),self.cap_backend.get())) if self.cap_folder.get().strip() else '')
+ def check_caption_connection(self):
+  if not self.ready():return
+  from comfy_client import ComfyClient
+  url=self.cap_url.get();backend=self.cap_backend.get()
+  def check():
+   client=ComfyClient(url);node='OrganizerPixAICaptionBatch' if backend=='PixAI' else 'OrganizerCaptionBatch'
+   info=client.request('/object_info/'+node)
+   if node not in info:raise ValueError('Required custom nodes are missing. Install them in the running ComfyUI instance and restart it.')
+   return ('ComfyUI connection','Connected: '+url+'\nRequired '+backend+' nodes are available. This checks the connection and nodes, not model inference.')
+  self.work(check,'report')
  def run_caption_local(self):
   if not self.ready():return
   try:
@@ -101,7 +120,11 @@ class CaptionUI:
    from comfy_client import base_url
    folder=self.cap_folder.get().strip();output=self.cap_output.get().strip();backend=self.cap_backend.get()
    if not Path(folder).is_dir() or not output:raise ValueError('Select image and output folders.')
-   images=[str(p) for row in list_dataset(folder,self.cap_recursive.get(),include_text=False) for p in row['images']]
+   from caption_output import output_folder
+   from core import read_json
+   output=str(output_folder(folder,backend))
+   generated_roots={output_folder(folder,b) for b in ('PixAI','JoyCaption','CL Tagger','Taggerine')}
+   images=[str(p) for row in list_dataset(folder,self.cap_recursive.get(),include_text=False) for p in row['images'] if not any(Path(p).resolve().is_relative_to(r) for r in generated_roots)]
    if not images:raise ValueError('No images in the selected folder.')
    if len({Path(p).stem.casefold() for p in images})!=len(images):raise ValueError('Duplicate image filenames: select folders with unique image names.')
    model=resolve_model_folder(self.cap_model.get(),backend);url=base_url(self.cap_url.get());device=self.cap_device.get()

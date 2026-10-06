@@ -1,9 +1,12 @@
 import os,tempfile,unittest,threading
 from pathlib import Path
 from unittest.mock import patch
-from caption_output import save_output,run_local
+from caption_output import save_output,run_local,output_folder
 
 class OutputTests(unittest.TestCase):
+ def test_model_named_output(self):
+  self.assertEqual(output_folder(Path.cwd(),"PixAI"),Path.cwd()/"PixAI")
+  with self.assertRaises(ValueError):output_folder(Path.cwd(),"../unsafe")
  def test_hardlink_and_existing_caption(self):
   with tempfile.TemporaryDirectory() as folder:
    root=Path(folder);image=root/'landscape.png';image.write_bytes(b'sample');out=root/'PixAI'

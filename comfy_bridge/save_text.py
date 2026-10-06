@@ -4,11 +4,16 @@ from .backend import image_paths
 
 class OrganizerSaveCaptionTXT:
  @classmethod
- def INPUT_TYPES(cls):return {'required':{'caption_json':('STRING',{'multiline':True,'forceInput':True}),'save_txt':('BOOLEAN',{'default':False})}}
+ def INPUT_TYPES(cls):return {'required':{'caption_json':('STRING',{'multiline':True,'forceInput':True}),'save_txt':('BOOLEAN',{'default':False}),'output_folder':('STRING',{'default':''})}}
  RETURN_TYPES=('STRING',);RETURN_NAMES=('save_report',);FUNCTION='save';CATEGORY='Model Library Organizer / Image to Text';OUTPUT_NODE=True
  @classmethod
  def IS_CHANGED(cls,**kwargs):return float('nan')
- def save(self,caption_json,save_txt):
+ def save(self,caption_json,save_txt,output_folder=''):
+  if output_folder and save_txt:
+   from .caption_output import save_output
+   records=json.loads(caption_json)
+   report=save_output(records,output_folder,[r['image'] for r in records])
+   return {'ui':{'text':[report]},'result':(report,)}
   records=json.loads(caption_json)
   if not isinstance(records,list):raise ValueError('Expected caption records.')
   plan=[];seen=set()

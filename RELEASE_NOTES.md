@@ -29,3 +29,7 @@ Source TXT always includes published trigger words when available, even with old
 ## 1.0.28: Run local Image to Text and save to a chosen folder
 
 Select images, a supported model folder/type, thresholds, an output folder and the running ComfyUI URL. Run in ComfyUI and save creates image hardlinks and matching captions in the chosen output folder after successful inference. Hardlinks require the same drive. Existing TXT and differing images are protected. Required nodes must be installed directly in the custom_nodes directory of the actual running instance, then ComfyUI must be restarted. Workflow exports remain available. The app does not launch or restart ComfyUI automatically.
+
+## 1.0.29: Automatic caption output and connection check
+
+Image to Text saves under the selected image folder in a PixAI/JoyCaption/CL-Tagger/Taggerine subfolder. The separate output entry was removed; automatic save location is displayed. Check connection beside the ComfyUI URL verifies that the required nodes are loaded. Recursive runs exclude generated output folders. Exported templates also use the automatic output folder when TXT saving is enabled. The updated save node must be installed and ComfyUI restarted for new templates; direct app execution only needs the existing analysis nodes.

@@ -5,7 +5,7 @@ from split_template import build_split_workflow
 
 PROMPT='Describe the visible subject, clothing, pose, composition, background and art style in English. Return only the caption.'
 
-def build_template(images,model_path,backend,expanded,thresholds,device='auto',settings=None,save_txt=False):
+def build_template(images,model_path,backend,expanded,thresholds,device='auto',settings=None,save_txt=False,output_folder=''):
  settings=settings or [.55,.4,PROMPT,512]
  if backend=='PixAI':
   graph=(build_split_workflow if expanded else build_ui_workflow)(images,model_path,thresholds,device)
@@ -32,7 +32,7 @@ def build_template(images,model_path,backend,expanded,thresholds,device='auto',s
   if n['type']=='Note':n['widgets_values']=['Install the exported Organizer nodes into ComfyUI/custom_nodes and restart ComfyUI. Drag this workflow JSON onto its canvas. Run it in ComfyUI. TXT saving is optional; existing TXT files are never overwritten. Model weights and runtime dependencies are not bundled.']
  i=max(n['id'] for n in nodes)+1;l=max((x[0] for x in links),default=0)+1
  src=next(n for n in nodes if n['id']==source);src['outputs'][0]['links'].append(l)
- nodes.append(dict(id=i,type='OrganizerSaveCaptionTXT',title='Save matching TXT / optional',pos=[1750 if expanded else 550,950 if expanded else 450],size=[410,140],flags={},order=i-1,mode=0,properties={'Node name for S&R':'OrganizerSaveCaptionTXT'},inputs=[dict(name='caption_json',type='STRING',link=l)],outputs=[dict(name='save_report',type='STRING',links=[],slot_index=0)],widgets_values=[bool(save_txt)]))
+ nodes.append(dict(id=i,type='OrganizerSaveCaptionTXT',title='Save matching TXT / optional',pos=[1750 if expanded else 550,950 if expanded else 450],size=[410,140],flags={},order=i-1,mode=0,properties={'Node name for S&R':'OrganizerSaveCaptionTXT'},inputs=[dict(name='caption_json',type='STRING',link=l)],outputs=[dict(name='save_report',type='STRING',links=[],slot_index=0)],widgets_values=[bool(save_txt),str(output_folder)]))
  links.append([l,source,0,i,0,'STRING']);graph.update(last_node_id=i,last_link_id=l)
  return graph
 

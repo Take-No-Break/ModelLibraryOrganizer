@@ -25,6 +25,11 @@ class DatasetUITests(unittest.TestCase):
   with patch('dataset_editor.messagebox.askyesnocancel',return_value=None):self.assertFalse(self.app.editor_guard())
  def test_caption_config_uses_user_paths(self):
   self.assertEqual(self.app.cap_url.get(),'http://127.0.0.1:8188');self.assertEqual(self.app.cap_output.get(),'');self.assertEqual(self.app.cap_model.get(),'');self.assertEqual(self.app.cap_folder.get(),'')
+ def test_automatic_model_output_location(self):
+  self.app.cap_folder.set(str(self.folder))
+  self.assertEqual(self.app.cap_output.get(),str(self.folder/'PixAI'))
+  self.app.cap_backend.set('JoyCaption')
+  self.assertEqual(self.app.cap_output.get(),str(self.folder/'JoyCaption'))
  def test_compact_header_and_footer(self):
   self.root.deiconify();self.root.geometry('1000x680');self.root.update()
   self.assertLess(self.app.tabs.winfo_rooty()-self.root.winfo_rooty(),65)
