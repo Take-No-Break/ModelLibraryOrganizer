@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.7 — Windows preview
+# Model Library Organizer 1.0.8 — Windows preview
 
 ## Run or install
 
@@ -78,7 +78,7 @@ requirements and supported model formats must match the supplied adapters.
 Image to Text remembers paths, model, device, thresholds, instructions and template
 options automatically on this PC. This does not overwrite a saved workflow JSON.
 The separate API request export and manual settings-save button have been removed.
-HF source matching is in Models. Duplicate Preview/Compatibility buttons and the CSV
+Combined Civitai/Hugging Face lookup is the default in Models. The separate single-file HF lookup button has been removed. Duplicate Preview/Compatibility buttons and the CSV
 export button have been removed from Tools.
 Compatibility is a checkpoint/LoRA loading estimate based on known architecture
 families; this app does not load a checkpoint to test it or guarantee generation quality.
@@ -117,3 +117,31 @@ Use Python 3.12 on Windows:
 Keep the entire dist/ModelLibraryOrganizer directory together. Include the runtime
 license notices and the documents listed in RELEASE_PREPARATION.md when packaging.
 GitHub Actions runs Windows tests, builds the EXE and checks fresh-settings startup.
+
+
+## Scan records, restore and duplicate results (1.0.8)
+
+Starting a full scan asks for confirmation and saves a read-only inventory of file
+and folder locations under LocalAppData/ModelLibraryOrganizer/scan-history. A scan
+does not move files. Applying approved changes writes a separate move journal
+before the first change and links it to that inventory. If recording fails, the
+operation stops. History / Restore automatically lists records and shows a restore
+action only when recorded moves are available. Missing move journals are reported
+as requiring review. Inventory JSON is not a backup of file contents and cannot
+undo external edits or deletions. Undo the newest moves first.
+
+Saved SHA256 duplicate reports display a table with file count, physical copy count,
+extra storage and hard-link/copy status. Selecting a group shows its paths and hash.
+Existing saved reports use the same presentation. Detection does not delete files.
+
+Automatic source lookup checks Civitai (with .com fallback when .red has no match)
+and bounded Hugging Face filename candidates verified by SHA256. Hugging Face is
+not a global reverse-hash index. SeaArt has no verified public reverse-SHA256 API
+for this app. Tensor.Art's website supports @sha256 followed by the hash:
+https://tensor.art/updates . A public automatic reverse-hash API has not been
+verified for Tensor.Art; no automatic Tensor.Art or SeaArt query is performed.
+Reports show these limitations explicitly. Add known source URLs manually when
+needed. Safetensors is a file format, not a source website.
+
+This local Windows preview was built with Python 3.14.5. Source CI uses Python 3.12.
+Neither an independent PC/VM test nor code signing is claimed.

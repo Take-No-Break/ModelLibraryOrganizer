@@ -19,7 +19,7 @@ class CleanupTests(unittest.TestCase):
  def test_tools_have_no_duplicates_and_hf_is_in_models(self):
   tools=self.buttons(self.app.pages['tools']);models=self.buttons(self.app.pages['models']);captions=self.buttons(self.app.pages['captions'])
   for text in ('一覧を保存…','HF配布元を照合…','プレビュー','互換性の候補'):self.assertNotIn(text,tools)
-  self.assertIn('HF配布元を照合…',models);self.assertNotIn('設定を保存',captions)
+  self.assertNotIn('HF配布元を照合…',models);self.assertNotIn('設定を保存',captions)
   self.assertLessEqual(int(self.app.cap_canvas.cget('width')),320);self.assertLessEqual(int(self.app.cap_canvas.cget('height')),290)
  def test_auto_preferences_include_options_and_do_not_write_workflow(self):
   self.app.cap_folder.set('example');self.app.cap_device.set('cpu');self.app.cap_thresholds['general'].set('0.22');self.app.cap_recursive.set(True);self.app.cap_joy.set('Describe this image.');self.app.save_training_settings()

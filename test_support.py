@@ -44,7 +44,7 @@ class SupportTests(unittest.TestCase):
     try:
      app=App(root,d);root.update_idletasks();app.help_center();app.publisher_settings();app.network_report();root.update_idletasks()
      self.assertTrue(network.OFFLINE);self.assertFalse(app.online.get())
-     self.assertEqual(app.host.get(),'https://civitai.red')
+     self.assertEqual(app.host.get(),'まとめて調査（Civitai + HF）')
      self.assertEqual(app.filter.get(),'すべて')
      tip=i18n.Tooltip(root,'全件調査');tip.show();self.assertIsNotNone(tip.win);tip.hide();self.assertIsNone(tip.win)
     finally:

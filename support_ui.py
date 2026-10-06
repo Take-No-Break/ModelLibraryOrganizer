@@ -117,6 +117,10 @@ Model weights, ComfyUI and a GPU runtime are not bundled. Choose folders on each
 
 Online lookup can send model hashes and search names to source services. Offline mode disables external requests; workflow template creation and text editing remain available. Diagnostic reports are not uploaded automatically. Updates and support links depend on the distributor's configured publication address.
 
+Source lookup limits: Combined scanning automatically checks Civitai and Hugging Face. Civitai uses SHA256 lookup; Hugging Face searches up to five filename-based candidates on their main branch, then verifies file SHA256. It is not a global hash index. SeaArt's published interfaces do not provide a verified public reverse-SHA256 lookup for this app; SeaArt-only downloads can remain unidentified. Tensor.Art supports website hash searches: enter @sha256 followed by the file's SHA256 in its search box (https://tensor.art/updates). An automatic public reverse-hash API has not been verified for this app, so it does not automatically query Tensor.Art. The lookup report distinguishes these limitations from requests actually made. Check the original download page and add its URL manually. A matching filename alone is not proof. Safetensors is a file format, not a distribution website.
+
+Scan and restoration: Every scan first saves a JSON inventory of original file/folder paths under scan-history. Scanning does not move files. Applying approved changes separately writes a move journal under history before the first change and links it to that inventory. Select the inventory or open its JSON in History / Restore to inspect it; restore uses the linked move journals. Inventory is not a file-content backup, and it cannot undo edits/deletions or changes made outside this app.
+
 Source descriptions and model names retain their original language. Exported model information uses English field labels. This application is independent of ComfyUI, Civitai, Hugging Face and the model authors.
 ''');body.configure(state='disabled')
  def publisher_settings(self):

@@ -2,7 +2,7 @@
 
 Repository: https://github.com/Take-No-Break/ModelLibraryOrganizer
 License: MIT. Third-party components keep their own notices.
-Prepared preview version: 1.0.7. Application source has not yet been pushed.
+Prepared preview version: 1.0.8. Application source has not yet been pushed.
 
 ## Ready locally
 
@@ -16,12 +16,12 @@ Prepared preview version: 1.0.7. Application source has not yet been pushed.
 
 1. Push the prepared local commit to origin/main.
 2. Wait for the Windows checks workflow to pass on GitHub.
-3. For a preview, create tag/release v1.0.7 as a prerelease and attach the Windows ZIP,
+3. For a preview, create tag/release v1.0.8 as a prerelease and attach the Windows ZIP,
    source ZIP and checksums. Use RELEASE_NOTES.md for the description.
 4. Ask a second Windows user to test the package; no VM/second-PC test is claimed.
 5. Before the first stable release, choose its version and synchronize the source,
    installer and release tag. The owner's intended first stable version is 1.0.0;
-   1.0.7 here is the current development preview, not a stable launch decision.
+   1.0.8 here is the current development preview, not a stable launch decision.
 6. Verify About support links and update notifications after a stable release exists.
 
 ## Build

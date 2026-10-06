@@ -1,7 +1,7 @@
 import io,json,tkinter as tk,urllib.request
 import network
 from pathlib import Path
-from i18n import ttk,messagebox,filedialog,LocalizedText,LocalizedToplevel,tr
+from i18n import tr,ttk,messagebox,filedialog,LocalizedText,LocalizedToplevel
 from PIL import Image,ImageTk
 from features import enrich,duplicates,compatibility,workflow_plan,repair_workflows
 
@@ -15,7 +15,11 @@ class FeatureUI:
     def show_text(self,title,text):
         self.notify_result(title,text)
     def feature_event(self,kind,value):
-        if kind=='report':self.show_text(value[0],value[1])
+        if kind=='duplicates':
+            from duplicate_report import format_report
+            self.record_result('SHA256による重複検出',json.dumps(value,ensure_ascii=False))
+            messagebox.showinfo('SHA256による重複検出',format_report(value).split('\n\n')[0]+'\n\n'+tr('詳細は調査結果の表で確認できます。'))
+        elif kind=='report':self.show_text(value[0],value[1])
         elif kind=='preview':
             self.show_preview(value)
         elif kind=='workflow':self.workflow_dialog(value)
@@ -34,8 +38,8 @@ class FeatureUI:
         self.stop.clear()
         def run():
             found=duplicates(folder,self.stop,lambda s:self.events.put(('status',s)),progress=self.report_progress)
-            return ('SHA256による重複検出','physical_copies = 独立した実体の数。1ならすべて既存ハードリンクです。extra_bytes = 重複コピーの概算容量（削除は行いません）。\n\n'+json.dumps(found,ensure_ascii=False,indent=2))
-        self.work(run,'report')
+            return found
+        self.work(run,'duplicates')
     def workflows(self):
         if not self.ready():return
         folder=filedialog.askdirectory(title='ComfyUIのworkflowsフォルダーを選択')
@@ -105,5 +109,6 @@ class FeatureUI:
         counts=Counter(identification_status(r) for r in self.rows)
         summary=' / '.join(f'{k}: {v}件' for k,v in counts.items()) or '今回の調査対象は0件です。'
         body=summary+'\n\n'+ '\n\n'.join(r['source']+'\n'+identification_status(r)+' / '+r.get('kind','')+' / '+r.get('family','')+'\n'+r.get('evidence','')+'\n'+r.get('url','') for r in self.rows)
+        if inventory:=getattr(self.engine,'scan_snapshot',None):body=tr('調査前の配置記録')+'\n'+str(inventory)+'\n\n'+body
         self.record_result('調査完了：モデルの識別結果',body)
         messagebox.showinfo('調査完了',summary+'\n\n詳細と過去のログは「調査結果」で確認できます。モデルはまだ移動していません。',parent=self.root)

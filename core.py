@@ -159,6 +159,9 @@ class Engine:
         self.cache['hashes'][key]={'stamp':s,'sha':sha};return sha
     def scan(self,scan_root,target_root,online=True,host='https://civitai.red',stop=None,notify=lambda x:None,only_new=False,progress=lambda completed,total:None):
         stop=stop or threading.Event();source_root=Path(scan_root).resolve();target_root=Path(target_root).resolve()
+        from scan_history import capture
+        notify('調査前の配置をJSONに記録しています…')
+        capture(self,source_root,target_root,stop)
         units=enumerate_units(source_root,stop);result=[];progress(0,len(units))
         seen=self.cache.setdefault('seen',{});catalog=self.cache.setdefault('catalog',{})
         for n,(p,bundle) in enumerate(units,1):
@@ -327,6 +330,9 @@ class Engine:
         record={'version':2,'created_at':time.strftime('%Y-%m-%d %H:%M:%S'),'root':str(root),
                 'scope':'Affected model paths and source TXT only; not a content backup.',
                 'before_state':before,'created_dirs':[],'complete':False,'ops':[]}
+        atomic_json(journal,record)
+        from scan_history import link
+        record['scan_snapshot']=link(self,journal)
         atomic_json(journal,record)
         def make_parents(parent):
             missing=[];p=parent

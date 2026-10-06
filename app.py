@@ -68,11 +68,10 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI)
         connection=ttk.LabelFrame(self.pages['tools'],text='配布元のオンライン照合',padding=8);connection.pack(fill='x',pady=8)
         ttk.Checkbutton(connection,text='公開APIで照合（通常はオン）',variable=self.online).pack(anchor='w')
         ttk.Label(connection,text='オフ：ファイル構造・内部メタデータ・取得済み情報から判定します。未取得の作者・配布元・説明などは分からない場合があります。GPUでAIを動かす機能ではありません。',wraplength=1050).pack(anchor='w')
-        self.host=ChoiceVar(value=self.settings.get('host','https://civitai.red'))
+        self.host=ChoiceVar(value='まとめて調査（Civitai + HF）')
         ttk.Combobox(bar,textvariable=self.host,values=['まとめて調査（Civitai + HF）','https://civitai.red','https://civitai.com','Hugging Face'],state='readonly',width=23).pack(side='left',padx=8)
         ttk.Button(bar,text='全件調査',command=self.scan).pack(side='right');ttk.Button(bar,text='調査を停止',command=self.stop.set).pack(side='right',padx=6)
         self.add_features(self.pages['tools'])
-        ttk.Button(bar,text='HF配布元を照合…',command=self.hf).pack(side='left',padx=5)
         self.add_sources_ui(self.pages['tools'])
         ttk.Label(outer,text='移動やリンク追加の提案がある場合だけ、変更内容を確認する画面が開きます。').pack(anchor='w',pady=4)
         actions=ttk.Frame(outer);actions.pack(fill='x',pady=(0,8))
@@ -165,6 +164,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI)
         if not Path(self.scan_dir.get()).is_dir() or not Path(self.target_dir.get()).is_dir() or not self.scan_dir.get() or not self.target_dir.get():
             messagebox.showerror('フォルダー未指定','存在する調査元とmodelsフォルダーを選択してください。');return
         if any(r['decision']=='承認' for r in self.rows) and not messagebox.askyesno('再調査','未実行の承認を取り消して再調査しますか？'):return
+        if not messagebox.askyesno('調査前の配置記録','調査前の全ファイル・フォルダーの場所をJSONに記録します。調査だけでは移動しません。\n\n整理を実行するとファイル・モデルの場所やフォルダーが変わります。実行前に変更履歴も保存し、履歴・復元から元の配置へ戻せます。\n\nこの記録は内容のバックアップではありません。変更・削除されたファイルは復元できない場合があります。\n\n調査を開始しますか？'):return
         self.scan_source=str(Path(self.scan_dir.get()).resolve());self.scan_target=str(Path(self.target_dir.get()).resolve())
         atomic_json(self.engine.data/'settings.json',{'scan_root':self.scan_source,'target_root':self.scan_target,'host':self.host.get()})
         self.stop.clear();online=self.online.get() and not network.OFFLINE;host=self.host.get();self.rows=[];self.filter.set('すべて');self.render()
@@ -176,7 +176,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI)
                 if kind=='idle':
                     self.busy=False;self.status.set('処理完了' if self.status.get()=='処理中…' else self.status.get())
                     if hasattr(self,'editor'):self.editor.configure(state='normal')
-                elif kind in ['report','preview','workflow','notes_done']:self.feature_event(kind,value)
+                elif kind in ['report','preview','workflow','notes_done','duplicates']:self.feature_event(kind,value)
                 elif kind=='dataset_rows':self.receive_dataset(value)
                 elif kind=='dataset_auto':self.receive_auto_dataset(value)
                 elif kind=='caption_prepared':pass
@@ -191,7 +191,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI)
                 elif kind=='status':self.status.set(value)
                 elif kind=='error':self.status.set('処理を停止: '+value);self.show_text('確認が必要です',value)
                 elif kind=='scanned':self.rows=value;self.render();self.set_gallery_rows(value,select=False);self.status.set(f'調査完了: {len(value)}項目。モデルの移動はまだ行っていません。');self.identification_report();self.root.after(150,self.review_moves)
-                elif kind=='applied':self.render();self.show_text('完了','承認した項目を整理しました。\n履歴: '+str(value));self.status.set('整理完了。ComfyUIのモデル一覧を更新し、必要ならモデルを選び直してください。')
+                elif kind=='applied':self.refresh_restore();self.render();self.show_text('完了','承認した項目を整理しました。\n履歴: '+str(value));self.status.set('整理完了。ComfyUIのモデル一覧を更新し、必要ならモデルを選び直してください。')
                 elif kind=='undone':self.rows=[];self.render();self.refresh_restore();self.notify_result('復元完了',f'{value}件の移動を元に戻しました。再調査してください。')
                 elif kind=='hf':self.render();self.details();self.notify_result('SHA256一致',value+'\n保存先は自動変更していません。確認して選択してください。')
         except queue.Empty:pass

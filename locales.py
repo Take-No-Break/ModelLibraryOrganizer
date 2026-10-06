@@ -332,3 +332,6 @@ CATALOG['es']['LoRAをチェックポイントへ読み込む際の互換性の�
 
 from locales_pt_br import register as register_pt_br
 register_pt_br(CATALOG, LANGS)
+
+from locale_safety_update import install as install_safety_strings
+install_safety_strings(CATALOG)

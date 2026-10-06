@@ -14,7 +14,7 @@ class ProviderTests(unittest.TestCase):
    self.assertIsNone(hf_lookup('f'*64,'model.safetensors')[0])
  def test_partial_failure_preserved(self):
   with patch('providers.api_lookup',return_value=(None,'通信失敗 (HTTP 403)')),patch('providers.hf_lookup',return_value=({'source':'https://huggingface.co/a/b'},'HF SHA256一致')):
-   info,status=lookup('f'*64,'model',AUTO);self.assertEqual(len(info['source_checks']),2);self.assertIn('通信失敗',status)
+   info,status=lookup('f'*64,'model',AUTO);self.assertEqual({c['site'] for c in info['source_checks']},{'Civitai.red','Civitai.com','Hugging Face','SeaArt','Tensor.Art'});self.assertIn('通信失敗',status)
  def test_rate_limit_pause_and_private_log(self):
   url='https://example.org/api/models?search=privatefilename'
   error=urllib.error.HTTPError(url,429,'limit',{'Retry-After':'60'},None)

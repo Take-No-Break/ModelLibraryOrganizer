@@ -408,6 +408,6 @@ def register(catalog, languages):
     for value in catalog['en'].values():
         if '\n' in value and value not in TRANSLATIONS and all(line in TRANSLATIONS for line in value.splitlines()):
             TRANSLATIONS[value] = '\n'.join(TRANSLATIONS[line] for line in value.splitlines())
-    catalog['pt-BR'] = {key: TRANSLATIONS[value] for key, value in catalog['en'].items() if value in TRANSLATIONS}
+    catalog['pt-BR'] = {**catalog.get('pt-BR',{}), **{key: TRANSLATIONS[value] for key, value in catalog['en'].items() if value in TRANSLATIONS}}
     # English UI literals are also localized; About and Image to Text stay English.
     catalog['pt-BR'].update(TRANSLATIONS)

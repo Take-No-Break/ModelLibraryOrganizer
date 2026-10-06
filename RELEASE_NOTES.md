@@ -1,24 +1,13 @@
-# Windows preview 1.0.7
+# Windows preview 1.0.8
 
-Model Library Organizer helps inspect, review and organize local AI model libraries.
+- Readable SHA256 duplicate tables for new and existing saved reports, distinguishing hard links from independent copies and showing extra storage.
+- Full-scan confirmation and original file/folder inventory JSON before scanning. Actual move journals remain required for restoration and are linked to the inventory.
+- Contextual restoration action, automatic history refresh and missing-journal reporting.
+- Combined Civitai/Hugging Face lookup by default; .com fallback and removal of the separate single-file HF lookup button.
+- English About explains SeaArt automation limitations and Tensor.Art website @sha256 search; neither site is automatically queried without a verified public API.
 
-- Model identification from structure, metadata and public source hashes.
-- Review destinations and hard links before applying changes; restore from history.
-- In-app previews and checkpoint/LoRA compatibility estimates.
-- Editable Image to Text ComfyUI templates and batch caption editing.
-- Japanese, English, Spanish, Chinese (Simplified/Traditional), Thai, German and Brazilian Portuguese UI.
-- MIT project license; contributions are welcome.
+Extract the entire Windows ZIP and run ModelLibraryOrganizer.exe. Keep _internal beside it. Python is not required. Install.cmd optionally installs for the current user.
 
-## Installation
+Models, personal paths, caches and credentials are excluded. No real model files were moved during verification. Windows preview is unsigned. No second-PC/VM or real GPU model inference validation is claimed. Inventory JSON records placement, not model contents; restore uses actual move journals and refuses changed/conflicting files.
 
-Download the Windows-x64-Preview ZIP, extract everything, and run
-ModelLibraryOrganizer.exe. Keep _internal beside it. Python is not required.
-Install.cmd optionally installs for the current user without administrator rights.
-
-## Known limits
-
-Windows package is unsigned. No second-PC/VM validation is claimed.
-Compatibility is an estimate, not a guarantee of loading or image quality.
-PixAI inference was previously verified; other caption adapters have schema tests,
-but their actual GPU inference is not yet verified. Model weights are not bundled.
-Update notifications use stable GitHub Releases; previews are excluded.
+Project license: MIT. Third-party components retain their licenses. Repository: https://github.com/Take-No-Break/ModelLibraryOrganizer

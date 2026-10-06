@@ -25,12 +25,19 @@ def lookup(sha,name,mode,stop=None):
     if mode==AUTO:
         info,status=api_lookup(sha,'https://civitai.red');checks.append({'site':'Civitai.red','result':status})
         if info:matches.append(info)
+        else:
+            if stop and stop.is_set():raise Cancelled()
+            info,status=api_lookup(sha,'https://civitai.com');checks.append({'site':'Civitai.com','result':status})
+            if info:matches.append(info)
     if stop and stop.is_set():raise Cancelled()
     try:
         info,status=hf_lookup(sha,name,stop);checks.append({'site':'Hugging Face','result':status})
         if info:matches.append(info)
     except Cancelled:raise
     except Exception as e:checks.append({'site':'Hugging Face','result':'通信失敗: '+str(e)})
+    if mode==AUTO:
+        checks.append({'site':'SeaArt','result':'自動SHA256逆引き非対応（公開エンドポイント未確認）'})
+        checks.append({'site':'Tensor.Art','result':'Web検索は @sha256 + ハッシュ値に対応。自動照合APIは未確認・未実行'})
     if matches:
         result=dict(matches[0]);result['source_checks']=checks;result['matched_sources']=[x['source'] for x in matches]
         return result,'照合済み / '+str(checks)
