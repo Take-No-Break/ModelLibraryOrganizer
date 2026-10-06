@@ -11,3 +11,4 @@ ui_strings.json
 .build-venv-314/
 GitHub-ready/
 Release-ready/
+dist-*/

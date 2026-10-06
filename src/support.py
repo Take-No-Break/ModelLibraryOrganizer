@@ -38,12 +38,21 @@ def safe_error(exc,context):
     # No exception messages or source lines: these may contain filenames, tokens or prompts.
     frames=[]
     for frame in traceback.extract_tb(exc.__traceback__):
-        if Path(frame.filename).name in {'app.py','core.py','features.py','feature_ui.py','providers.py','network.py','support.py','support_ui.py','i18n.py'}:
+        if (Path(__file__).parent/Path(frame.filename).name).is_file():
             frames.append({'module':Path(frame.filename).name,'function':frame.name,'line':frame.lineno})
     return {'utc':datetime.now(timezone.utc).isoformat(timespec='seconds'),'context':context,'exception':type(exc).__name__,'frames':frames,'version':VERSION}
 
 def record_error(data_dir,exc,context):
     p=Path(data_dir)/'support-errors.json';records=read_json(p,[]) or [];records.append(safe_error(exc,context));atomic_json(p,records[-100:])
+
+def error_details(exc,context):
+    import hashlib
+    record=safe_error(exc,context)
+    signature=json.dumps([context,record['exception'],record['frames']],sort_keys=True)
+    code='MLO-'+hashlib.sha256(signature.encode()).hexdigest()[:8].upper()
+    explanation=('画面処理で必要な項目にアクセスできませんでした。アプリ内部の不具合です。配布元が見つからないという意味ではありません。'
+                 if isinstance(exc,AttributeError) else '処理を完了できませんでした。以下のエラー内容とサポートログを確認してください。')
+    return code,explanation,record
 
 def support_report(data_dir):
     return {'app_version':VERSION,'platform':'Windows','network':diagnostics(),'errors':read_json(Path(data_dir)/'support-errors.json',[]),'privacy':'No model names, local paths, prompts, credentials, exception messages or response bodies. No automatic upload.'}

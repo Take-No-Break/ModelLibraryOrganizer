@@ -64,9 +64,19 @@ class SupportUI:
     self.update_template_view()
     self.populate_compatibility();self.select_page(self.pages[page])
  def callback_error(self,kind,value,tb):
+    import time
+    from support import error_details
+    value=value.with_traceback(tb)
+    code,explanation,record=error_details(value,'ui_callback')
+    now=time.monotonic()
+    shown=getattr(self,'callback_errors_shown',{})
+    if now-shown.get(code,-100)<10:return
+    shown[code]=now;self.callback_errors_shown=shown
     try:record_error(self.engine.data,value.with_traceback(tb),'ui_callback')
     except Exception:pass
-    messagebox.showerror('確認が必要です',kind.__name__+'\n'+tr('通信診断・サポートログ'))
+    location=record['frames'][-1] if record['frames'] else None
+    detail=(location['module']+':'+str(location['line'])+' / '+location['function']) if location else 'UI callback'
+    messagebox.showerror('確認が必要です',code+' / '+kind.__name__+'\n\n'+tr(explanation)+'\n\n'+detail+'\n'+tr('詳細は「通信診断・サポートログ」で確認できます。'),parent=self.root)
  def check_updates(self,automatic=False):
     if self.busy:
         if automatic:self.root.after(3000,lambda:self.check_updates(True))

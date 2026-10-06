@@ -176,7 +176,9 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
             except Cancelled:self.events.put(('error','調査を停止しました。モデルは移動していません。'))
             except Exception as e:
                 record_error(self.engine.data,e,event)
-                self.events.put(('error',str(e)))
+                from support import error_details
+                code,explanation,_=error_details(e,event)
+                self.events.put(('error',code+' / '+type(e).__name__+'\n'+tr(explanation)+'\n\n'+str(e)))
             finally:self.events.put(('idle',None))
         threading.Thread(target=worker,daemon=True).start()
     def scan(self,only_new=False):

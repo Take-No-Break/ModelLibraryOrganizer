@@ -25,6 +25,8 @@ class ScrollablePage(ttk.Frame):
 
 def scroll_wheel(event):
  widget=event.widget
+ # Native folder dialogs can report a Tcl path instead of a Python widget.
+ if not hasattr(widget,'winfo_class'):return
  if widget.winfo_class() in ('Text','Treeview','Listbox','TCombobox'):return
  while widget is not None:
   page=getattr(widget,'_page_scroll',None)

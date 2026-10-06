@@ -44,6 +44,7 @@ class Gallery:
  def install_interactions(self):
   def menu(event):
    w=event.widget
+   if not hasattr(w,'winfo_class'):return
    if w.winfo_class() not in ('Text','Entry','TEntry','TCombobox'):return
    m=tk.Menu(self.root,tearoff=False)
    for label,action in [('コピー','<<Copy>>'),('貼り付け','<<Paste>>'),('切り取り','<<Cut>>'),('すべて選択','<<SelectAll>>')]:
