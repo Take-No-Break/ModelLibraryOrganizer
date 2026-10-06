@@ -23,6 +23,8 @@ Downloaded too many models to remember what they are, where they came from, or w
 
 The app prepares training data; it does not train LoRA/Embedding models or generate images itself.
 
+Screenshots show the real v1.0.32 interface in Classic mode, with illustrative model records and neutral sample images. Demo paths and preview artwork are examples, not verified downloaded models.
+
 ## Install on Windows
 
 1. Download and extract the entire **Windows-x64-Preview.zip** from Releases.
@@ -32,6 +34,13 @@ The app prepares training data; it does not train LoRA/Embedding models or gener
 `Uninstall.cmd` is included. It removes recorded application files while leaving model libraries and user data. **The uninstaller has not been executed or tested.** This preview has local tests and packaged startup verification; a separate-PC or virtual-machine test is not claimed.
 
 ## Organize a model library
+
+![Models: file types, families and proposed destinations](docs/screenshots/models.jpg)
+
+- **Top:** choose the download folder and destination models folder.
+- **Middle:** inspect each model's type, family and proposed location.
+- **Bottom:** create source notes or review moves before applying them.
+
 
 1. Choose a **scan folder** containing downloaded models. Subfolders are included.
 2. Choose the destination **models folder**, such as `ComfyUI/models` or your configured shared models directory. Select the actual models directory, rather than the ComfyUI application root.
@@ -57,6 +66,14 @@ Recognized roles include LoRA, checkpoints, VAE, Embeddings, supported ControlNe
 
 SeaArt and Tensor.Art are not automatically queried: this app has no verified reverse-hash API integration for them. Add a known source URL manually. A source match does not prove runtime compatibility.
 
+### Preview a model
+
+![Preview: model list, source information and image](docs/screenshots/preview.jpg)
+
+- **Left, top:** select a model and check its family/type.
+- **Left, bottom:** read descriptions, trigger words and available source information.
+- **Right:** see the preview image without leaving the app.
+
 ### Compatibility
 
 Choose checkpoint and LoRA folders and scan them, then select a LoRA. The table compares it with every identified checkpoint/diffusion model within the selected checkpoint folder, including subfolders:
@@ -76,6 +93,12 @@ Creation skips existing files. **Update readable TXT** rebuilds the same generat
 ## Image to Text
 
 Supported adapters: **PixAI, JoyCaption, CL Tagger and Taggerine**. Choose the appropriate complete model folder, not just an arbitrary `.safetensors` file. Weights and model dependencies must be installed separately; arbitrary Image to Text models are not supported automatically.
+
+![Image to Text: model settings and workflow preview](docs/screenshots/image-to-text.jpg)
+
+- **Top left:** choose images and the analysis model; check the automatic save location.
+- **Left:** connect to local ComfyUI, export a template, or install required nodes.
+- **Right:** see the Combined/Expanded workflow layout before exporting.
 
 ### Set up custom nodes
 
@@ -118,9 +141,25 @@ Other adapters use `JoyCaption`, `CL-Tagger` or `Taggerine`. Original images sta
 
 Old exported workflows with an empty output setting may write TXT beside the original images. Update the custom nodes, restart ComfyUI and export a new template to use the subfolder layout.
 
-## Edit Text and Tag editor
+## Edit Text
+
+![Text editor: image list, preview and editable caption](docs/screenshots/text-editor.jpg)
+
+- **Left:** select an image/TXT pair.
+- **Right:** preview the image and edit its caption.
+- **Bottom:** prepare bulk changes and review them before saving.
+
 
 Open a dataset folder to view images and matching captions. Select an image or TXT to edit its text. Bulk changes can add prefixes/suffixes, remove or replace text, or wrap selected terms in `< >`. Review changes before saving; originals are backed up. External file changes prevent overwriting stale content.
+
+### Tag editor
+
+![Tag editor: thumbnails, tag statistics and caption tags](docs/screenshots/tag-editor.jpg)
+
+- **Left:** scroll through image thumbnails.
+- **Top:** sort tag counts, search and filter your dataset.
+- **Middle:** insert tags or remove unwanted tags in bulk.
+- **Bottom:** click caption tags to edit them; save when ready.
 
 The Tag editor provides a thumbnail sidebar, compact clickable tags, tag-count sorting, search, category filters, bulk insertion and unwanted-tag removal. Changes remain unsaved until saved. Tag counts reflect caption occurrence, not inference confidence scores.
 
