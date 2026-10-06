@@ -49,6 +49,7 @@ class TagEditorUI:
   self.tag_search=tk.StringVar();self.tag_value=tk.StringVar()
   settings=read_json(self.engine.data/'tag-editor-settings.json',{}) or {}
   if not isinstance(settings,dict):settings={}
+  self.tag_font_size=tk.IntVar(value=8);self.tag_image_size=tk.IntVar(value=150)
   overrides=settings.get('categories',{});unwanted=settings.get('unwanted',[])
   self.tag_category_overrides={k:v for k,v in overrides.items() if isinstance(k,str) and v in CATEGORIES[1:]} if isinstance(overrides,dict) else {}
   self.tag_unwanted={v for v in unwanted if isinstance(v,str)} if isinstance(unwanted,list) else set()
@@ -184,7 +185,17 @@ class TagEditorUI:
   return self.tag_image_list.selection()
 
  def save_tag_options(self):
-  atomic_json(self.engine.data/'tag-editor-settings.json',{'categories':self.tag_category_overrides,'unwanted':sorted(self.tag_unwanted)})
+  atomic_json(self.engine.data/'tag-editor-settings.json',{'categories':self.tag_category_overrides,'unwanted':sorted(self.tag_unwanted),'font_size':self.tag_font_size.get(),'image_size':self.tag_image_size.get()})
+
+ def resize_tag_editor(self,save=True):
+  if not hasattr(self,'tag_rows'):return
+  try:size=self.tag_font_size.get();image_size=self.tag_image_size.get()
+  except tk.TclError:return
+  if not 8<=size<=18 or not 60<=image_size<=260:return
+  from tag_widgets import metrics
+  for canvas in (self.tag_cloud_canvas,self.tag_rows.canvas,self.tag_unwanted_canvas):metrics(canvas)[1].configure(size=size)
+  self.tag_image_list.set_image_size(image_size);self.tag_rows.schedule(True);self.draw_tag_cloud();self.draw_unwanted()
+  if save:self.save_tag_options()
 
  def tag_category_menu(self,tag,event):
   previous=getattr(self,'tag_context_menu',None)
@@ -262,7 +273,7 @@ class TagEditorUI:
   self.tag_selected_chip=(index,tag)
   if self.tag_rows.pending:self.root.after_cancel(self.tag_rows.pending);self.tag_rows.pending=None
   self.tag_rows.draw()
-  entry=tk.Entry(canvas,font=('Segoe UI',9),relief='flat',borderwidth=0,background=theme.EDIT,foreground=theme.EDIT_TEXT,insertbackground=theme.EDIT_TEXT);self.tag_inline_editor=entry
+  entry=tk.Entry(canvas,font=('Segoe UI',self.tag_font_size.get()),relief='flat',borderwidth=0,background=theme.EDIT,foreground=theme.EDIT_TEXT,insertbackground=theme.EDIT_TEXT);self.tag_inline_editor=entry
   entry.insert(0,tag);entry.select_range(0,'end');width=min(260,max(130,canvas.winfo_width()-20));x=min(max(4,event.x),max(4,canvas.winfo_width()-width-4));y=canvas.canvasy(event.y)
   from tag_widgets import rounded
   scale=max(1,canvas.winfo_fpixels('1i')/96);height=round(26*scale)

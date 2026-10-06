@@ -63,7 +63,7 @@ class LayoutAndOptions(UIChanges):
   self.root.deiconify();self.root.geometry('1000x680');self.root.update()
   self.assertLess(self.app.progress.winfo_rooty(),self.app.tabs.winfo_rooty())
   self.assertLess(self.app.progress.winfo_height(),30)
-  self.assertEqual(self.root.cget('background'),'#1f1f30')
+  self.assertEqual(self.root.cget('background'),'#e8e6e1')
  def test_window_size_saved_on_close(self):
   self.root.deiconify();self.root.geometry('900x600');self.root.update()
   scale=max(1,self.root.winfo_fpixels('1i')/96)

@@ -22,10 +22,10 @@ class CaptionRows(tk.Frame):
  def yview(self,*args):self.canvas.yview(*args);self.schedule()
  def wheel(self,event):self.canvas.yview_scroll(-int(event.delta/120),'units');self.schedule();return 'break'
  def make_layout(self):
-  c=self.canvas;s,_=metrics(c);width=max(280,c.winfo_width());self.tag_x=205*s;available=max(70,width-self.tag_x-12*s);self.rows=[];self.tops=[];y=0
+  c=self.canvas;s,_=metrics(c);width=max(280,c.winfo_width());self.image_h=self.app.tag_image_size.get()*0.8*s;self.image_w=self.image_h*72/112;self.info_x=self.image_w+10*s;self.tag_x=self.info_x+123*s;available=max(70,width-self.tag_x-12*s);self.rows=[];self.tops=[];y=0
   for ident in self.ids:
    r=self.app.tag_records[int(ident)];tags=[t for t in split_tags(r['draft']) if self.app.matches_tag_category(t)]
-   chips,h=layout_chips(c,[(t,None) for t in tags],available,True);rowheight=max(142*s,h+16*s)
+   chips,h=layout_chips(c,[(t,None) for t in tags],available,True);rowheight=max(142*s,self.image_h+20*s,h+16*s)
    self.tops.append(y);self.rows.append((ident,y,rowheight,chips));y+=rowheight
   self.total_height=max(1,y);c.configure(scrollregion=(0,0,width,self.total_height));self.relayout=False
  def see(self,ident):
@@ -51,16 +51,16 @@ class CaptionRows(tk.Frame):
    display=name
    while f.measure(display)>112*s and len(display)>5:display=display[:-1]
    if display!=name:display=display[:-1]+'…'
-   c.create_text(82*s,y+14*s,text=display,anchor='nw',font=f,fill=theme.TEXT)
+   c.create_text(self.info_x,y+14*s,text=display,anchor='nw',font=f,fill=theme.TEXT)
    count=len(split_tags(record['draft']));dirty=record['draft']!=record['state']['text']
-   c.create_text(82*s,y+43*s,text=f'{count} tags'+(' · unsaved' if dirty else ''),anchor='nw',font=f,fill=theme.BLUE if dirty else theme.MUTED)
-   photo=self.app.tag_image_list.thumbnail(record['images'][0],72*s,112*s) if record['images'] else None
-   if photo:c.create_image(41*s,y+71*s,image=photo);self.photos.append(photo)
-   else:c.create_text(41*s,y+71*s,text='TXT',font=f,fill=theme.MUTED)
-   self.hits.append(((4*s,y+8*s,78*s,y+130*s),'select',ident,None))
-   rounded(c,83*s,y+69*s,112*s,31*s,theme.FIELD,radius=6*s)
-   c.create_text(139*s,y+84*s,text='Copy view tags',font=f,fill=theme.TEXT)
-   self.hits.append(((83*s,y+69*s,195*s,y+100*s),'copy',ident,None))
+   c.create_text(self.info_x,y+43*s,text=f'{count} tags'+(' · unsaved' if dirty else ''),anchor='nw',font=f,fill=theme.BLUE if dirty else theme.MUTED)
+   photo=self.app.tag_image_list.thumbnail(record['images'][0],self.image_w,self.image_h) if record['images'] else None
+   if photo:c.create_image(5*s+self.image_w/2,y+10*s+self.image_h/2,image=photo);self.photos.append(photo)
+   else:c.create_text(5*s+self.image_w/2,y+10*s+self.image_h/2,text='TXT',font=f,fill=theme.MUTED)
+   self.hits.append(((4*s,y+8*s,self.info_x-4*s,y+h-8*s),'select',ident,None))
+   rounded(c,self.info_x,y+69*s,112*s,31*s,theme.FIELD,radius=6*s)
+   c.create_text(self.info_x+56*s,y+84*s,text='Copy view tags',font=('Segoe UI',8),fill=theme.TEXT)
+   self.hits.append(((self.info_x,y+69*s,self.info_x+112*s,y+100*s),'copy',ident,None))
    for chip in chips:
     bounds=draw_chip(c,chip,self.tag_x,y+8*s,True,self.app.tag_selected_chip==(int(ident),chip[0]))
     self.hits.append((bounds,'tag',ident,chip[0]))

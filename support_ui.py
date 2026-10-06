@@ -14,22 +14,25 @@ class SupportUI:
     network.OFFLINE=bool(self.preferences.get('offline',False))
     if network.OFFLINE:self.online.set(False)
     head=self.operation_header;head.pack(fill='x',before=self.tabs,pady=(0,3))
-    ttk.Label(head,text='v'+VERSION,font=('Yu Gothic UI',9)).pack(side='left',before=self.operation_status)
+    ttk.Label(head,text='v'+VERSION,font=('Yu Gothic UI',9)).pack(side='left')
     self.language=tk.StringVar(value=i18n.LANGS[i18n.LANG])
-    choose=ttk.Combobox(head,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=15,font=('Yu Gothic UI',9));choose.pack(side='right',before=self.progress);choose.bind('<<ComboboxSelected>>',self.change_language)
-    ttk.Label(head,text='言語',font=('Yu Gothic UI',9)).pack(side='right',before=self.progress,padx=5)
-    self.appearance=tk.StringVar(value='Classic' if self.preferences.get('theme')=='classic' else 'Dark')
+    choose=ttk.Combobox(head,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=15,font=('Yu Gothic UI',9));choose.pack(side='right');choose.bind('<<ComboboxSelected>>',self.change_language)
+    ttk.Label(head,text='言語',font=('Yu Gothic UI',9)).pack(side='right',padx=5)
+    self.appearance=tk.StringVar(value='Classic' if self.preferences.get('theme','classic')=='classic' else 'Dark')
     appearance=ttk.Combobox(head,values=['Dark','Classic'],textvariable=self.appearance,state='readonly',width=8,font=('Yu Gothic UI',9))
-    appearance.pack(side='right',before=self.progress,padx=5);appearance.bind('<<ComboboxSelected>>',self.change_appearance)
+    appearance.pack(side='right',padx=5);appearance.bind('<<ComboboxSelected>>',self.change_appearance)
+    self.theme_color=tk.StringVar(value=__import__('tag_theme').ACCENT)
+    color=ttk.Combobox(head,values=['Neutral','Pink','Blue','Purple'],textvariable=self.theme_color,state='readonly',width=8,font=('Yu Gothic UI',9))
+    color.pack(side='right',padx=5);color.bind('<<ComboboxSelected>>',self.change_appearance)
     self.root.report_callback_exception=self.callback_error
     if self.preferences.get('auto_updates') and not network.OFFLINE and self.publisher.get('github_repository'):
         self.root.after(1800,lambda:self.check_updates(True))
  def change_appearance(self,event=None):
-    old=self.preferences.get('theme','dark')
+    old=self.preferences.get('theme','classic')
     mode='classic' if self.appearance.get()=='Classic' else 'dark'
     if not self.ready() or not self.editor_guard() or not self.tag_guard():
-        self.appearance.set('Classic' if old=='classic' else 'Dark');return
-    self.preferences['theme']=mode;self.save_preferences()
+        self.appearance.set('Classic' if old=='classic' else 'Dark');self.theme_color.set(self.preferences.get('theme_color','Neutral'));return
+    self.preferences['theme']=mode;self.preferences['theme_color']=self.theme_color.get();self.save_preferences()
     self.change_language()
  def save_preferences(self):atomic_json(self.engine.data/'preferences.json',self.preferences)
  def change_language(self,event=None):
@@ -38,7 +41,7 @@ class SupportUI:
     root=self.root;data=self.engine.data;geometry=root.geometry()
     page=next((k for k,v in self.pages.items() if str(v)==self.current_page()),'models')
     rows=self.rows;dataset=self.dataset_rows;dataset_path=self.dataset_path.get()
-    state={k:v.get() for k,v in vars(self).items() if isinstance(v,tk.Variable) and k not in ('language','appearance','filter','status','editor_status','compat_origin','cap_connection')}
+    state={k:v.get() for k,v in vars(self).items() if isinstance(v,tk.Variable) and k not in ('language','appearance','theme_color','filter','status','editor_status','compat_origin','cap_connection')}
     groups={k:{name:v.get() for name,v in getattr(self,k).items()} for k in ('cap_thresholds','compat_roots')}
     context={k:getattr(self,k) for k in ['scan_source','scan_target'] if hasattr(self,k)}
     self.save_training_settings()
@@ -183,3 +186,4 @@ Tag rankings counts how many caption TXT files contain each comma-separated tag,
         if p:atomic_json(p,report);messagebox.showinfo('保存完了','必要な場合、このJSONを配布者に送ってください。',parent=win)
     ttk.Button(win,text='診断ログを保存…（自動送信なし）',command=export).pack(side='left',padx=12,pady=10)
     ttk.Button(win,text='問い合わせページを開く',command=self.open_support).pack(side='left',padx=12,pady=10)
+

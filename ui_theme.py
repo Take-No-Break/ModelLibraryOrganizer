@@ -3,8 +3,8 @@ import tkinter as tk
 from tkinter import ttk
 import tag_theme as colors
 
-def configure_theme(root,mode="dark"):
- colors.set_mode(mode)
+def configure_theme(root,mode="dark",accent='Neutral'):
+ colors.set_mode(mode,accent)
  root.configure(background=colors.BG)
  for option,value in [('Background',colors.BG),('Foreground',colors.TEXT),('insertBackground',colors.TEXT),('selectBackground',colors.SELECT),('selectForeground','#ffffff')]:root.option_add('*'+option,value)
  style=ttk.Style(root);style.theme_use('clam')

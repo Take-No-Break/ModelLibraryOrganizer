@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import font
 from collections import OrderedDict
 from pathlib import Path
+from bisect import bisect_right
 from PIL import Image,ImageOps,ImageTk
 from i18n import tr
 import tag_theme as theme
@@ -17,7 +18,7 @@ def metrics(canvas):
  return scale,canvas._chip_font
 
 def layout_chips(canvas,items,width,remove=False):
- scale,f=metrics(canvas);gap=3*scale;height=19*scale;x=0;y=0;result=[]
+ scale,f=metrics(canvas);gap=3*scale;height=max(19*scale,f.metrics('linespace')+5*scale);x=0;y=0;result=[]
  for tag,badge in items:
   display=tag;bw=(f.measure(str(badge))+9*scale) if badge is not None else 0;extra=bw+(12*scale if remove else 0)+10*scale
   while f.measure(display)+extra>width and len(display)>4:display=display[:-1]
@@ -72,7 +73,7 @@ class PillButton(tk.Canvas):
 class ThumbnailStrip(tk.Frame):
  def __init__(self,parent,records):
   super().__init__(parent,bg=theme.BG);self.records=records;self.ids=[];self.values={};self.selected=set();self.current='';self.anchor=None;self.cache=OrderedDict();self.pending=None;self.scheduler=self._root()
-  self.scale=max(1,self.winfo_fpixels('1i')/96);self.rowheight=round(185*self.scale)
+  self.scale=max(1,self.winfo_fpixels('1i')/96);self.image_height=140;self.rowheight=round(185*self.scale);self.tops=[];self.row_sizes=[];self.dimensions={};self.layout_key=None
   self.canvas=tk.Canvas(self,width=round(190*self.scale),height=round(380*self.scale),highlightthickness=0,bg=theme.BG,yscrollincrement=round(22*self.scale))
   from tkinter import ttk
   scroll=ttk.Scrollbar(self,command=self.yview,style='Tag.Vertical.TScrollbar');scroll.pack(side='right',fill='y');self.canvas.pack(side='left',fill='both',expand=True);self.canvas.configure(yscrollcommand=scroll.set)
@@ -80,6 +81,8 @@ class ThumbnailStrip(tk.Frame):
  def schedule(self):
   if self.pending:self.scheduler.after_cancel(self.pending)
   self.pending=self.scheduler.after_idle(self.draw)
+ def set_image_size(self,size):
+  self.image_height=int(size);self.rowheight=round((self.image_height+45)*self.scale);self.schedule()
  def yview(self,*args):self.canvas.yview(*args);self.schedule()
  def wheel(self,event):self.canvas.yview_scroll(-int(event.delta/120),'units');self.schedule();return 'break'
  def get_children(self):return tuple(self.ids)
@@ -91,12 +94,13 @@ class ThumbnailStrip(tk.Frame):
  def focus(self):return self.current
  def exists(self,item):return str(item) in self.values
  def delete(self,*items):
+  self.layout_key=None
   for item in items:self.values.pop(str(item),None);self.selected.discard(str(item))
   self.ids=[i for i in self.ids if i in self.values];self.schedule()
  def insert(self,parent,index,iid,values):
-  iid=str(iid);self.ids.append(iid);self.values[iid]=values;self.schedule();return iid
+  self.layout_key=None;iid=str(iid);self.ids.append(iid);self.values[iid]=values;self.schedule();return iid
  def clicked(self,event):
-  position=int(self.canvas.canvasy(event.y)//self.rowheight)
+  self.make_layout();position=bisect_right(self.tops,self.canvas.canvasy(event.y))-1
   if not 0<=position<len(self.ids):return
   iid=self.ids[position]
   if event.state&1 and self.anchor in self.ids:
@@ -106,25 +110,47 @@ class ThumbnailStrip(tk.Frame):
    else:self.selected.add(iid)
   else:self.selected={iid}
   self.current=iid;self.anchor=iid;self.schedule();self.event_generate('<<TreeviewSelect>>')
- def thumbnail(self,path,width,height):
+ def thumbnail(self,path,width,height,upscale=False):
   try:
-   p=Path(path);s=p.stat();key=(str(p),s.st_mtime_ns,width,height)
+   p=Path(path);s=p.stat();key=(str(p),s.st_mtime_ns,width,height,upscale)
    if key in self.cache:self.cache.move_to_end(key);return self.cache[key]
    with Image.open(p) as src:
-    image=ImageOps.exif_transpose(src).convert('RGB');image.thumbnail((int(width),int(height)))
+    image=ImageOps.exif_transpose(src).convert('RGB')
+    if upscale:image=ImageOps.contain(image,(max(1,int(width)),max(1,int(height))),Image.Resampling.LANCZOS)
+    else:image.thumbnail((int(width),int(height)))
    photo=ImageTk.PhotoImage(image,master=self.canvas);self.cache[key]=photo
    while len(self.cache)>48:self.cache.popitem(last=False)
    return photo
   except Exception:return None
+ def image_ratio(self,path):
+  try:
+   p=Path(path);stat=p.stat();key=(str(p),stat.st_mtime_ns)
+   if key not in self.dimensions:
+    with Image.open(p) as image:
+     width,height=image.size
+     if image.getexif().get(274) in (5,6,7,8):width,height=height,width
+    self.dimensions[key]=height/max(1,width)
+   return self.dimensions[key]
+  except Exception:return 1
+ def make_layout(self):
+  width=max(1,self.canvas.winfo_width());key=(width,tuple(self.ids))
+  if key==self.layout_key:return
+  self.layout_key=key;self.tops=[];self.row_sizes=[];y=0;records=self.records()
+  for iid in self.ids:
+   record=records[int(iid)];image_width=max(1,width-14*self.scale)
+   image_height=round(image_width*self.image_ratio(record['images'][0])) if record['images'] else 100*self.scale
+   height=image_height+48*self.scale;self.tops.append(y);self.row_sizes.append((height,image_height));y+=height
+  self.canvas.configure(scrollregion=(0,0,width,max(1,y)))
  def draw(self):
-  self.pending=None;c=self.canvas;c.delete('all');width=max(round(150*self.scale),c.winfo_width());height=max(1,len(self.ids)*self.rowheight)
-  c.configure(scrollregion=(0,0,width,height));top=c.canvasy(0);first=max(0,int(top//self.rowheight)-1);last=min(len(self.ids),int((top+c.winfo_height())//self.rowheight)+2)
+  self.pending=None;c=self.canvas;c.delete('all');self.make_layout();width=max(1,c.winfo_width())
+  top=c.canvasy(0);first=max(0,bisect_right(self.tops,top)-2);last=min(len(self.ids),bisect_right(self.tops,top+c.winfo_height())+1)
   self.visible_photos=[];records=self.records()
   for position in range(first,last):
-   iid=self.ids[position];y=position*self.rowheight;r=records[int(iid)];label,count,status=self.values[iid]
-   rounded(c,2,y+2,width-4,self.rowheight-4,'#33364f' if iid in self.selected else theme.BG,theme.BLUE if iid in self.selected else '',radius=4*self.scale)
-   photo=self.thumbnail(r['images'][0],width-12,140*self.scale) if r['images'] else None
-   if photo:c.create_image(width/2,y+75*self.scale,image=photo);self.visible_photos.append(photo)
-   else:c.create_text(width/2,y+75*self.scale,text='TXT',fill=theme.MUTED,font=('Segoe UI',10))
-   c.create_text(7*self.scale,y+156*self.scale,text=Path(label).name[:32],anchor='w',font=('Segoe UI',8),fill=theme.TEXT,width=width-14)
-   c.create_text(7*self.scale,y+173*self.scale,text=f'{count} tags'+(' · unsaved' if status=='未保存' else ''),anchor='w',font=('Segoe UI',8),fill=theme.MUTED)
+   iid=self.ids[position];y=self.tops[position];rowheight,image_height=self.row_sizes[position];r=records[int(iid)];label,count,status=self.values[iid]
+   rounded(c,2,y+2,width-4,rowheight-4,theme.SELECT if iid in self.selected else theme.BG,theme.BLUE if iid in self.selected else '',radius=4*self.scale)
+   photo=self.thumbnail(r['images'][0],width-14*self.scale,image_height,upscale=True) if r['images'] else None
+   center=y+image_height/2+5*self.scale
+   if photo:c.create_image(width/2,center,image=photo);self.visible_photos.append(photo)
+   else:c.create_text(width/2,center,text='TXT',fill=theme.MUTED,font=('Segoe UI',10))
+   c.create_text(7*self.scale,y+image_height+16*self.scale,text=Path(label).name[:32],anchor='w',font=('Segoe UI',8),fill=theme.TEXT,width=width-14)
+   c.create_text(7*self.scale,y+image_height+33*self.scale,text=f'{count} tags'+(' · unsaved' if status=='未保存' else ''),anchor='w',font=('Segoe UI',8),fill=theme.MUTED)

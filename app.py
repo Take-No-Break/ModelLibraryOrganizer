@@ -43,7 +43,8 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         from display import configure_fonts
         configure_fonts(root)
         from ui_theme import configure_theme,recolor_existing
-        configure_theme(root,(read_json(self.engine.data/'preferences.json',{}) or {}).get('theme','dark'))
+        theme_preferences=read_json(self.engine.data/'preferences.json',{}) or {}
+        configure_theme(root,theme_preferences.get('theme','classic'),theme_preferences.get('theme_color','Neutral'))
         style=ttk.Style();style.configure('Treeview',rowheight=scaled_window_size(root,27,27)[0])
         outer=ttk.Frame(root,padding=4);outer.pack(fill='both',expand=True)
         shell=outer
@@ -51,7 +52,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.pages={};self.page_notebooks={};self.page_hosts={}
         from scroll_pages import ScrollablePage,scroll_wheel
         root.bind_all('<MouseWheel>',scroll_wheel)
-        groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性')]),('training','学習データ',[('captions','Image to Text'),('texts','テキスト編集'),('tag_ranking','Tag rankings'),('tag_editor','Tag editor')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('restore','履歴・復元',[('restore','履歴・復元')])]
+        groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性')]),('training','学習データ',[('captions','Image to Text'),('texts','Edit Text' if __import__('i18n').LANG=='ja' else 'テキスト編集'),('tag_ranking','Tag rankings'),('tag_editor','Tag editor')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('restore','履歴・復元',[('restore','履歴・復元')])]
         for group,title,children in groups:
             parent=ttk.Frame(self.tabs,padding=2);self.tabs.add(parent,text=tr(title))
             if len(children)==1:
@@ -113,9 +114,10 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         ttk.Button(bottom,text='移動案を確認して整理…',command=self.review_and_apply).pack(side='right')
         self.status=StatusVar(value='まずフォルダーを選んで「調査開始」。Ctrl / Shiftで複数選択できます。');None
         self.operation_header=ttk.Frame(shell)
-        self.progress=ttk.Progressbar(self.operation_header,mode='determinate',maximum=100,length=110);self.progress.pack(side='right',padx=(3,8))
-        self.progress_label=tk.StringVar(value='0%');ttk.Label(self.operation_header,textvariable=self.progress_label,width=4,font=('Yu Gothic UI',9)).pack(side='right')
-        self.operation_status=ttk.Label(self.operation_header,textvariable=self.status,width=1,anchor='center',font=('Yu Gothic UI',9));self.operation_status.pack(side='left',fill='x',expand=True,padx=8)
+        self.operation_progress=ttk.Frame(self.operation_header);self.operation_progress.pack(side='right')
+        self.operation_status=ttk.Label(self.operation_progress,textvariable=self.status,width=14,anchor='w',font=('Yu Gothic UI',9));self.operation_status.pack(side='right',padx=(4,8))
+        self.progress=ttk.Progressbar(self.operation_progress,mode='determinate',maximum=100,length=110);self.progress.pack(side='right',padx=(3,8))
+        self.progress_label=tk.StringVar(value='0%');ttk.Label(self.operation_progress,textvariable=self.progress_label,width=4,font=('Yu Gothic UI',9)).pack(side='right',before=self.progress)
         status_tip=Tooltip(self.operation_status,self.status.get());self.operation_status.bind('<Enter>',lambda _:setattr(status_tip,'text',self.status.get()),add='+')
         self.init_panels()
         self.init_captions()
@@ -186,7 +188,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
             while True:
                 kind,value=self.events.get_nowait()
                 if kind=='idle':
-                    self.busy=False;self.status.set('処理完了' if self.status.get()=='処理中…' else self.status.get())
+                    self.busy=False;self.status.set('処理完了' if self.status.get() in ('処理中…',tr('処理中…')) else self.status.get())
                     if hasattr(self,'editor'):self.editor.configure(state='normal')
                 elif kind in ['report','preview','workflow','notes_done','duplicates']:self.feature_event(kind,value)
                 elif kind=='dataset_rows':self.receive_dataset(value)
