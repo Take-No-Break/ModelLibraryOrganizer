@@ -350,3 +350,5 @@ if 'pt-BR' in CATALOG: CATALOG['pt-BR'].update({'ファイル名検索': 'Buscar
 if 'de' in CATALOG: CATALOG['de'].update({'ファイル名検索': 'Dateiname suchen', '互換性の調査完了。': 'Kompatibilitätsprüfung abgeschlossen.'})
 
 if 'th' in CATALOG: CATALOG['th'].update({'ファイル名検索': 'ค้นหาชื่อไฟล์', '互換性の調査完了。': 'ตรวจสอบความเข้ากันได้เสร็จแล้ว'})
+
+CATALOG['en'].update({"選択した履歴の変更前の配置へ戻します。復元済みの履歴も再確認できます。記録済みの場所から同じファイルを特定できない場合や競合がある場合は停止します。":"Restore the layout before the selected operation. Previously restored histories can be checked again. Restoration stops if the unchanged file cannot be uniquely located in recorded paths or a destination conflicts."})
