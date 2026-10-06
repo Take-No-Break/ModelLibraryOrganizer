@@ -32,6 +32,16 @@ class Tests(unittest.TestCase):
         rows=self.scan()
         self.assertEqual(next(r for r in rows if r['title']=='caption')['kind'],'Image_to_txt_models')
         self.assertEqual(next(r for r in rows if r['title']=='encoder')['kind'],'')
+    def test_vae_in_checkpoint_publication(self):
+        p=model(self.root/'vae'/'flux2-vae.safetensors',['encoder.conv_in.weight','decoder.conv_out.weight'])
+        sha=digest(p)
+        self.e.cache['models'][sha]={'kind':'checkpoints','family':'Other','title':'Flux2 bundle','source':'https://civitai.com/models/test'}
+        self.e.cache['choices'][sha]={'relative':'checkpoints/Other','kind':'checkpoints'}
+        row=self.scan()[0]
+        self.assertEqual(row['kind'],'vae')
+        self.assertEqual(Path(row['destination']),p)
+        self.assertEqual(row['decision'],'変更なし')
+        self.assertTrue(p.exists())
     def test_bad_header_blocked(self):
         (self.root/'bad.safetensors').write_bytes(b'version https://git-lfs.github.com/spec/v1\n')
         r=self.scan()[0];self.assertTrue(r['blocked']);self.assertEqual(r['decision'],'保留')

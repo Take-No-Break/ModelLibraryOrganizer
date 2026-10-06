@@ -186,7 +186,7 @@ class Engine:
         seen=self.cache.setdefault('seen',{});catalog=self.cache.setdefault('catalog',{})
         for n,(p,bundle) in enumerate(units,1):
             if stop.is_set():raise Cancelled()
-            identity=str(p.resolve());fingerprint={'files':snapshot(p),'online':online,'host':host,'target':str(target_root),'layout':layout,'classification_version':2}
+            identity=str(p.resolve());fingerprint={'files':snapshot(p),'online':online,'host':host,'target':str(target_root),'layout':layout,'classification_version':3}
             if only_new and seen.get(identity)==fingerprint:
                 progress(n,len(units));continue
             notify(f'{n}/{len(units)} 調査: {p.name}')
@@ -250,8 +250,16 @@ class Engine:
                     if kind=='Img2txtModels':kind='Image_to_txt_models'
                     reason=[why,status]
                     conflict=False
-                    if inferred=='diffusion_models' and kind=='checkpoints':kind=inferred;reason.append('公開分類はCheckpointですが、実体は単独の拡散モデルです')
+                    structural_role=inferred if inferred and '自己申告' not in why and '用途は' not in why and '推定' not in why else ''
+                    if structural_role and kind and inferred!=kind:
+                        kind=inferred;reason.append('配布ページ全体の分類より、このファイルの内部構造による種類を優先: '+inferred)
                     elif inferred and kind and inferred!=kind:conflict=True;reason.append('公開情報と内部構造の種類が異なるため要確認')
+                    if saved and structural_role:
+                        saved_parts=Path(saved.get('relative','')).parts
+                        saved_role=saved.get('kind') or (saved_parts[0] if saved_parts else '')
+                        aliases={'clip':'text_encoders','unet':'diffusion_models','Img2txtModels':'Image_to_txt_models'}
+                        if aliases.get(saved_role,saved_role)!=structural_role:
+                            saved=None;reason.append('内部構造と異なる過去の配置ルールを使用せず、正しい種類の保存先を再提案')
                     row.update(kind=kind,family=family_name((info or {}).get('family','')),title=(info or {}).get('title') or p.stem,url=(info or {}).get('source',''))
                     if saved:
                         relative=Path(saved['relative'])
