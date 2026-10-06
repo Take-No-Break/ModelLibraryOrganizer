@@ -60,7 +60,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
             else:
                 notebook=ttk.Notebook(parent);notebook.pack(fill='both',expand=True)
                 for key,label in children:
-                    host=ScrollablePage(notebook)
+                    host=ScrollablePage(notebook,fit_width=(key=='tag_editor'))
                     if key!='tag_ranking':notebook.add(host,text=tr(label))
                     self.pages[key]=host.body;self.page_hosts[key]=host
                     self.page_notebooks[key]=(parent,notebook)
@@ -117,7 +117,15 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.status=StatusVar(value='まずフォルダーを選んで「調査開始」。Ctrl / Shiftで複数選択できます。');None
         self.operation_header=ttk.Frame(shell)
         self.operation_progress=ttk.Frame(self.operation_header);self.operation_progress.pack(side='right')
-        self.operation_status=ttk.Label(self.operation_progress,textvariable=self.status,width=14,anchor='w',font=('Yu Gothic UI',9));self.operation_status.pack(side='right',padx=(4,8))
+        self.header_status=tk.StringVar()
+        from tkinter import font as tkfont
+        header_font=tkfont.Font(root=root,family='Yu Gothic UI',size=9)
+        def short_status(*_):
+            value=self.status.get().split('\n')[0];short=value
+            while short and header_font.measure(short+'…')>105:short=short[:-1]
+            self.header_status.set(short+'…' if short!=value else value)
+        self.status.trace_add('write',short_status);short_status()
+        self.operation_status=ttk.Label(self.operation_progress,textvariable=self.header_status,width=18,anchor='w',font=('Yu Gothic UI',9));self.operation_status.pack(side='right',padx=(4,8))
         self.progress=ttk.Progressbar(self.operation_progress,mode='determinate',maximum=100,length=110);self.progress.pack(side='right',padx=(3,8))
         self.progress_label=tk.StringVar(value='0%');ttk.Label(self.operation_progress,textvariable=self.progress_label,width=4,font=('Yu Gothic UI',9)).pack(side='right',before=self.progress)
         status_tip=Tooltip(self.operation_status,self.status.get());self.operation_status.bind('<Enter>',lambda _:setattr(status_tip,'text',self.status.get()),add='+')

@@ -26,3 +26,18 @@ def configure_fonts(root):
     root.option_add('*Text.Font','TkTextFont')
     root.option_add('*Entry.Font','TkTextFont')
     return family
+
+
+def highlight_folder_paths(widget,paths):
+    """Display each proposed/created directory in green without changing its text."""
+    import tag_theme
+    color='#8dd59f' if tag_theme.MODE=='dark' else '#19713a'
+    widget.tag_configure('new_folders',foreground=color)
+    for path in paths:
+        start='1.0'
+        while True:
+            found=widget.search(str(path),start,stopindex='end',exact=True)
+            if not found:break
+            end=found+' + '+str(len(str(path)))+' chars'
+            widget.tag_add('new_folders',found,end);start=end
+    widget.tag_raise('new_folders')

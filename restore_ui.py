@@ -84,10 +84,14 @@ class RestoreUI:
   for op in plans:
    lines.extend([op['source'],' → '+op['destination']])
    for link in op.get('links',[]):lines.append(' + '+link)
+  created=[item['path'] for item in doc.get('created_dirs',[]) if isinstance(item,dict) and item.get('path')]
+  if created:lines.extend(['','Created folders:',*created])
   if doc.get('retained_dirs'):lines.extend(['',tr('空でない等の理由で残したフォルダー：'),*doc['retained_dirs']])
   self.restore_text.configure(state='normal');self.restore_text.delete('1.0','end')
   # Paths and filenames are user data, not UI translation keys.
   tk.Text.insert(self.restore_text,'1.0','\n'.join(lines));self.restore_text.configure(state='disabled')
+  from display import highlight_folder_paths
+  highlight_folder_paths(self.restore_text,created)
 
  def import_restore(self):
   if not self.ready():return

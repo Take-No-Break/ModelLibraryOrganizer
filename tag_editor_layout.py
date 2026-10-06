@@ -6,6 +6,7 @@ from tag_widgets import ThumbnailStrip,PillButton
 from tag_rows import CaptionRows
 from tag_categories import CATEGORIES
 import tag_theme as theme
+from responsive_controls import ControlFlow
 
 def build_editor(app):
  page=app.pages['tag_editor'];scale=max(1,page.winfo_fpixels('1i')/96)
@@ -19,7 +20,7 @@ def build_editor(app):
  def button(parent,text,action,side='left',small=False):
   b=PillButton(parent,text,action,small=small);b.pack(side=side,padx=3,pady=2);return b
  toolbar_host=frame(base,theme.PANEL);toolbar_host.pack(fill='x')
- toolbar=frame(toolbar_host,theme.PANEL);toolbar.pack(side='right');app.tag_toolbar=toolbar
+ toolbar=ControlFlow(toolbar_host,align='right',bg=theme.PANEL);toolbar.pack(fill='x');app.tag_toolbar=toolbar
  button(toolbar,'Open Folder',lambda:app.choose_root(app.tag_folder));button(toolbar,'Save All',app.preview_tag_save)
  path=entry(toolbar,app.tag_folder,26);path.pack(side='left',padx=8,ipady=3);app.tag_path_entry=path
  tk.Checkbutton(toolbar,text='Subfolders',variable=app.tag_recursive,bg=theme.PANEL,fg=theme.TEXT,selectcolor=theme.FIELD,activebackground=theme.PANEL,activeforeground=theme.TEXT,font=('Segoe UI',8),bd=0).pack(side='left')
@@ -34,7 +35,7 @@ def build_editor(app):
  app.tag_stats=label(stats_head,'Tag Stats',True);app.tag_stats.pack(side='left')
  help_label=label(stats_head,'ⓘ  Ctrl / Shift: select images',True);help_label.pack(side='right')
  Tooltip(help_label,'Click a statistics tag to filter images. Category filters show tags. Right-click a tag to set its category. Edits are saved only after Save All and review.')
- sortbar=frame(stats);sortbar.pack(fill='x',padx=7)
+ sortbar=ControlFlow(stats,bg=theme.PANEL);sortbar.pack(fill='x',padx=7)
  label(sortbar,'Sort:',True).pack(side='left');app.tag_sort_buttons={}
  for name in ('By count','By name'):
   b=button(sortbar,name,lambda n=name:app.change_tag_sort(n),small=True);app.tag_sort_buttons[name]=b
@@ -44,21 +45,21 @@ def build_editor(app):
  app.tag_cloud_canvas=tk.Canvas(cloud,height=134*scale,bg=theme.PANEL,highlightthickness=0);app.tag_cloud_canvas.pack(side='left',fill='both',expand=True)
  scroll=ttk.Scrollbar(cloud,command=app.tag_cloud_canvas.yview,style='Tag.Vertical.TScrollbar');scroll.pack(side='right',fill='y');app.tag_cloud_canvas.configure(yscrollcommand=scroll.set)
  app.tag_cloud_canvas.bind('<Configure>',lambda _:app.draw_tag_cloud());app.tag_cloud_canvas.bind('<MouseWheel>',lambda e:(app.tag_cloud_canvas.yview_scroll(-int(e.delta/120),'units'),'break')[-1])
- filters=frame(lower,theme.PANEL);filters.pack(fill='x',pady=(1,0));label(filters,'Filter:',True).pack(side='left',padx=(7,2));app.tag_category_buttons={}
+ filters=ControlFlow(lower,bg=theme.PANEL);filters.pack(fill='x',pady=(1,0));label(filters,'Filter:',True).pack(side='left',padx=(7,2));app.tag_category_buttons={}
  for category in CATEGORIES:
   b=button(filters,category,lambda c=category:app.change_tag_category(c),small=True);app.tag_category_buttons[category]=b
  tools=frame(lower,theme.PANEL);tools.pack(fill='x',pady=(1,0))
- bulk=frame(tools);bulk.pack(fill='x',padx=7,pady=(3,0));label(bulk,'Bulk Insert:',True).pack(side='left')
+ bulk=ControlFlow(tools,bg=theme.PANEL);bulk.pack(fill='x',padx=7,pady=(3,0));label(bulk,'Bulk Insert:',True).pack(side='left')
  entry(bulk,app.tag_value,25).pack(side='left',padx=6,ipady=3);button(bulk,'Insert',lambda:app.bulk_tag_edit(False),small=True);button(bulk,'Remove',lambda:app.bulk_tag_edit(True),small=True)
  scope=ttk.Combobox(bulk,textvariable=app.tag_scope,values=['Selected','Filtered','All'],state='readonly',style='Tag.TCombobox',font=('Segoe UI',8),width=9);scope.pack(side='left',padx=6)
  Tooltip(scope,'Selected: highlighted images. Filtered: images currently shown. All: entire loaded dataset. This scope applies to bulk edits.')
  button(bulk,'Delete Category',lambda:app.clear_scoped_tags(True),side='right',small=True)
- unwanted=frame(tools);unwanted.pack(fill='x',padx=7);label(unwanted,'Unwanted Tag:',True).pack(side='left')
+ unwanted=ControlFlow(tools,bg=theme.PANEL);unwanted.pack(fill='x',padx=7);label(unwanted,'Unwanted Tag:',True).pack(side='left')
  entry(unwanted,app.tag_unwanted_value,23).pack(side='left',padx=6,ipady=3);button(unwanted,'Register',app.register_unwanted,small=True);button(unwanted,'Remove Unwanted',app.remove_unwanted,small=True)
  button(unwanted,'Delete All Tags',lambda:app.clear_scoped_tags(False),side='right',small=True)
  app.tag_unwanted_canvas=tk.Canvas(tools,height=25*scale,bg=theme.PANEL,highlightthickness=0);app.tag_unwanted_canvas.pack(fill='x',padx=5,pady=2);app.tag_unwanted_canvas.bind('<Configure>',lambda _:app.draw_unwanted())
  app.tag_rows=CaptionRows(lower,app);app.tag_rows.pack(fill='both',expand=True,pady=(4,0));app.tag_chip_canvas=app.tag_rows.canvas
- foot=frame(base,theme.PANEL);foot.pack(fill='x');app.tag_filter_label=label(foot,'All images');app.tag_filter_label.pack(side='left',padx=7)
+ foot=ControlFlow(base,bg=theme.PANEL);foot.pack(fill='x');app.tag_filter_label=label(foot,'All images');app.tag_filter_label.pack(side='left',padx=7)
  button(foot,'Clear filter',lambda:app.set_tag_filter(''),small=True)
  label(foot,'Click tag: edit  ·  Enter: apply  ·  Esc: cancel  ·  ×: remove',True).pack(side='right',padx=7)
  app.tag_refreshing=False

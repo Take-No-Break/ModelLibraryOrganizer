@@ -109,6 +109,8 @@ class Panels(Gallery):
                     parent=parent.parent
             body='【提案の理由】\n'+r.get('evidence','')+'\n\n【現在の場所】\n'+r['source']+'\n\n【移動先】\n'+r['destination']+'\n\n【追加ハードリンク】\n'+('\n'.join(r.get('links',[])) or 'なし')+'\n\n【新しく作成するフォルダー】\n'+('\n'.join(folders) or 'なし')
             self.linked_text(text,body)
+            from display import highlight_folder_paths
+            highlight_folder_paths(text,folders)
         def answer(value):
             proposals[position[0]]['decision']=value;position[0]+=1
             if position[0]>=len(proposals):finish(True)

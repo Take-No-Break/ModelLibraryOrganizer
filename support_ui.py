@@ -14,16 +14,24 @@ class SupportUI:
     network.OFFLINE=bool(self.preferences.get('offline',False))
     if network.OFFLINE:self.online.set(False)
     head=self.operation_header;head.pack(fill='x',before=self.tabs,pady=(0,3))
-    ttk.Label(head,text='v'+VERSION,font=('Yu Gothic UI',9)).pack(side='left')
+    self.operation_progress.pack_forget()
+    version=ttk.Label(head,text='v'+VERSION,font=('Yu Gothic UI',9));version.grid(row=0,column=0,sticky='w')
+    controls=ttk.Frame(head);controls.grid(row=0,column=2,sticky='e')
     self.language=tk.StringVar(value=i18n.LANGS[i18n.LANG])
-    choose=ttk.Combobox(head,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=15,font=('Yu Gothic UI',9));choose.pack(side='right');choose.bind('<<ComboboxSelected>>',self.change_language)
-    ttk.Label(head,text='言語',font=('Yu Gothic UI',9)).pack(side='right',padx=5)
+    choose=ttk.Combobox(controls,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=15,font=('Yu Gothic UI',9));choose.pack(side='right');choose.bind('<<ComboboxSelected>>',self.change_language)
+    ttk.Label(controls,text='言語',font=('Yu Gothic UI',9)).pack(side='right',padx=5)
     self.appearance=tk.StringVar(value='Classic' if self.preferences.get('theme','classic')=='classic' else 'Dark')
-    appearance=ttk.Combobox(head,values=['Dark','Classic'],textvariable=self.appearance,state='readonly',width=8,font=('Yu Gothic UI',9))
+    appearance=ttk.Combobox(controls,values=['Dark','Classic'],textvariable=self.appearance,state='readonly',width=8,font=('Yu Gothic UI',9))
     appearance.pack(side='right',padx=5);appearance.bind('<<ComboboxSelected>>',self.change_appearance)
     self.theme_color=tk.StringVar(value=__import__('tag_theme').ACCENT)
-    color=ttk.Combobox(head,values=['Neutral','Pink','Blue','Purple'],textvariable=self.theme_color,state='readonly',width=8,font=('Yu Gothic UI',9))
+    color=ttk.Combobox(controls,values=['Neutral','Pink','Blue','Purple'],textvariable=self.theme_color,state='readonly',width=8,font=('Yu Gothic UI',9))
     color.pack(side='right',padx=5);color.bind('<<ComboboxSelected>>',self.change_appearance)
+    self.operation_progress.pack_forget();head.columnconfigure(1,weight=1)
+    def fit_header(event=None):
+        compact=head.winfo_width()<version.winfo_reqwidth()+controls.winfo_reqwidth()+self.operation_progress.winfo_reqwidth()+30
+        controls.grid_configure(row=0,column=2,sticky='e')
+        self.operation_progress.grid(row=1 if compact else 0,column=0 if compact else 1,columnspan=3 if compact else 1,sticky='e',pady=(2,0) if compact else 0)
+    head.bind('<Configure>',fit_header,add='+');self.root.after_idle(fit_header)
     self.root.report_callback_exception=self.callback_error
     if self.preferences.get('auto_updates') and not network.OFFLINE and self.publisher.get('github_repository'):
         self.root.after(1800,lambda:self.check_updates(True))
@@ -41,7 +49,7 @@ class SupportUI:
     root=self.root;data=self.engine.data;geometry=root.geometry()
     page=next((k for k,v in self.pages.items() if str(v)==self.current_page()),'models')
     rows=self.rows;dataset=self.dataset_rows;dataset_path=self.dataset_path.get()
-    state={k:v.get() for k,v in vars(self).items() if isinstance(v,tk.Variable) and k not in ('language','appearance','theme_color','filter','status','editor_status','compat_origin','cap_connection')}
+    state={k:v.get() for k,v in vars(self).items() if isinstance(v,tk.Variable) and k not in ('language','appearance','theme_color','filter','status','header_status','editor_status','compat_origin','cap_connection')}
     groups={k:{name:v.get() for name,v in getattr(self,k).items()} for k in ('cap_thresholds','compat_roots')}
     context={k:getattr(self,k) for k in ['scan_source','scan_target'] if hasattr(self,k)}
     self.save_training_settings()

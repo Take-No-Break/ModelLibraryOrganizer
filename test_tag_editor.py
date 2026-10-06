@@ -83,7 +83,7 @@ class TagTests(unittest.TestCase):
   try:
    app=App(root,self.root/'data');root.update()
    parent,book=app.page_notebooks['tag_editor'];labels=[book.tab(tab,'text') for tab in book.tabs()]
-   self.assertEqual(labels[-2:],['Tag rankings','Tag editor'])
+   self.assertEqual(labels[-2:],['Edit Text','Tag editor']);self.assertNotIn('Tag rankings',labels)
    app.tag_folder.set(str(self.folder));app.reload_tags();root.update()
    self.assertEqual(len(app.tag_rank_table.get_children()),3)
    app.tag_rank_table.selection_set('1');app.show_tag_frequency();self.assertAlmostEqual(float(app.tag_frequency_bar['value']),200/3)
