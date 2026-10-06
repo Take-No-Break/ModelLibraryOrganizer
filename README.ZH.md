@@ -60,7 +60,7 @@ models/Civitai/ExampleCreator/loras/Pony/example.safetensors
 
 可识别 LoRA、检查点、VAE、Embedding、支持的 ControlNet 结构、风格适配器、模型补丁及支持的图像描述模型包。可以保留已有 ComfyUI 分类，但支持目录名称不等于能识别其中所有模型。可信的单文件张量结构优先于发布页面的整体分类。未识别或信息冲突的文件保留供审核。
 
-SeaArt 和 Tensor.Art 不会被自动查询：本应用没有经过验证的反向哈希 API 集成。已知来源 URL 可手动添加。来源匹配不保证运行兼容性。
+SeaArt 和 Tensor.Art 不会被自动查询：本应用没有经过验证的反向哈希 API 集成。无法识别来源的模型可能需要审核，或选择整理到 `Not Found`。不会仅因查询失败就自动移动；已识别类型和原位置可以保留，也可手动指定目标。已知来源 URL 可手动添加。来源匹配不保证运行兼容性。
 
 ### 模型预览
 
@@ -91,9 +91,13 @@ SeaArt 和 Tensor.Art 不会被自动查询：本应用没有经过验证的反�
 
 未选择模型时，创建操作使用列表中符合条件的项目。已有说明会跳过。字段标签使用英文，描述保留来源语言。这些文件记录模型信息，不是图片训练文本。模型权重不会被修改。
 
-## Image to Text
+## LoRA / Checkpoint 训练数据准备
 
-支持 **PixAI、JoyCaption、CL Tagger 和 Taggerine** 适配器。请选择所需文件齐全的模型目录，而非任意 `.safetensors`。权重和依赖项需另行安装；不会自动支持所有 Image to Text 模型。
+创建和编辑用于 LoRA 或检查点训练的图片描述 TXT。Image to Text 生成描述，Edit Text 和 Tag editor 调整触发词等文本以配合训练工具。本应用准备数据，不直接训练模型。来源 TXT 是独立功能，用于记录下载模型的信息。
+
+### Image to Text
+
+本项目目前实现的适配器为 **PixAI、JoyCaption、CL Tagger 和 Taggerine**，并非所有 Image to Text 模型的完整列表。在 **Image to Text model folder** 选择模型目录，再在 **Model** 选择对应适配器。需要包含该适配器所需文件的完整模型包，单个或任意 `.safetensors` 文件并不足够。其他架构需要兼容适配器的实现，否则可能加载失败。阈值设置因适配器而异，可能不适用于其他模型。权重和依赖项需另行安装。
 
 ![Image to Text：模型设置和工作流预览](docs/screenshots/image-to-text.jpg)
 

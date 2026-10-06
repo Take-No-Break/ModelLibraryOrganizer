@@ -61,7 +61,7 @@ The app calculates the full SHA-256 of each supported file. Civitai lookup uses 
 
 Recognized roles include LoRA, checkpoints, VAE, Embeddings, supported ControlNet structures, style adapters, model patches and supported caption-model bundles. Existing ComfyUI categories can be preserved, but support for a folder name does not mean every possible model in it can be identified. Reliable per-file tensor structure takes priority over the overall category of a distribution page. Unidentified or conflicting files remain available for review.
 
-SeaArt and Tensor.Art are not automatically queried: this app has no verified reverse-hash API integration for them. Add a known source URL manually. A source match does not prove runtime compatibility.
+SeaArt and Tensor.Art are not automatically queried: this app has no verified reverse-hash API integration for them. Models whose source cannot be identified may need review or organization under `Not Found`. They are not automatically moved there solely because a source lookup failed; existing recognized types and locations can be preserved, and you can choose a destination manually. Add a known source URL manually. A source match does not prove runtime compatibility.
 
 ### Preview a model
 
@@ -92,9 +92,13 @@ Colors are metadata estimates, not generation tests or guarantees. Each computer
 
 With no selection, creation uses eligible list items. Existing notes are skipped. Labels are English; descriptions retain their source language. These notes document models, not image training captions. Model weights are unchanged.
 
-## Image to Text
+## LoRA / Checkpoint training data preparation
 
-Supported adapters: **PixAI, JoyCaption, CL Tagger and Taggerine**. Choose the appropriate complete model folder, not just an arbitrary `.safetensors` file. Weights and model dependencies must be installed separately; arbitrary Image to Text models are not supported automatically.
+Create and edit image captions for LoRA or checkpoint training datasets. Image to Text prepares captions, while Edit Text and Tag editor let you adjust trigger words and other text for your trainer. The app prepares data; it does not train models. Model source TXT is a separate information note about downloaded models.
+
+### Image to Text
+
+The adapters currently implemented in this project are **PixAI, JoyCaption, CL Tagger and Taggerine**; this is not a list of every Image to Text model available. Select your model directory in **Image to Text model folder**, then select the matching adapter in **Model**. Use a complete model bundle with the files required by that adapter. A standalone or arbitrary `.safetensors` file is not sufficient. Other architectures need a compatible adapter implementation and may fail to load. Threshold settings are adapter-specific and may not apply to a different model. Weights and model dependencies must be installed separately.
 
 ![Image to Text: model settings and workflow preview](docs/screenshots/image-to-text.jpg)
 
