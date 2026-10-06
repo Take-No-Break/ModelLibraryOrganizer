@@ -46,23 +46,22 @@ class Release17Tests(unittest.TestCase):
   self.assertEqual(read_json(self.data/'compatibility-assessments.json',{})[pair_key(*rows)]['note'],'My test')
   self.app.compat_rating.set('自動判定');self.app.save_compat_pair()
   self.assertEqual(self.app.compat_table.item('0','tags'),('related',))
- def test_specific_checkpoint_selection(self):
+ def test_all_checkpoint_comparison(self):
   paths=[self.data/name for name in ['adapter.safetensors','one.safetensors','two.safetensors']]
   for p in paths:p.touch()
   rows=[{'source':str(p),'kind':'loras' if i==0 else 'checkpoints','family':'Pony' if i<2 else 'Anima','sha':str(i)*64} for i,p in enumerate(paths)]
   self.app.rows=rows;self.app.populate_compatibility()
-  self.assertEqual(len(self.app.compat_checkpoints),2)
-  self.assertEqual(self.app.compat_pairs[0]['checkpoint'],str(paths[1]))
+  self.assertEqual(len(self.app.compat_pairs),2)
   self.assertEqual(self.app.compat_table.item('0','tags'),('same',))
-  self.app.compat_checkpoint_choice.current(1);self.app.compat_selected()
-  self.assertEqual(len(self.app.compat_table.get_children()),1)
-  self.assertEqual(self.app.compat_pairs[0]['checkpoint'],str(paths[2]))
-  self.assertEqual(self.app.compat_table.item('0','tags'),('different',))
-  self.assertIn(str(paths[2]),self.app.compat_summary.get('1.0','end'))
+  self.assertEqual(self.app.compat_table.item('1','tags'),('different',))
+  self.app.compat_table.selection_set('1');self.app.select_compat_pair()
   self.app.compat_rating.set('要調整（黄）');self.app.save_compat_pair()
   self.assertEqual(read_json(self.data/'compatibility-assessments.json',{})[pair_key(rows[0],rows[2])]['rating'],'要調整（黄）')
-  self.app.compat_checkpoint_choice.current(0);self.app.compat_selected()
   self.assertEqual(self.app.compat_table.item('0','tags'),('same',))
+  self.assertEqual(self.app.compat_table.item('1','tags'),('related',))
+  self.app.compat_roots['checkpoints'].set(str(self.data/'missing'))
+  self.app.populate_compatibility()
+  self.assertEqual(self.app.compat_pairs,[])
  def test_language_change_and_all_filter(self):
   self.app.scan_dir.set('C:/my models');self.app.language.set('日本語');self.app.change_language();self.root.update()
   self.assertEqual(i18n.LANG,'ja');self.assertEqual(self.app.scan_dir.get(),'C:/my models')

@@ -17,3 +17,7 @@ Reliable tensor structure takes priority over the distribution page category. A 
 ## 1.0.25: Select a specific LoRA and Checkpoint
 
 Compatibility now has separate LoRA and Checkpoint/diffusion model selectors. Select both files to display the assessment for that exact pair and save a pair-specific manual evaluation. Folder selection filters previously scanned models; use Scan selected folders for models not investigated yet. This comparison estimates compatibility from known families and does not load models or perform image generation. No files are moved.
+
+## 1.0.26: One LoRA against every checkpoint
+
+Select a LoRA to compare against all identified checkpoint/diffusion models in the selected folder, including subfolders. Choosing a folder starts a read-only compatibility scan when idle. The checkpoint selector was removed. Automatic family estimates remain untested; each row can separately record successful use, adjustments or failure. No generation test is performed and no models are moved.
