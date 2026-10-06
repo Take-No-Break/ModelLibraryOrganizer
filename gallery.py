@@ -7,6 +7,26 @@ from PIL import Image,ImageTk
 from note_format import plain,note_content
 import network
 
+PREVIEW_TYPES={
+ 'checkpoints':'Checkpoint','loras':'LoRA','embeddings':'Embedding',
+ 'diffusion_models':'Diffusion model','diffusers':'Diffusers',
+ 'Img2txtModels':'Image to Text model','workflows':'Workflow','workflow':'Workflow',
+ 'text_encoders':'Text encoder','clip_vision':'CLIP Vision','clip':'CLIP',
+ 'vae':'VAE','vae_approx':'VAE approximation','controlnet':'ControlNet',
+ 'background_removal':'Background removal','upscale_models':'Upscale model',
+ 'latent_upscale_models':'Latent upscale model','style_models':'Style model',
+ 'model_patches':'Model patch','audio_encoders':'Audio encoder',
+ 'detection':'Detection model','sams':'SAM','ultralytics':'Ultralytics',
+ 'frame_interpolation':'Frame interpolation','geometry_estimation':'Geometry estimation',
+ 'optical_flow':'Optical flow','gligen':'GLIGEN','hypernetworks':'Hypernetwork',
+ 'classifiers':'Classifier','photomaker':'PhotoMaker','onnx':'ONNX model','unet':'UNet',
+ 'Not Found':'Unknown type'}
+
+def preview_classification(row):
+ family=row.get('family') or 'Unknown family'
+ kind=row.get('kind') or ''
+ return family+' / '+PREVIEW_TYPES.get(kind,kind or 'Unknown type')
+
 class Gallery:
  def short_path(self,path,root):
   if not path:return ''
@@ -59,7 +79,7 @@ class Gallery:
   pane=ttk.Panedwindow(page,orient='horizontal');pane.pack(fill='both',expand=True,pady=8)
   left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
   self.gallery_list=ttk.Treeview(left,columns=('name','family'),show='headings',height=9)
-  self.gallery_list.heading('name',text='モデル／ファイル');self.gallery_list.heading('family',text='系統');self.gallery_list.column('name',width=320);self.gallery_list.column('family',width=110)
+  self.gallery_list.heading('name',text='モデル／ファイル');self.gallery_list.heading('family',text='系統 / 種類');self.gallery_list.column('name',width=320);self.gallery_list.column('family',width=230)
   self.gallery_list.pack(fill='both',expand=True)
   self.gallery_list.bind('<<TreeviewSelect>>',self.gallery_selected)
   self.gallery_text=LocalizedText(left,height=14,wrap='word');self.gallery_text.pack(fill='both',expand=True,pady=8)
@@ -67,7 +87,7 @@ class Gallery:
   self.gallery_rows=[];self.gallery_generation=0
  def set_gallery_rows(self,rows,select=True):
   self.gallery_rows=list(rows);self.gallery_list.delete(*self.gallery_list.get_children())
-  for i,r in enumerate(rows):self.gallery_list.insert('','end',iid=str(i),values=(Path(r['source']).name,r.get('family','')))
+  for i,r in enumerate(self.gallery_rows):self.gallery_list.insert('','end',iid=str(i),values=(Path(r['source']).name,preview_classification(r)))
   if select:self.select_page(self.pages['preview'])
  def scan_gallery(self):
   if not self.ready():return

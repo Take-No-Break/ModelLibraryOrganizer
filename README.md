@@ -1,4 +1,4 @@
-# Model Library Organizer 1.0.8 — Windows preview
+# Model Library Organizer 1.0.9 — Windows preview
 
 ## Run or install
 
@@ -145,3 +145,7 @@ needed. Safetensors is a file format, not a source website.
 
 This local Windows preview was built with Python 3.14.5. Source CI uses Python 3.12.
 Neither an independent PC/VM test nor code signing is claimed.
+
+## Preview classification (1.0.9)
+
+Preview lists show base family / file type, for example Illustrious / LoRA or SDXL / Checkpoint. Recognized embeddings, Image to Text packages and other model types keep their own type labels. Unknown classification is displayed explicitly; this display change does not expand scanning to workflow JSON files or infer model identity from filenames.
