@@ -71,8 +71,13 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.target_dir=tk.StringVar(value=self.settings.get('target_root',''))
         for n,(label,var) in enumerate([('調査するフォルダー',self.scan_dir),('整理先の models フォルダー',self.target_dir)]):
             ttk.Label(fields,text=label).grid(row=n,column=0,sticky='w',pady=4)
-            ttk.Entry(fields,textvariable=var,width=1,tooltip=__import__('tips').TIPS[label]).grid(row=n,column=1,sticky='ew',padx=10)
+            entry=ttk.Entry(fields,textvariable=var,width=1,tooltip=__import__('tips').TIPS[label]);entry.grid(row=n,column=1,sticky='ew',padx=10)
+            if n==1:
+                from destination_root import placeholder
+                placeholder(entry,var)
             ttk.Button(fields,text='選択…',command=lambda v=var:self.choose_root(v)).grid(row=n,column=2)
+        from destination_root import NOTE
+        ttk.Label(outer,text=NOTE,wraplength=620).pack(anchor='w',pady=(2,4))
         bar=ttk.Frame(outer);bar.pack(fill='x',pady=10)
         self.online=tk.BooleanVar(value=True)
         connection=ttk.LabelFrame(self.pages['tools'],text='配布元のオンライン照合',padding=8);connection.pack(fill='x',pady=8)
@@ -184,6 +189,8 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         threading.Thread(target=worker,daemon=True).start()
     def scan(self,only_new=False):
         if not self.ready():return
+        from destination_root import confirm_root
+        if not confirm_root(self):return
         if not Path(self.scan_dir.get()).is_dir() or not Path(self.target_dir.get()).is_dir() or not self.scan_dir.get() or not self.target_dir.get():
             messagebox.showerror('フォルダー未指定','存在する調査元とmodelsフォルダーを選択してください。');return
         if any(r['decision']=='承認' for r in self.rows) and not messagebox.askyesno('再調査','未実行の承認を取り消して再調査しますか？'):return

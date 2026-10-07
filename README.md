@@ -51,6 +51,8 @@ models/loras/Character/Pony/example.safetensors
 models/Civitai/ExampleCreator/loras/Pony/example.safetensors
 ```
 
+Choose the **models root**, not `models/loras` or another type subfolder. The app creates or reuses `loras`, `checkpoints`, `vae`, `embeddings` and other type folders **under the chosen destination**. Choosing `models/loras` would nest other types inside loras; the app offers to change it to the models root before scanning. Folders and file moves are applied only after approval.
+
 Family folders are derived from returned source metadata, not a fixed set of bundled folders. A newly reported family can produce a new folder proposal. The folder is created only when approved changes execute. Unknown families are not guessed: proposals may use a type folder or `Unknown`, or remain for review. Correctly placed files can retain their existing locations.
 
 Files are not deleted to clean up a layout. Only eligible empty source folders are removed. Conflicting destinations are flagged for review.

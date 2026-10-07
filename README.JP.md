@@ -50,6 +50,8 @@ models/loras/Character/Pony/example.safetensors
 models/Civitai/ExampleCreator/loras/Pony/example.safetensors
 ```
 
+保存先は**models全体**を指定し、`models/loras`など種類別フォルダを指定しないでください。選んだ保存先の下に`loras`・`checkpoints`・`vae`・`embeddings`などを作成、または再利用します。`models/loras`を指定すると他の種類までその中に入るため、調査前にmodels全体への変更を案内します。フォルダ作成と移動は承認後に実行します。
+
 系統フォルダは配布元の情報から作成する提案であり、固定のフォルダ一式を同梱する方式ではありません。新しい系統も提案でき、承認した変更の実行時に作成します。不明な系統は推測せず、種類別フォルダや`Unknown`への提案、または確認待ちにします。すでに適切な場所にあるファイルはその場所を維持できます。
 
 整理のためにファイルを削除しません。条件を満たした空の移動元フォルダだけを削除します。移動先の競合は確認対象になります。

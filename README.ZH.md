@@ -50,6 +50,8 @@ models/loras/Character/Pony/example.safetensors
 models/Civitai/ExampleCreator/loras/Pony/example.safetensors
 ```
 
+目标请选择 **models 根目录**，不要选择 `models/loras` 等类型子目录。应用在所选目标下创建或复用 `loras`、`checkpoints`、`vae`、`embeddings` 等目录。若选择 `models/loras`，其他类型会嵌套在 loras 内，因此扫描前会提示改用根目录。目录创建与文件移动只在批准后执行。
+
 家族目录来自来源返回的元数据，而不是预先打包的固定目录列表。新家族也可产生新目录建议，只有执行获批变更时才会创建。未知家族不会被猜测：可能建议类型目录、`Unknown`，或保留待审核。已正确放置的文件可以保持原位置。
 
 不会为了整理布局而删除文件。只会移除符合条件的空源目录。目标位置冲突会标记为待审核。
