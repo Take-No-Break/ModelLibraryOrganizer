@@ -347,7 +347,10 @@ def main():
     enable_dpi()
     root=tk.Tk();app=App(root)
     app.table.bind('<Control-a>',lambda e:app.table.selection_set(app.table.get_children()))
-    if '--smoke-test' in sys.argv:
+    if '--smoke-test' in sys.argv or '--smoke-civitai' in sys.argv:
+        if '--smoke-civitai' in sys.argv:
+            import civitai_connect_ui
+            civitai_connect_ui.show(app)
         root.update();root.after(300,root.destroy)
     root.mainloop()
 

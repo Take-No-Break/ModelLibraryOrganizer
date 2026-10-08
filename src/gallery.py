@@ -6,6 +6,7 @@ from features import enrich,compatibility
 from PIL import Image,ImageTk
 from note_format import plain,note_content
 import network
+import civitai_connect_ui
 
 PREVIEW_TYPES={
  'checkpoints':'Checkpoint','loras':'LoRA','embeddings':'Embedding',
@@ -86,7 +87,7 @@ class Gallery:
   ttk.Button(bar,text='選択…',command=browse).pack(side='left')
   ttk.Button(bar,text='このフォルダーを調査',command=self.scan_gallery).pack(side='left')
   ttk.Button(bar,text='今回の調査結果',command=lambda:self.set_gallery_rows(self.rows)).pack(side='left')
-  ttk.Button(bar,text='Connect with Civitai',command=lambda:__import__('civitai_connect_ui').show(self)).pack(side='left')
+  ttk.Button(bar,text='Connect with Civitai',command=lambda:civitai_connect_ui.show(self)).pack(side='left')
   filters=ttk.Frame(page);filters.pack(fill='x',pady=(6,0))
   self.gallery_family=ChoiceVar(value='すべて');self.gallery_kind=ChoiceVar(value='すべて')
   self.gallery_filters={}
