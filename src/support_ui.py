@@ -20,6 +20,16 @@ class SupportUI:
     self.language=tk.StringVar(value=i18n.LANGS[i18n.LANG])
     choose=ttk.Combobox(controls,values=list(i18n.LANGS.values()),textvariable=self.language,state='readonly',width=15,font=('Yu Gothic UI',9));choose.pack(side='right');choose.bind('<<ComboboxSelected>>',self.change_language)
     ttk.Label(controls,text='言語',font=('Yu Gothic UI',9)).pack(side='right',padx=5)
+    self.civitai_badge=ttk.Label(controls,text='●',font=('Yu Gothic UI',10),foreground='#888888')
+    self.civitai_badge.pack(side='right',padx=5)
+    badge_tip=Tooltip(self.civitai_badge,'Civitai: Not connected')
+    def refresh_civitai_badge():
+        from civitai_auth import bearer
+        connected=bool(bearer())
+        self.civitai_badge.configure(foreground='#269447' if connected else '#888888')
+        badge_tip.text='Civitai: Connected' if connected else 'Civitai: Not connected'
+        self.root.after(1000,refresh_civitai_badge)
+    self.root.after(1000,refresh_civitai_badge)
     self.appearance=tk.StringVar(value='Classic' if self.preferences.get('theme','classic')=='classic' else 'Dark')
     appearance=ttk.Combobox(controls,values=['Dark','Classic'],textvariable=self.appearance,state='readonly',width=8,font=('Yu Gothic UI',9))
     appearance.pack(side='right',padx=5);appearance.bind('<<ComboboxSelected>>',self.change_appearance)
