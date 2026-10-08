@@ -50,5 +50,43 @@ class LibraryTests(unittest.TestCase):
     self.assertEqual(str(app.gallery_previous.cget('state')),'disabled');self.assertEqual(str(app.gallery_next.cget('state')),'normal')
     library_ui.comparison_result(app,[{'id':1,'description':'old'},{'id':2,'description':'new'}],1)
     root.update()
-   finally:root.destroy()
+   finally:
+    for timer in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(timer)
+    root.destroy()
+
+ def test_reverse_compatibility_tree_scroll_and_metadata(self):
+  import tkinter as tk
+  from app import App
+  from features import compatibility
+  from gallery import preview_content
+  import library_ui
+  with tempfile.TemporaryDirectory() as directory:
+   root=tk.Tk();root.withdraw()
+   try:
+    app=App(root,Path(directory));root.update()
+    records=[]
+    for name,kind,family in [('lora','loras','Pony'),('checkpoint','checkpoints','SDXL'),('other','loras','Anima')]:
+     path=Path(directory)/(name+'.safetensors');path.write_bytes(b'neutral')
+     records.append(dict(source=str(path),kind=kind,family=family,sha=name,title=name,author='Demo',url=''))
+    app.rows=records;app.populate_compatibility()
+    forward=compatibility(records[0],[records[1]])[0]
+    app.compat_direction.set('Checkpoint → LoRA');app.populate_compatibility()
+    self.assertEqual(len(app.compat_pairs),2)
+    self.assertEqual(app.compat_pairs[0]['pair_key'],forward['pair_key'])
+    self.assertEqual({r['relation'] for r in app.compat_pairs},{'related','different'})
+    app.gallery_rows=records;library_ui.refresh_authors(app)
+    parent=app.author_tree.get_children()[0]
+    self.assertFalse(app.author_tree.item(parent,'open'))
+    library_ui.expand_authors(app,True);self.assertTrue(app.author_tree.item(parent,'open'))
+    self.assertTrue(app.author_tree.cget('yscrollcommand'));self.assertTrue(app.author_tree.cget('xscrollcommand'))
+    self.assertFalse(app.author_tree.column('type','stretch'))
+    self.assertTrue(app.gallery_list.cget('yscrollcommand'))
+    content=preview_content({**records[0],'metadata':{'ss_datasets':'[{"num_train_images":196,"tag_frequency":{"img":{"muk":49}}}]'}})
+    self.assertIn('Public API / Safetensors metadata',content)
+    self.assertIn('196',content);self.assertIn('49',content)
+    self.assertNotIn('ss_datasets:\n  [{',content)
+   finally:
+    for timer in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(timer)
+    root.destroy()
+
 if __name__=='__main__':unittest.main()

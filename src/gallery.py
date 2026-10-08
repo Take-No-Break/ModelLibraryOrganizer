@@ -34,6 +34,13 @@ def preview_content(row):
  lines=[line for line in lines if not line.startswith(('Trigger words: ','Evidence: ','SHA256: '))]
  index=next((i+1 for i,line in enumerate(lines) if line.startswith('Model: ')),0)
  lines[index:index]=triggers+['']
+ if any(key in (row.get('metadata') or {}) for key in ('ss_datasets','ss_tag_frequency')):
+  explanation='学習メタデータ（生成用のポジティブプロンプトではありません）:\nタグの後の数字は、学習データ内でそのタグが記録された回数です。信頼度やプロンプトの重みではありません。\nbatch_size_per_device: デバイスあたりの学習バッチ枚数\nnum_train_images: 学習画像数 / num_reg_images: 正則化画像数\nresolution: 学習解像度 / enable_bucket: 縦横比に応じたサイズ分け\nmin_bucket_reso / max_bucket_reso: バケット解像度の下限・上限\nis_dreambooth: DreamBooth方式のデータセット設定'
+  from locales import CATALOG
+  CATALOG['en'][explanation]='Training metadata (not a positive generation prompt):\nNumbers after tags are recorded tag frequencies in the training dataset, not confidence scores or prompt weights.\nbatch_size_per_device: training images per batch per device\nnum_train_images: training image count / num_reg_images: regularization image count\nresolution: training resolution / enable_bucket: grouping by aspect ratio\nmin_bucket_reso / max_bucket_reso: lower/upper bucket resolutions\nis_dreambooth: DreamBooth dataset configuration'
+  position=lines.index('[File metadata]') if '[File metadata]' in lines else len(lines)
+  lines[position:position]=[tr(explanation),'']
+ lines[0]='Model Library Organizer — Source information (Public API / Safetensors metadata)'
  return '\n'.join(lines+['',*details])
 
 class Gallery:
@@ -85,7 +92,6 @@ class Gallery:
    if p:self.gallery_path.set(p)
   ttk.Button(bar,text='選択…',command=browse).pack(side='left')
   ttk.Button(bar,text='このフォルダーを調査',command=self.scan_gallery).pack(side='left')
-  ttk.Button(bar,text='今回の調査結果',command=lambda:self.set_gallery_rows(self.rows)).pack(side='left')
   filters=ttk.Frame(page);filters.pack(fill='x',pady=(6,0))
   self.gallery_family=ChoiceVar(value='すべて');self.gallery_kind=ChoiceVar(value='すべて')
   self.gallery_filters={}
@@ -101,11 +107,18 @@ class Gallery:
   left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
   self.gallery_vertical=ttk.Panedwindow(left,orient='vertical');self.gallery_vertical.pack(fill='both',expand=True)
   upper=ttk.Frame(self.gallery_vertical);lower=ttk.Frame(self.gallery_vertical);self.gallery_vertical.add(upper,weight=1);self.gallery_vertical.add(lower,weight=2)
-  self.gallery_list=ttk.Treeview(upper,columns=('name','family'),show='headings',height=9)
+  list_frame=ttk.Frame(upper);list_frame.pack(fill='both',expand=True)
+  list_frame.rowconfigure(0,weight=1);list_frame.columnconfigure(0,weight=1)
+  self.gallery_list=ttk.Treeview(list_frame,columns=('name','family'),show='headings',height=9)
   self.gallery_list.heading('name',text='モデル／ファイル',command=lambda:self.sort_gallery('name'));self.gallery_list.heading('family',text='系統 / 種類',command=lambda:self.sort_gallery('family'));self.gallery_list.column('name',width=320);self.gallery_list.column('family',width=230)
-  self.gallery_list.pack(fill='both',expand=True)
+  self.gallery_list.grid(row=0,column=0,sticky='nsew')
+  y=ttk.Scrollbar(list_frame,orient='vertical',command=self.gallery_list.yview);y.grid(row=0,column=1,sticky='ns')
+  x=ttk.Scrollbar(list_frame,orient='horizontal',command=self.gallery_list.xview);x.grid(row=1,column=0,sticky='ew')
+  self.gallery_list.configure(yscrollcommand=y.set,xscrollcommand=x.set)
   self.gallery_list.bind('<<TreeviewSelect>>',self.gallery_selected)
-  self.gallery_text=LocalizedText(lower,height=14,wrap='word');self.gallery_text.pack(fill='both',expand=True,pady=4)
+  text_frame=ttk.Frame(lower);text_frame.pack(fill='both',expand=True,pady=4)
+  self.gallery_text=LocalizedText(text_frame,height=14,wrap='word');self.gallery_text.pack(side='left',fill='both',expand=True)
+  text_scroll=ttk.Scrollbar(text_frame,orient='vertical',command=self.gallery_text.yview);text_scroll.pack(side='right',fill='y');self.gallery_text.configure(yscrollcommand=text_scroll.set)
   navigation=ttk.Frame(right);navigation.pack(fill='x')
   self.gallery_previous=ttk.Button(navigation,text='前の画像',command=lambda:self.change_gallery_image(-1));self.gallery_previous.pack(side='left')
   self.gallery_counter=tk.StringVar(value='0 / 0');ttk.Label(navigation,textvariable=self.gallery_counter).pack(side='left',padx=5)
@@ -145,7 +158,7 @@ class Gallery:
    self.linked_text(self.gallery_text,'')
    self.gallery_photo.configure(image='',text=tr('モデルを選ぶと公開画像を表示します。'));self.gallery_photo.image=None
  def sort_gallery(self,column):
-  self.gallery_descending=not self.gallery_descending if self.gallery_sort==column else False
+  self.gallery_descending=False if column=='name' else not self.gallery_descending if self.gallery_sort==column else False
   self.gallery_sort=column;self.filter_gallery_rows()
  def scan_gallery(self):
   if not self.ready():return
@@ -243,12 +256,18 @@ class Gallery:
   self.compat_origin=StatusVar(value='候補はこのPCの調査履歴と今回の結果のみです。未調査のPCでは空です。全ドライブを自動探索しません。')
   ttk.Label(page,textvariable=self.compat_origin,wraplength=1100).pack(anchor='w',pady=5)
   ttk.Button(page,text='調査済みモデルから一覧を更新',command=self.populate_compatibility).pack(anchor='w',pady=8)
-  ttk.Label(page,text='LoRA').pack(anchor='w')
+  self.compat_direction=ChoiceVar(value='LoRA → Checkpoint')
+  direction=ttk.Combobox(page,textvariable=self.compat_direction,values=['LoRA → Checkpoint','Checkpoint → LoRA'],state='readonly',width=26);direction.pack(anchor='w')
+  direction.bind('<<ComboboxSelected>>',lambda event:self.populate_compatibility())
   self.compat_choice=ttk.Combobox(page,state='readonly',width=90);self.compat_choice.pack(fill='x');self.compat_choice.bind('<<ComboboxSelected>>',self.compat_selected)
   self.compat_summary=LocalizedText(page,height=5,wrap='word');self.compat_summary.pack(fill='x',pady=8)
-  self.compat_table=ttk.Treeview(page,columns=('model','family','result'),show='headings')
+  compat_frame=ttk.Frame(page);compat_frame.pack(fill='both',expand=True)
+  compat_frame.rowconfigure(0,weight=1);compat_frame.columnconfigure(0,weight=1)
+  self.compat_table=ttk.Treeview(compat_frame,columns=('model','family','result'),show='headings')
   for key,label,width in [('model','チェックポイント',450),('family','系統',120),('result','判定',400)]:self.compat_table.heading(key,text=label);self.compat_table.column(key,width=width)
-  self.compat_table.pack(fill='both',expand=True)
+  self.compat_table.grid(row=0,column=0,sticky='nsew')
+  scroll=ttk.Scrollbar(compat_frame,orient='vertical',command=self.compat_table.yview);scroll.grid(row=0,column=1,sticky='ns');self.compat_table.configure(yscrollcommand=scroll.set)
+  x=ttk.Scrollbar(compat_frame,orient='horizontal',command=self.compat_table.xview);x.grid(row=1,column=0,sticky='ew');self.compat_table.configure(xscrollcommand=x.set)
   for tag,color in [('same','#e4f4e6'),('related','#fff2d8'),('different','#e5e5e5'),('unknown','#e5e5e5')]:self.compat_table.tag_configure(tag,background=color)
   self.compat_table.bind('<<TreeviewSelect>>',self.select_compat_pair)
   self.compat_overrides=read_json(self.engine.data/'compatibility-assessments.json',{}) or {}
@@ -259,37 +278,39 @@ class Gallery:
   ttk.Label(edit,text='メモ').pack(side='left');ttk.Entry(edit,textvariable=self.compat_note).pack(side='left',fill='x',expand=True)
   ttk.Button(edit,text='評価を保存',command=self.save_compat_pair).pack(side='left')
  def populate_compatibility(self):
-  old_lora=self.compat_choice.current()
-  previous_lora=self.compat_loras[old_lora]['source'] if hasattr(self,'compat_loras') and 0<=old_lora<len(self.compat_loras) else None
+  old=self.compat_choice.current()
+  previous=self.compat_inputs[old]['source'] if hasattr(self,'compat_inputs') and 0<=old<len(self.compat_inputs) else None
   catalog={r['source']:r for r in self.engine.cache.get('catalog',{}).values()};catalog.update({r['source']:r for r in self.rows})
   roots={k:v.get().strip() for k,v in self.compat_roots.items()}
   def allowed(row):
    key='loras' if row.get('kind')=='loras' else 'checkpoints'
    return not roots[key] or Path(row['source']).resolve().is_relative_to(Path(roots[key]).resolve())
-  self.compat_catalog=[r for r in catalog.values() if Path(r['source']).exists() and allowed(r)];self.compat_loras=[r for r in self.compat_catalog if r.get('kind')=='loras' and Path(r['source']).exists()]
-  self.compat_choice.configure(values=[Path(r['source']).name+' / '+r.get('family','') for r in self.compat_loras])
-  self.compat_checkpoints=[r for r in self.compat_catalog if r.get('kind') in ('checkpoints','diffusion_models')]
-  def caption(r,key):
-   path=Path(r['source']);root=self.compat_roots[key].get().strip()
+  self.compat_catalog=[r for r in catalog.values() if Path(r['source']).exists() and allowed(r)]
+  self.compat_loras=sorted([r for r in self.compat_catalog if r.get('kind')=='loras'],key=lambda r:Path(r['source']).name.casefold())
+  self.compat_checkpoints=sorted([r for r in self.compat_catalog if r.get('kind') in ('checkpoints','diffusion_models')],key=lambda r:Path(r['source']).name.casefold())
+  reverse=self.compat_direction.get()=='Checkpoint → LoRA'
+  self.compat_inputs=self.compat_checkpoints if reverse else self.compat_loras
+  self.compat_table.heading('model',text='LoRA' if reverse else tr('チェックポイント'))
+  key='checkpoints' if reverse else 'loras'
+  def caption(r):
+   path=Path(r['source']);root=roots[key]
    return (str(path.relative_to(Path(root))) if root and path.is_relative_to(Path(root)) else str(path))+' / '+(r.get('family') or 'Unknown')
-  self.compat_choice.configure(values=[caption(r,'loras') for r in self.compat_loras])
-  self.compat_pairs=[]
-  self.compat_table.delete(*self.compat_table.get_children())
-  self.compat_origin.set('このPCの調査履歴＋今回の結果 / LoRA: '+str(len(self.compat_loras))+' / Checkpoint: '+str(sum(r.get('kind') in ('checkpoints','diffusion_models') for r in self.compat_catalog))+' — 入力したフォルダー内に候補を限定します。空欄では過去の調査全体です。')
-  if self.compat_loras:
-   self.compat_choice.current(next((i for i,r in enumerate(self.compat_loras) if r['source']==previous_lora),0));self.compat_selected()
+  self.compat_choice.configure(values=[caption(r) for r in self.compat_inputs])
+  self.compat_pairs=[];self.compat_table.delete(*self.compat_table.get_children())
+  self.compat_origin.set('LoRA: '+str(len(self.compat_loras))+' / Checkpoint: '+str(len(self.compat_checkpoints)))
+  if self.compat_inputs:
+   self.compat_choice.current(next((i for i,r in enumerate(self.compat_inputs) if r['source']==previous),0));self.compat_selected()
   else:self.compat_choice.set('');self.linked_text(self.compat_summary,'未調査または候補なし。フォルダーを指定して追加調査してください。')
  def compat_selected(self,event=None):
   index=self.compat_choice.current()
   if index<0:return
-  row=self.compat_loras[index]
-  summary='LoRA: '+row['source']+'\nBase family: '+(row.get('family') or 'Unknown')+'\n'
-  summary+='Compared with all '+str(len(self.compat_checkpoints))+' checkpoint / diffusion models in the selected folder.\n'
-  if not self.compat_checkpoints:summary+='No checkpoint available. Scan the selected checkpoint folder first.\n'
+  row=self.compat_inputs[index];reverse=self.compat_direction.get()=='Checkpoint → LoRA'
+  candidates=self.compat_loras if reverse else self.compat_checkpoints
+  summary=('Checkpoint: ' if reverse else 'LoRA: ')+row['source']+'\nBase family: '+(row.get('family') or 'Unknown')+'\n'
+  summary+='Compared with '+str(len(candidates))+(' LoRA models.' if reverse else ' checkpoint / diffusion models.')+'\n'
   summary+='Family estimate only; no model loading or image generation is performed.\n'+row.get('url','')
-  self.linked_text(self.compat_summary,summary)
-  self.compat_table.delete(*self.compat_table.get_children())
-  self.compat_pairs=compatibility(row,self.compat_checkpoints)
+  self.linked_text(self.compat_summary,summary);self.compat_table.delete(*self.compat_table.get_children())
+  self.compat_pairs=compatibility(row,candidates)
   self.compat_rating.set('自動判定');self.compat_note.set('')
   for i,r in enumerate(self.compat_pairs):
    override=self.compat_overrides.get(r['pair_key'],{});rating=override.get('rating','自動判定')

@@ -1,6 +1,6 @@
 from pathlib import Path
 from html.parser import HTMLParser
-import re
+import re,json
 
 class PlainDescription(HTMLParser):
     def __init__(self):
@@ -26,6 +26,15 @@ def readable(value,indent=''):
     if isinstance(value,list):return '\n'.join(readable(v,indent) for v in value)
     return '\n'.join(indent+line for line in plain(value).splitlines())
 
+def file_metadata(metadata):
+ result=dict(metadata or {})
+ for key in ('ss_datasets','ss_tag_frequency'):
+  value=result.get(key)
+  if isinstance(value,str):
+   try:result[key]=json.loads(value)
+   except (ValueError,TypeError):pass
+ return result
+
 def note_content(row,sections=None):
     info=row.get('info',{})
     lines=['Model Library Organizer — Source information','', 'Model: '+row.get('title',''),
@@ -38,7 +47,7 @@ def note_content(row,sections=None):
       '', '[Version description]',plain(info.get('description','')),
       '', '[Public metadata]',readable({k:v for k,v in info.items() if k not in ('model_description','description','images','triggers')}),
       '', '[Lookup results]',readable({'matched_sources':row.get('matched_sources',[]),'source_checks':row.get('source_checks',[])}),
-      '', '[File metadata]',readable(row.get('metadata',{})),
+      '', '[File metadata]',readable(file_metadata(row.get('metadata',{}))),
       '', 'A shared model family does not guarantee compatibility or results with every checkpoint.','']
     if sections is not None:
         sections=set(sections)|{'triggers'}

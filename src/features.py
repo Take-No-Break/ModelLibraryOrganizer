@@ -64,12 +64,13 @@ def pair_key(lora,checkpoint):
 
 def compatibility(row,catalog):
     result=[]
+    reverse=row.get('kind') in ('checkpoints','diffusion_models')
     for other in catalog:
-        if other.get('kind') not in ('checkpoints','diffusion_models') or not Path(other['source']).exists():continue
+        if other.get('kind') not in (('loras',) if reverse else ('checkpoints','diffusion_models')) or not Path(other['source']).exists():continue
         a=row.get('family','');b=other.get('family','')
         relation=family_relation(a,b)
         status={'same':'同じ系統・組み合わせ未検証','related':'SDXL派生・互換性は中（未検証）','different':'異なる系統・対応関係なし／未確認','unknown':'系統未確認'}[relation]
-        result.append({'checkpoint':other['source'],'family':b,'assessment':status,'relation':relation,'pair_key':pair_key(row,other),'source':other.get('url','')})
+        result.append({'checkpoint':other['source'],'family':b,'assessment':status,'relation':relation,'pair_key':pair_key(other,row) if reverse else pair_key(row,other),'source':other.get('url','')})
     return result
 
 # Explicit loader fields only. Never rewrite captions, prompts or arbitrary strings.

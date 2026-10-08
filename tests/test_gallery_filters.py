@@ -31,7 +31,7 @@ class GalleryFilterTests(unittest.TestCase):
                 app.gallery_family.set('すべて')
                 app.gallery_kind.set('すべて')
                 app.sort_gallery('name')
-                self.assertEqual(app.gallery_list.get_children(), ('0', '2', '1'))
+                self.assertEqual(app.gallery_list.get_children(), ('1', '2', '0'))
                 app.gallery_family.set('Pony')
                 app.set_gallery_rows([dict(source='/demo/new.safetensors', family='SDXL', kind='vae')], select=False)
                 self.assertEqual(app.gallery_family.get(), 'すべて')

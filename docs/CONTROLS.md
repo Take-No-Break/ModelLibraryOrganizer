@@ -86,7 +86,6 @@ Folder names are derived from metadata; new reported families can create new fol
 | --- | --- |
 | Folder entry / Browse | Chooses a collection to inspect. |
 | Scan this folder | Performs source identification for that folder. |
-| Current scan results | Populates the preview list from the current Models results. |
 | Model list | Selects a model; the family/type column distinguishes LoRA, checkpoint, VAE and other recognized roles. |
 | Information pane | Displays available identity, published trigger words, descriptions and evidence. Unavailable fields are labeled accordingly. |
 | Image pane | Shows an available general-audience source image; no image is saved beside the model. |
@@ -298,3 +297,12 @@ The uninstaller is included but has not been executed or tested. Model libraries
 ### Preview filters and sorting
 
 Choose Family and Type to combine filters. All removes that filter. Filename search matches part of a filename without case sensitivity. Click the Model / file or Family / type column heading to sort; click again to reverse the order. Filtering changes only the visible list, not the files.
+
+### Inspection list refinements
+
+- Filename heading always sorts A–Z. The family heading retains its sort toggle.
+- Preview lists, preview text, author lists and compatibility results have scrollbars.
+- Authors start collapsed. Expand all / Collapse all controls open or close every group. Metadata columns are compact; the author/model column takes the remaining width.
+- Compatibility direction can be LoRA → Checkpoint or Checkpoint → LoRA. Both use the same saved pair assessment. Family similarity remains an estimate, not a verified loader test.
+- Version comparison uses a larger colour-coded legend: additions green, removals red.
+- ss_datasets and ss_tag_frequency are training metadata. Tag numbers are recorded frequencies, not confidence scores or generation prompt weights.

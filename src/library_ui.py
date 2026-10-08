@@ -6,8 +6,10 @@ from core import fetch_json
 from features import enrich
 import network,library_models as models
 from responsive_controls import ControlFlow
+from gallery import PREVIEW_TYPES
 from locales import CATALOG
 TEXTS={'作者別一覧':'Authors','一覧を更新':'Refresh list','モデルの更新確認':'Check model updates','トリガーワードをコピー':'Copy trigger words','バージョンの説明を比較':'Compare version descriptions','画像から使用モデルを探す':'Find models used in image','この画像の使用モデル':'Models used in this image','作者':'Author','手持ちモデル':'Installed model','追加部分は緑、削除部分は赤で表示します。':'Additions are green; removals are red.','調査済みで現在も存在するモデルのみを一覧表示します。':'Only scanned models still present on this PC are listed.','公開APIが返す一般向け画像を切り替えます。':'Browse general-audience images returned by the public API.','前の画像':'Previous image','次の画像':'Next image'}
+TEXTS.update({'タグをすべて開く':'Expand all','すべて閉じる':'Collapse all'})
 CATALOG['en'].update(TEXTS)
 def selected(app):
  return [app.gallery_rows[int(i)] for i in app.gallery_list.selection()]
@@ -16,11 +18,18 @@ def init(app):
  for label,action in [('モデルの更新確認',lambda:check_updates(app)),('トリガーワードをコピー',lambda:copy_words(app)),('バージョンの説明を比較',lambda:compare(app)),('作者別一覧',lambda:show_authors(app)),('画像から使用モデルを探す',lambda:from_png(app))]:ttk.Button(bar,text=label,command=action).pack(side='left')
  page=app.pages['authors']
  ttk.Label(page,text='調査済みで現在も存在するモデルのみを一覧表示します。').pack(anchor='w')
- ttk.Button(page,text='一覧を更新',command=lambda:refresh_authors(app)).pack(anchor='w',pady=4)
- tree=ttk.Treeview(page,columns=('version','type','family'),show='tree headings')
+ controls=ttk.Frame(page);controls.pack(fill='x',pady=4)
+ ttk.Button(controls,text='一覧を更新',command=lambda:refresh_authors(app)).pack(side='left')
+ ttk.Button(controls,text='タグをすべて開く',command=lambda:expand_authors(app,True)).pack(side='left',padx=5)
+ ttk.Button(controls,text='すべて閉じる',command=lambda:expand_authors(app,False)).pack(side='left')
+ frame=ttk.Frame(page);frame.pack(fill='both',expand=True);frame.rowconfigure(0,weight=1);frame.columnconfigure(0,weight=1)
+ tree=ttk.Treeview(frame,columns=('version','type','family'),show='tree headings')
  tree.heading('#0',text=tr('作者')+' / '+tr('手持ちモデル'))
- for key,label in [('version','Version'),('type','種類'),('family','系統')]:tree.heading(key,text=tr(label));tree.column(key,width=130)
- tree.pack(fill='both',expand=True)
+ for key,label in [('version','Version'),('type','種類'),('family','系統')]:tree.heading(key,text=tr(label));tree.column(key,width={'version':75,'type':85,'family':95}[key],minwidth=55,stretch=False)
+ tree.column('#0',width=380,minwidth=180,stretch=True)
+ tree.grid(row=0,column=0,sticky='nsew')
+ y=ttk.Scrollbar(frame,orient='vertical',command=tree.yview);y.grid(row=0,column=1,sticky='ns')
+ x=ttk.Scrollbar(frame,orient='horizontal',command=tree.xview);x.grid(row=1,column=0,sticky='ew');tree.configure(yscrollcommand=y.set,xscrollcommand=x.set)
  app.author_tree=tree;app.author_records={}
  tree.bind('<Double-1>',lambda event:open_author_model(app))
 def refresh_authors(app):
@@ -32,14 +41,19 @@ def refresh_authors(app):
   if author not in groups:groups[author]=[]
   groups[author].append((row,info))
  for author,items in sorted(groups.items(),key=lambda x:x[0].casefold()):
-  parent=tree.insert('','end',text=author,open=True)
+  parent=tree.insert('','end',text=author,open=False)
   by_model={}
   for row,info in items:
    identity=models.identity(row)
    key=str(identity[1]) if identity else row.get('title') or Path(row['source']).name
-   if key not in by_model:by_model[key]=tree.insert(parent,'end',text=row.get('title') or Path(row['source']).name,open=True)
-   child=tree.insert(by_model[key],'end',text=Path(row['source']).name,values=(info.get('version') or ((identity or ('',0,''))[2] or 'Unknown'),row.get('kind',''),row.get('family','')))
+   if key not in by_model:by_model[key]=tree.insert(parent,'end',text=row.get('title') or Path(row['source']).name,open=False)
+   child=tree.insert(by_model[key],'end',text=Path(row['source']).name,values=(info.get('version') or ((identity or ('',0,''))[2] or 'Unknown'),PREVIEW_TYPES.get(row.get('kind'),row.get('kind','')),row.get('family','')))
    app.author_records[child]=row
+def expand_authors(app,opened):
+ def visit(parent):
+  for child in app.author_tree.get_children(parent):
+   app.author_tree.item(child,open=opened);visit(child)
+ visit('')
 def show_authors(app):
  refresh_authors(app);app.select_page(app.pages['authors'])
 def open_author_model(app):
@@ -116,7 +130,14 @@ def compare(app):
  app.work(run,'library_callback')
 def comparison_result(app,versions,current):
  window=LocalizedToplevel(app.root);window.title(tr('バージョンの説明を比較'));window.geometry('850x650')
- ttk.Label(window,text='追加部分は緑、削除部分は赤で表示します。').pack(anchor='w')
+ legend=ttk.Frame(window);legend.pack(fill='x',padx=8,pady=8)
+ from i18n import LANG
+ parts=[('追加部分は ',None),('緑','#187331'),('、削除部分は ',None),('赤','#a33e42'),(' で表示します。',None)] if LANG=='ja' else [('Additions: ',None),('green','#187331'),(' / Removals: ',None),('red','#a33e42')]
+ for word,color in parts:
+  kwargs={'text':word,'font':('Yu Gothic UI',12,'bold')}
+  if color:kwargs['foreground']=color
+  ttk.Label(legend,**kwargs).pack(side='left')
+
  labels=[str(v.get('name') or v['id'])+' / '+str(v['id'])+' / '+str(v.get('baseModel','')) for v in versions]
  bar=ttk.Frame(window);bar.pack(fill='x')
  a=ttk.Combobox(bar,values=labels,state='readonly');a.pack(side='left',fill='x',expand=True)
