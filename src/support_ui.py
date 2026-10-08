@@ -24,10 +24,10 @@ class SupportUI:
     self.civitai_badge.pack(side='right',padx=5)
     badge_tip=Tooltip(self.civitai_badge,'Civitai: Not connected')
     def refresh_civitai_badge():
-        from civitai_auth import bearer
+        from civitai_auth import bearer,STATUS
         connected=bool(bearer())
         self.civitai_badge.configure(foreground='#269447' if connected else '#888888')
-        badge_tip.text='Civitai: Connected' if connected else 'Civitai: Not connected'
+        badge_tip.text='Civitai: Connected' if connected else 'Civitai: '+STATUS
         self.root.after(1000,refresh_civitai_badge)
     self.root.after(1000,refresh_civitai_badge)
     self.appearance=tk.StringVar(value='Classic' if self.preferences.get('theme','classic')=='classic' else 'Dark')

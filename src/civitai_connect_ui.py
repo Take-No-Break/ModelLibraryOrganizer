@@ -20,7 +20,7 @@ def show(app):
   window.clipboard_clear();window.clipboard_append(civitai_auth.REDIRECT)
  ttk.Button(callback_bar,text='Copy',command=copy_callback).pack(side='right',padx=(8,0))
  ttk.Label(window,text='Permissions: UserRead, ModelsRead, MediaRead',wraplength=660).pack(anchor='w',padx=12,pady=(4,8))
- status=tk.StringVar(value='Connected' if civitai_auth.bearer() else 'Not connected')
+ status=tk.StringVar(value='Connected' if civitai_auth.bearer() else civitai_auth.STATUS)
  ttk.Label(window,textvariable=status,wraplength=620).pack(anchor='w',padx=12,pady=6)
  events=queue.Queue()
  def poll():

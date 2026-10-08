@@ -3,6 +3,7 @@ import base64,hashlib,json,secrets,time,threading,webbrowser
 from http.server import HTTPServer,BaseHTTPRequestHandler
 from urllib.parse import urlencode,urlparse,parse_qs
 from urllib.request import Request,build_opener,HTTPRedirectHandler
+STATUS='Not connected'
 TOKEN='';EXPIRES=0;GENERATION=0;LOGIN_LOCK=threading.Lock()
 REDIRECT='http://localhost:47831/oauth/callback'
 BASE='https://auth.civitai.com/api/auth/oauth/'
@@ -14,7 +15,12 @@ def clear():
 def bearer():
  return TOKEN if time.time()<EXPIRES else ''
 def login(client_id,notify):
- global TOKEN,EXPIRES
+ global TOKEN,EXPIRES,STATUS
+ original_notify=notify
+ def notify(ok,message):
+  global STATUS
+  STATUS=message
+  original_notify(ok,message)
  if not LOGIN_LOCK.acquire(blocking=False):notify(False,'Another authorization is already in progress.');return
  generation=GENERATION
  verifier=secrets.token_urlsafe(48);state=secrets.token_urlsafe(32)
@@ -29,7 +35,7 @@ def login(client_id,notify):
     self.send_response(400);self.end_headers();self.wfile.write(b'Invalid callback.');return
    result.update(code=q.get('code',[''])[0],error=bool(q.get('error')))
    self.send_response(200);self.send_header('Content-Type','text/plain; charset=utf-8');self.end_headers()
-   self.wfile.write(b'Authorization received. Return to Model Library Organizer.')
+   self.wfile.write(b'Authorization code received. Return to Model Library Organizer to check whether connection succeeded.')
  try:
   with HTTPServer(('127.0.0.1',47831),Callback) as server:
    server.timeout=1
@@ -45,13 +51,22 @@ def login(client_id,notify):
    data=json.loads(raw)
   token=data.get('access_token','');seconds=min(3600,max(0,int(data.get('expires_in',0))))
   if not isinstance(token,str) or not token or '\r' in token or '\n' in token or seconds<=0:raise ValueError('token')
-  if int(data.get('scope',0))&37!=37:raise ValueError('scope')
+  if int(data.get('scope',0))&37!=37:raise ValueError('missing UserRead / ModelsRead / MediaRead permissions')
   if generation!=GENERATION:notify(False,'Authorization was cancelled locally.');return
   TOKEN=token;EXPIRES=time.time()+seconds
   notify(True,'Connected for this session (up to 1 hour). Select a model to retry its preview.')
  except Exception as exc:
   clear()
   code=getattr(exc,'code',None)
-  notify(False,'Civitai connection failed'+(' (HTTP '+str(code)+')' if code else ' ('+type(exc).__name__+')')+'. Check app registration and callback port 47831.')
+  reason=''
+  if code:
+   try:
+    response=json.loads(exc.read(65536))
+    value=response.get('error','')
+    if value in ('invalid_grant','invalid_client','invalid_request','unsupported_grant_type','invalid_scope'):reason=': '+value
+   except Exception:pass
+  elif isinstance(exc,ValueError) and str(exc)=='missing UserRead / ModelsRead / MediaRead permissions':
+   reason=': enable UserRead, ModelsRead and MediaRead in OAuth Apps, then reconnect'
+  notify(False,'Civitai connection failed'+(' (HTTP '+str(code)+')' if code else ' ('+type(exc).__name__+')')+reason+'.')
 
  finally:LOGIN_LOCK.release()
