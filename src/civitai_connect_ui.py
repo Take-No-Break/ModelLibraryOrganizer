@@ -5,10 +5,13 @@ from core import read_json,atomic_json
 import civitai_auth,network
 def show(app):
  window=LocalizedToplevel(app.root);window.title('Civitai connection (experimental)');window.transient(app.root)
- window.geometry('660x300')
+ window.geometry('700x440')
  ttk.Label(window,text='Sign in through your browser. Previews remain general-audience only.\nCredentials are held in memory and cleared when the app closes.',wraplength=620).pack(anchor='w',padx=12,pady=12)
  config=app.engine.data/'civitai-oauth-client.json'
  client=tk.StringVar(value=(read_json(config,{}) or {}).get('client_id',''))
+ from locales import CATALOG
+ CATALOG['en']['取得場所：Civitaiのアカウント設定 → OAuth Apps → 新規アプリを登録（Public）→ 発行されたClient IDをコピー。\nこの番号は開発者が一度登録するアプリの識別番号です。ユーザーのログインIDやパスワードではありません。\n下の「OAuth app settings」で設定ページを開けます。']='Where to find it: Civitai account settings → OAuth Apps → Register a new app (Public) → Copy the issued Client ID.\nThis identifies the app registered once by its developer; it is not your login ID or password.\nUse OAuth app settings below to open the settings page.'
+ ttk.Label(window,text='取得場所：Civitaiのアカウント設定 → OAuth Apps → 新規アプリを登録（Public）→ 発行されたClient IDをコピー。\nこの番号は開発者が一度登録するアプリの識別番号です。ユーザーのログインIDやパスワードではありません。\n下の「OAuth app settings」で設定ページを開けます。',wraplength=660).pack(anchor='w',padx=12,pady=8)
  ttk.Label(window,text='Public OAuth Client ID').pack(anchor='w',padx=12)
  ttk.Entry(window,textvariable=client).pack(fill='x',padx=12)
  ttk.Label(window,text='Register callback: '+civitai_auth.REDIRECT+'\nPermissions: UserRead, ModelsRead, MediaRead',wraplength=620).pack(anchor='w',padx=12,pady=8)
