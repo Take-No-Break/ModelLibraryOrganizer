@@ -44,7 +44,7 @@ def login(client_id,notify):
    deadline=time.monotonic()+180
    while not result and time.monotonic()<deadline:server.handle_request()
   if not result.get('code'):notify(False,'Authorization cancelled or timed out.');return
-  request=Request(BASE+'token',data=urlencode(dict(grant_type='authorization_code',code=result['code'],code_verifier=verifier,client_id=client_id,redirect_uri=REDIRECT)).encode(),headers={'Content-Type':'application/x-www-form-urlencoded'})
+  request=Request(BASE+'token',data=urlencode(dict(grant_type='authorization_code',code=result['code'],code_verifier=verifier,client_id=client_id,redirect_uri=REDIRECT)).encode(),headers={'Content-Type':'application/x-www-form-urlencoded','Origin':'http://localhost:47831','Accept':'application/json','User-Agent':'ModelLibraryOrganizer/1.0'})
   with build_opener(NoRedirect()).open(request,timeout=20) as response:
    raw=response.read(1024*1024+1)
    if len(raw)>1024*1024:raise ValueError('response size')

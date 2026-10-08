@@ -4,6 +4,14 @@ import civitai_auth as auth,network
 class AuthTests(unittest.TestCase):
  def tearDown(self):
   auth.clear();network.OFFLINE=False;network.COOLDOWN.clear()
+ def test_recover_source_after_earlier_unknown(self):
+  from features import enrich
+  engine=MagicMock();engine.cache={'details':{'abc':{'status':'SHA256ˆê’v'}}}
+  row={'sha':'abc','url':''}
+  version={'modelId':2991085,'id':3391775,'files':[{'hashes':{'SHA256':'abc'}}]}
+  with patch('features.fetch_json',side_effect=[version,{}]):
+   enrich(engine,row,'https://civitai.red')
+  self.assertEqual(row['url'],'https://civitai.red/models/2991085?modelVersionId=3391775')
  def test_bearer_expiry(self):
   auth.TOKEN='secret';auth.EXPIRES=time.time()+60
   self.assertEqual(auth.bearer(),'secret')
@@ -45,5 +53,6 @@ class AuthTests(unittest.TestCase):
    results=[];auth.login('public-client',lambda *args:results.append(args))
    self.assertTrue(results[0][0]);self.assertEqual(auth.bearer(),'test-token')
    req=build.return_value.open.call_args.args[0]
+   self.assertEqual(req.get_header('Origin'),'http://localhost:47831')
    q=parse_qs(req.data.decode());self.assertIn('code_verifier',q);self.assertNotIn('client_secret',q)
 if __name__=='__main__':unittest.main()
