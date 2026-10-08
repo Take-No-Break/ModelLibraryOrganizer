@@ -9,14 +9,20 @@ def enrich(engine,row,host,online=True):
     if host not in ('https://civitai.red','https://civitai.com'):
         origin=urlparse(row.get('url',''))
         host=(origin.scheme+'://'+origin.netloc) if origin.hostname in ('civitai.red','civitai.com') else 'https://civitai.red'
-    if sha in cache and (not online or cache[sha].get('status')=='SHA256一致' or urlparse(row.get('url','')).hostname not in ('civitai.red','civitai.com')):
-        row['info']=cache[sha];return row['info']
+    recover_source=online and not row.get('url') and not cache.get(sha,{}).get('source_url')
+    if not recover_source and sha in cache and (not online or cache[sha].get('status')=='SHA256一致' or urlparse(row.get('url','')).hostname not in ('civitai.red','civitai.com')):
+        row['info']=cache[sha]
+        if not row.get('url') and cache[sha].get('source_url'):row['url']=cache[sha]['source_url']
+        return row['info']
     info={'status':'公開情報未取得','triggers':[]}
     if sha and online:
         try:
             v=fetch_json(host+'/api/v1/model-versions/by-hash/'+sha)
             if not any(f.get('hashes',{}).get('SHA256','').lower()==sha.lower() for f in v.get('files',[])):raise ValueError('SHA256不一致')
             info={'status':'SHA256一致','triggers':v.get('trainedWords',[]),'version':v.get('name'), 'version_id':v.get('id'),'base_model':v.get('baseModel'),'published':v.get('publishedAt'),'description':v.get('description'),'model':v.get('model'),'files':[{'name':f.get('name'),'hashes':f.get('hashes')} for f in v.get('files',[])],'images':v.get('images',[])}
+            if v.get('modelId') and v.get('id'):
+                info['source_url']=host+'/models/'+str(int(v['modelId']))+'?modelVersionId='+str(int(v['id']))
+                if not row.get('url'):row['url']=info['source_url']
             try:
                 card=fetch_json(host+'/api/v1/models/'+str(v['modelId']))
                 info['author']=card.get('creator',{}).get('username');info['tags']=card.get('tags',[]);info['model_description']=card.get('description')

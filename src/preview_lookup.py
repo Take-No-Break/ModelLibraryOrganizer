@@ -42,7 +42,7 @@ def preview_candidates(row,info,host,online=True):
    if exc.code!=404:errors.append('auth' if exc.code in (401,403) else 'failed')
   except Exception:errors.append('failed')
  if 'auth' in errors:return [],AUTH
- if errors and not success:return [],FAILED
+ if errors:return [],FAILED
  return [],NO_IMAGE
 
 from locales import CATALOG
