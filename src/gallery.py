@@ -73,7 +73,7 @@ class Gallery:
   # Tag offsets are based on the actual displayed text, including localization.
   actual=box.get('1.0','end-1c')
   for i,m in enumerate(re.finditer(r'https://[^\s<>"\)]+',actual)):
-   tag='link'+str(i);box.tag_add(tag,'1.0 + %d chars'%m.start(),'1.0 + %d chars'%m.end());box.tag_configure(tag,foreground=__import__('tag_theme').BLUE,underline=True)
+   tag='link'+str(i);box.tag_add(tag,'1.0 + %d chars'%m.start(),'1.0 + %d chars'%m.end());box.tag_configure(tag,foreground='#0000ee',underline=True)
    box.tag_bind(tag,'<Button-1>',lambda e,u=m.group():self.open_external(u));box.tag_bind(tag,'<Enter>',lambda e:box.configure(cursor='hand2'));box.tag_bind(tag,'<Leave>',lambda e:box.configure(cursor='xterm'))
   box.configure(state='disabled')
  def init_gallery(self):
