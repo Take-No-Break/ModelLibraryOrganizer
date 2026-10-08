@@ -15,7 +15,9 @@ Browse your downloaded LoRA and checkpoint models, see available preview images,
 | [Models](#organize-a-model-library) | Recursively scan supported files; calculate full SHA-256; match public sources; inspect model types and families; review unidentified files. |
 | [Organization](#organize-a-model-library) | Choose type/category or provider → creator → type → family layouts; review moves and hardlinks; create required folders when approved changes run. |
 | [Model inspection](#preview-a-model) | View available descriptions, trigger words, source links and preview images inside the app; resize preview panes. |
-| [Compatibility](#compatibility) | Select one LoRA and compare its family with all identified checkpoint/diffusion models in the chosen folder; record manual results for individual pairs. |
+| [Inspection tools](#updates-authors-and-trigger-words) | Check newer versions, copy trigger words, browse local models by author and compare version descriptions. |
+| [Image model lookup](#find-models-used-in-an-image) | Match supported generation metadata against scanned files; images without metadata cannot identify models. |
+| [Compatibility](#compatibility) | Compare LoRA → Checkpoint or Checkpoint → LoRA using base model families; save manual pair assessments. |
 | [Source TXT](#model-source-txt) | Create readable model information files with available trigger words, source, type, family and hash; choose optional fields or update existing generated notes with backups. |
 | [Image to Text](#image-to-text) | Export Combined or Expanded ComfyUI workflows, install/update required custom nodes, or run against a local ComfyUI server. |
 | [Edit Text](#edit-text) | Inspect image/TXT pairs or standalone TXT; edit individual captions or bulk prepend, append, remove, replace and wrap text. |
@@ -69,21 +71,39 @@ SeaArt and Tensor.Art are not automatically queried: this app has no verified re
 
 ![Preview: model list, source information and image](docs/screenshots/preview.jpg)
 
-1. Open **Model inspection → Preview** after scanning.
-2. Select a LoRA, checkpoint or another identified model in the list.
-3. Read available trigger words, type, family and source descriptions below the list.
-4. View the preview image on the right. Open the source link only when you need the original page.
+1. Open **Model inspection → Preview** and scan your model folder.
+2. Combine **Base model family**, **Model type** and **Filename search** to narrow the list. The filename heading sorts A–Z; the family heading can reverse its order.
+3. Select a model to read published trigger words, descriptions, source links and file metadata. Trigger words appear near the top; SHA-256 and evidence appear below.
+4. Use **Previous image / Next image** to browse available general-audience previews. Drag the dividers to resize the list, text and image areas.
 
-Published metadata must be available from a supported source; unavailable trigger words or images are not invented.
+Images and trigger words depend on the public API. Restricted or unavailable previews may not be shown; opening a source page in your browser is separate from API access. The app does not provide Civitai OAuth sign-in.
+
+**Labels:** **Model type** describes a role such as LoRA, checkpoint, VAE or embedding. **Base model family** describes the source base model or lineage, such as Illustrious, Pony or Anima. **Identification confidence** is a recorded identification status, not a numerical probability; **Evidence** explains the supporting information. Numbers under **ss_datasets** or **ss_tag_frequency** describe training data, not positive prompts, confidence scores or prompt weights.
+
+### Updates, authors and trigger words
+
+1. Select models in Preview with Ctrl / Shift. **Copy trigger words** combines available words without duplicates; cached words can be used offline.
+2. **Check model updates** lists newer public Civitai versions by publication date. Open a version to review it; weights are not automatically downloaded or replaced.
+3. **Authors** groups scanned files still on this PC by author, model and version. Groups start closed; use **Expand all / Collapse all**, or double-click a file to inspect it. This is your scanned library, not every upload by the author.
+4. **Compare version descriptions** compares two versions of the selected Civitai model: additions are green and removals are red. It compares descriptions and trigger words, not tensor weights.
+
+### Find models used in an image
+
+1. Scan your model library first.
+2. Click **Find models used in image** and select a PNG containing supported generation metadata, or use **Models used in this image** for the current API preview.
+3. Compare recorded model names, hashes or version IDs with scanned files. A supported ComfyUI prompt graph can also supply loader filenames.
+4. Distinguish hash/version matches from unverified filename matches. **Not identified** does not prove the model is absent from the PC.
+
+An ordinary PNG without generation metadata cannot reveal models from appearance. Images need not come from Civitai, but metadata may be stripped or incomplete. See the [inspection guide](docs/MODEL-INSPECTION-TOOLS.md).
 
 ### Compatibility
 
-1. Open **Model inspection → Compatibility** and choose checkpoint and LoRA folders.
-2. Scan those folders, then select one LoRA.
-3. Compare it with all identified checkpoints: **green** = same family, **yellow** = related SDXL families, **gray** = different or unknown.
-4. Click a row to record your own loading/generation test result.
+1. Open **Model inspection → Compatibility**, choose checkpoint and LoRA folders, and scan them.
+2. Choose **LoRA → Checkpoint** to compare one LoRA with checkpoint/diffusion models, or **Checkpoint → LoRA** to compare one checkpoint with LoRAs.
+3. Select the model. **Green** = same base model family, **yellow** = related SDXL families, **gray** = different or unknown.
+4. Select a pair and save your own loading/generation assessment and note. Both directions share the same saved pair assessment.
 
-Colors are metadata estimates, not generation tests or guarantees. Each computer needs its own folder selection and scans.
+These are metadata estimates, not model-loading tests or generation guarantees. Candidates come from scans on this PC; choosing a folder alone does not identify its files.
 
 ### Model source TXT
 
@@ -163,7 +183,7 @@ Counts show how many caption files use a tag, not AI confidence. Category filter
 1. Open **Results** and select a report to revisit scans, exports or caption changes.
 2. Use **History / Restore** to inspect recorded file moves.
 3. Select an eligible history record, or open its JSON, then choose **Restore this layout**.
-4. Restore the newest operation first and review the confirmation.
+4. Review the confirmation before restoring. Previously restored move journals can be checked again against current recorded paths. Changed files, missing journals or conflicts may block restoration.
 
 **A scan inventory without a linked move journal cannot restore locations.** Changed/deleted files or path conflicts may block restoration. History is not a model-content backup and cannot undo external actions. [Tools and recovery details](docs/CONTROLS.md#tools) explain duplicate checks and workflow-reference repair.
 
@@ -191,7 +211,3 @@ Windows CI uses Python 3.12. The prepared local Windows release was built using 
 Application source is provided under the [MIT license](LICENSE). Contributions and improvements are welcome; MIT does not require contributors to submit modifications upstream. Model weights and third-party dependencies retain their own licenses and notices.
 
 The Tag editor interface was developed with [unaya-git/TagFilter](https://github.com/unaya-git/TagFilter) as a design reference. This acknowledgment does not imply endorsement or affiliation.
-
-### Model inspection tools
-
-Browse multiple preview images, check newer Civitai model versions, copy selected trigger words, group installed models by author, and compare version descriptions. Image metadata can identify used models within your scanned library. [Operation guide](docs/MODEL-INSPECTION-TOOLS.md).

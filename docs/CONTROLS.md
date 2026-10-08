@@ -11,7 +11,7 @@ This guide describes the visible controls and dialogs, including what they chang
 | Results | Opens saved operation reports. |
 | Models | Opens file identification and organization proposals. |
 | Model inspection → Preview | Shows model information and available preview images. |
-| Model inspection → Compatibility | Compares a selected LoRA with identified checkpoint candidates. |
+| Model inspection → Compatibility | Compares LoRA → Checkpoint or Checkpoint → LoRA using scanned base model families. |
 | Training data → Image to Text | Configures local ComfyUI analysis and workflow/node exports. |
 | Training data → Text editor | Opens image training captions or model source-note settings. |
 | Training data → Tag editor | Opens thumbnail browsing and tag editing. |
@@ -93,19 +93,33 @@ Folder names are derived from metadata; new reported families can create new fol
 
 API metadata can be missing, restricted or unavailable. No trigger words or preview images are fabricated.
 
+| Additional control | What it does |
+| --- | --- |
+| Previous image / Next image | Browses available general-audience API previews. |
+| Models used in this image | Matches the current preview metadata with scanned local files. |
+| Find models used in image | Opens a PNG containing supported model names/hashes or a ComfyUI prompt graph; ordinary images without metadata cannot identify models from appearance. |
+| Check model updates | Lists newer public Civitai versions by publication date; no automatic download or replacement. |
+| Copy trigger words | Copies available words for selected models without duplicates; can use cached data offline. |
+| Compare version descriptions | Compares two versions of the selected Civitai model: descriptions and trigger words, with additions green and removals red. |
+| Authors / Refresh list | Groups scanned files still on this PC by author, model and version. |
+| Expand all / Collapse all | Opens or closes author groups; groups start collapsed. Double-click a file to inspect it. |
+
+**Model type** describes a role; **Base model family** describes a base model or lineage. **Identification confidence** is a categorical identification status, not a numerical probability. **Evidence** explains the supporting information. Image matching distinguishes hashes/versions from unverified names; an unidentified result does not prove the model is missing. See [the inspection guide](MODEL-INSPECTION-TOOLS.md).
+
 ### Compatibility
 
 1. Choose checkpoint and LoRA folders and scan them.
-2. Select one LoRA.
-3. Read all identified checkpoint candidates and their automatic family estimates.
-4. Select a checkpoint row to record your own test result.
+2. Choose LoRA → Checkpoint or Checkpoint → LoRA, then select one model.
+3. Read the opposite-type candidates and their base model family estimates.
+4. Select a pair to record your own test result; both directions share the saved assessment.
 
 | Control | What it does |
 | --- | --- |
 | Checkpoint folder / LoRA folder | Limits candidates to the selected folders, including subfolders. Blank entries use known scan history. |
 | Scan selected folders | Performs an additional read-only identification scan for these folders. |
 | Refresh scanned models | Rebuilds candidates from current results and this computer's saved catalog. |
-| LoRA selector | Compares one LoRA against every available checkpoint/diffusion candidate. |
+| Direction selector | Chooses LoRA → Checkpoint or Checkpoint → LoRA. |
+| Model selector | Compares one selected model with scanned candidates of the opposite type. |
 | Checkpoint row | Selects the pair whose assessment you want to record. |
 | Automatic assessment | Uses known family metadata: same green, related SDXL yellow, different/unknown gray. |
 | Worked / Needs adjustment / Failed | Records a manual pair-specific evaluation from your own experience. |
@@ -260,7 +274,7 @@ Completion popups inform you of success without forcing a tab change. Reports ar
 | --- | --- |
 | History row | Shows scan inventory or recorded move details and restore eligibility. |
 | Open history JSON | Imports a scan inventory or move journal for inspection. |
-| Restore this layout | Restores an eligible journal or linked moves after confirmation. Disabled when there are no restorable operations, required journals are missing or the record was already restored. |
+| Restore this layout | Restores an eligible journal or linked moves after confirmation. Previously restored move journals can be checked again. Missing move journals, changed files or path conflicts can prevent restoration. |
 | Show warning before moving | Restores or disables the preliminary move warning. Final confirmation and journaling remain. |
 | Confirm restoration | Attempts recorded reversal; file changes or conflicts can block it. |
 
@@ -296,13 +310,13 @@ The uninstaller is included but has not been executed or tested. Model libraries
 
 ### Preview filters and sorting
 
-Choose Family and Type to combine filters. All removes that filter. Filename search matches part of a filename without case sensitivity. Click the Model / file or Family / type column heading to sort; click again to reverse the order. Filtering changes only the visible list, not the files.
+Choose Base model family and Model type to combine filters. All removes that filter. Filename search matches part of a filename without case sensitivity. The Model / file heading always sorts A–Z; the base model family heading can reverse its sort direction. Filtering changes only the visible list, not the files.
 
 ### Inspection list refinements
 
 - Filename heading always sorts A–Z. The family heading retains its sort toggle.
 - Preview lists, preview text, author lists and compatibility results have scrollbars.
-- Authors start collapsed. Expand all / Collapse all controls open or close every group. Metadata columns are compact; the author/model column takes the remaining width.
+- Authors start collapsed. Expand all / Collapse all controls open or close every group. The author/model column has a narrower starting width and can be resized; both scrollbars remain available.
 - Compatibility direction can be LoRA → Checkpoint or Checkpoint → LoRA. Both use the same saved pair assessment. Family similarity remains an estimate, not a verified loader test.
 - Version comparison uses a larger colour-coded legend: additions green, removals red.
 - ss_datasets and ss_tag_frequency are training metadata. Tag numbers are recorded frequencies, not confidence scores or generation prompt weights.
