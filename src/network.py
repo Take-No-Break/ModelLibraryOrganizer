@@ -24,8 +24,12 @@ def request_json(url):
     if remaining>0:
         record(host,operation,'一時停止中',remaining);raise ServicePaused(f'{host}: 一時停止中。約{int(remaining)+1}秒後に再調査してください')
     req=urllib.request.Request(url,headers={'User-Agent':'ModelLibraryOrganizer/1.2','Accept':'application/json'})
+    from civitai_auth import bearer,NoRedirect
+    token=bearer() if host in ('civitai.com','civitai.red') and u.path.startswith('/api/v1/') else ''
+    if token:req.add_header('Authorization','Bearer '+token)
+    opener=urllib.request.build_opener(NoRedirect()) if token else urllib.request.build_opener()
     try:
-        with urllib.request.urlopen(req,timeout=18) as response:
+        with opener.open(req,timeout=18) as response:
             body=response.read(8*1024*1024+1)
             if len(body)>8*1024*1024:raise ValueError('API応答サイズ超過')
             data=json.loads(body)

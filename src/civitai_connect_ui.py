@@ -1,0 +1,37 @@
+"""Experimental Civitai connection dialog."""
+import queue,threading,tkinter as tk
+from i18n import ttk,LocalizedToplevel,tr
+from core import read_json,atomic_json
+import civitai_auth,network
+def show(app):
+ window=LocalizedToplevel(app.root);window.title('Civitai connection (experimental)');window.transient(app.root)
+ window.geometry('660x300')
+ ttk.Label(window,text='Sign in through your browser. Previews remain general-audience only.\nCredentials are held in memory and cleared when the app closes.',wraplength=620).pack(anchor='w',padx=12,pady=12)
+ config=app.engine.data/'civitai-oauth-client.json'
+ client=tk.StringVar(value=(read_json(config,{}) or {}).get('client_id',''))
+ ttk.Label(window,text='Public OAuth Client ID').pack(anchor='w',padx=12)
+ ttk.Entry(window,textvariable=client).pack(fill='x',padx=12)
+ ttk.Label(window,text='Register callback: '+civitai_auth.REDIRECT+'\nPermissions: UserRead, ModelsRead, MediaRead',wraplength=620).pack(anchor='w',padx=12,pady=8)
+ status=tk.StringVar(value='Connected' if civitai_auth.bearer() else 'Not connected')
+ ttk.Label(window,textvariable=status,wraplength=620).pack(anchor='w',padx=12,pady=6)
+ events=queue.Queue()
+ def poll():
+  if not window.winfo_exists():return
+  try:
+   ok,message=events.get_nowait();status.set(message);button.configure(state='normal')
+  except queue.Empty:pass
+  window.after(100,poll)
+ def connect():
+  if network.OFFLINE or not app.online.get():status.set('Enable online API lookup before connecting.');return
+  value=client.get().strip()
+  if not value:status.set('Enter the Client ID from Civitai account settings → OAuth Apps.');return
+  atomic_json(config,{'client_id':value})
+  button.configure(state='disabled');status.set('Waiting for browser authorization (3 minute timeout)…')
+  threading.Thread(target=civitai_auth.login,args=(value,lambda ok,msg:events.put((ok,msg))),daemon=True).start()
+ def disconnect():
+  civitai_auth.clear();status.set('Disconnected locally. Revoke consent in Civitai Connected Apps if needed.')
+ bar=ttk.Frame(window);bar.pack(fill='x',padx=12)
+ button=ttk.Button(bar,text='Connect with Civitai',command=connect);button.pack(side='left')
+ ttk.Button(bar,text='Disconnect',command=disconnect).pack(side='left',padx=6)
+ ttk.Button(bar,text='OAuth app settings',command=lambda:app.open_external('https://civitai.com/user/account')).pack(side='left')
+ poll()
