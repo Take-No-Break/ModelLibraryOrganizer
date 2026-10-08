@@ -163,16 +163,18 @@ class Gallery:
    host=self.host.get();online=self.online.get() and not network.OFFLINE
    def run():
     info=enrich(self.engine,row,host,online);im=None;error='公開APIに一般向け画像がありません。'
-    candidates=[x for x in info.get('images',[]) if x.get('nsfwLevel')==1 and x.get('type','image')=='image']
+    from preview_lookup import preview_candidates
+    candidates,error=preview_candidates(row,info,host,online)
     if network.OFFLINE:error='オフラインでは画像を取得できません。'
     elif candidates:
-     try:
-      url=candidates[0].get('url','')
-      if not url.startswith('https://'):raise ValueError('HTTPS image required')
-      with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'ModelLibraryOrganizer/1.5'}),timeout=20) as response:raw=response.read(20*1024*1024+1)
-      if len(raw)>20*1024*1024:raise ValueError('Image exceeds 20 MB')
-      im=Image.open(io.BytesIO(raw));im.thumbnail((450,480));im=im.convert('RGB')
-     except Exception as exc:error='画像を取得できません: '+str(exc)
+     for candidate in candidates[:3]:
+      try:
+       url=candidate.get('url','')
+       if not url.startswith('https://'):raise ValueError('HTTPS image required')
+       with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'ModelLibraryOrganizer/1.5'}),timeout=20) as response:raw=response.read(20*1024*1024+1)
+       if len(raw)>20*1024*1024:raise ValueError('Image exceeds 20 MB')
+       im=Image.open(io.BytesIO(raw));im.thumbnail((450,480));im=im.convert('RGB');error='';break
+      except Exception as exc:error='画像を取得できません: '+str(exc)
     return generation,row,info,im,error
    self.work(run,'gallery_image')
   begin()
