@@ -14,7 +14,12 @@ def show(app):
  ttk.Label(window,text='取得場所：Civitaiのアカウント設定 → OAuth Apps → 新規アプリを登録（Public）→ 発行されたClient IDをコピー。\nこの番号は開発者が一度登録するアプリの識別番号です。ユーザーのログインIDやパスワードではありません。\n下の「OAuth app settings」で設定ページを開けます。',wraplength=660).pack(anchor='w',padx=12,pady=8)
  ttk.Label(window,text='Public OAuth Client ID').pack(anchor='w',padx=12)
  ttk.Entry(window,textvariable=client).pack(fill='x',padx=12)
- ttk.Label(window,text='Register callback: '+civitai_auth.REDIRECT+' (This is your PC)\nPermissions: UserRead, ModelsRead, MediaRead',wraplength=620).pack(anchor='w',padx=12,pady=8)
+ callback_bar=ttk.Frame(window);callback_bar.pack(fill='x',padx=12,pady=(8,0))
+ ttk.Label(callback_bar,text='Register callback (This is your PC): '+civitai_auth.REDIRECT,wraplength=560).pack(side='left',fill='x',expand=True)
+ def copy_callback():
+  window.clipboard_clear();window.clipboard_append(civitai_auth.REDIRECT)
+ ttk.Button(callback_bar,text='Copy',command=copy_callback).pack(side='right',padx=(8,0))
+ ttk.Label(window,text='Permissions: UserRead, ModelsRead, MediaRead',wraplength=660).pack(anchor='w',padx=12,pady=(4,8))
  status=tk.StringVar(value='Connected' if civitai_auth.bearer() else 'Not connected')
  ttk.Label(window,textvariable=status,wraplength=620).pack(anchor='w',padx=12,pady=6)
  events=queue.Queue()
