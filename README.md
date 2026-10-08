@@ -191,3 +191,7 @@ Windows CI uses Python 3.12. The prepared local Windows release was built using 
 Application source is provided under the [MIT license](LICENSE). Contributions and improvements are welcome; MIT does not require contributors to submit modifications upstream. Model weights and third-party dependencies retain their own licenses and notices.
 
 The Tag editor interface was developed with [unaya-git/TagFilter](https://github.com/unaya-git/TagFilter) as a design reference. This acknowledgment does not imply endorsement or affiliation.
+
+### Model inspection tools
+
+Browse multiple preview images, check newer Civitai model versions, copy selected trigger words, group installed models by author, and compare version descriptions. Image metadata can identify used models within your scanned library. [Operation guide](docs/MODEL-INSPECTION-TOOLS.md).

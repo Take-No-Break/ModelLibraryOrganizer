@@ -106,6 +106,13 @@ class Gallery:
   self.gallery_list.pack(fill='both',expand=True)
   self.gallery_list.bind('<<TreeviewSelect>>',self.gallery_selected)
   self.gallery_text=LocalizedText(lower,height=14,wrap='word');self.gallery_text.pack(fill='both',expand=True,pady=4)
+  navigation=ttk.Frame(right);navigation.pack(fill='x')
+  self.gallery_previous=ttk.Button(navigation,text='前の画像',command=lambda:self.change_gallery_image(-1));self.gallery_previous.pack(side='left')
+  self.gallery_counter=tk.StringVar(value='0 / 0');ttk.Label(navigation,textvariable=self.gallery_counter).pack(side='left',padx=5)
+  self.gallery_next=ttk.Button(navigation,text='次の画像',command=lambda:self.change_gallery_image(1));self.gallery_next.pack(side='left')
+  self.gallery_resources=ttk.Button(right,text='この画像の使用モデル',command=self.gallery_image_resources);self.gallery_resources.pack(anchor='w')
+  ttk.Label(right,text='公開APIが返す一般向け画像を切り替えます。',wraplength=350).pack(anchor='w')
+  self.gallery_candidates=[];self.gallery_index=0;self.update_gallery_buttons()
   self.gallery_photo=ttk.Label(right,text='モデルを選ぶと公開画像を表示します。',anchor='center');self.gallery_photo.pack(fill='both',expand=True)
   self.gallery_rows=[];self.gallery_generation=0
  def set_gallery_rows(self,rows,select=True):
@@ -134,6 +141,7 @@ class Gallery:
   if previous and self.gallery_list.exists(previous[0]):self.gallery_list.selection_set(previous[0])
   else:
    self.gallery_generation+=1
+   self.gallery_candidates=[];self.gallery_index=0;self.gallery_counter.set('0 / 0');self.update_gallery_buttons()
    self.linked_text(self.gallery_text,'')
    self.gallery_photo.configure(image='',text=tr('モデルを選ぶと公開画像を表示します。'));self.gallery_photo.image=None
  def sort_gallery(self,column):
@@ -155,6 +163,7 @@ class Gallery:
   ids=self.gallery_list.selection()
   if not ids:return
   row=self.gallery_rows[int(ids[0])];self.gallery_generation+=1;generation=self.gallery_generation
+  self.gallery_candidates=[];self.gallery_index=0;self.gallery_counter.set('0 / 0');self.update_gallery_buttons()
   self.gallery_photo.configure(image='',text=tr('読み込み中…'));self.gallery_photo.image=None
   self.linked_text(self.gallery_text,preview_content(row))
   def begin():
@@ -162,26 +171,54 @@ class Gallery:
    if self.busy:self.root.after(150,begin);return
    host=self.host.get();online=self.online.get() and not network.OFFLINE
    def run():
-    info=enrich(self.engine,row,host,online);im=None;error='公開APIに一般向け画像がありません。'
+    info=enrich(self.engine,row,host,online)
     from preview_lookup import preview_candidates
-    candidates,error=preview_candidates(row,info,host,online)
-    if network.OFFLINE:error='オフラインでは画像を取得できません。'
-    elif candidates:
-     for candidate in candidates[:3]:
-      try:
-       url=candidate.get('url','')
-       if not url.startswith('https://'):raise ValueError('HTTPS image required')
-       with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'ModelLibraryOrganizer/1.5'}),timeout=20) as response:raw=response.read(20*1024*1024+1)
-       if len(raw)>20*1024*1024:raise ValueError('Image exceeds 20 MB')
-       im=Image.open(io.BytesIO(raw));im.thumbnail((450,480));im=im.convert('RGB');error='';break
-      except Exception as exc:error='画像を取得できません: '+str(exc)
-    return generation,row,info,im,error
+    candidates,error=preview_candidates(row,info,host,online,full=True)
+    image=None
+    if not online:error='オフラインでは画像を取得できません。'
+    elif candidates:image,error=self.fetch_gallery_image(candidates[0])
+    return generation,row,info,image,error,candidates,0
    self.work(run,'gallery_image')
   begin()
+ @staticmethod
+ def fetch_gallery_image(candidate):
+  try:
+   if network.OFFLINE:raise ValueError('Offline mode')
+   url=candidate.get('url','')
+   if not url.startswith('https://'):raise ValueError('HTTPS image required')
+   with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'ModelLibraryOrganizer/1.0'}),timeout=20) as response:raw=response.read(20*1024*1024+1)
+   if len(raw)>20*1024*1024:raise ValueError('Image exceeds 20 MB')
+   with Image.open(io.BytesIO(raw)) as source:
+    source.thumbnail((450,480));image=source.convert('RGB')
+   return image,''
+  except Exception as exc:return None,'画像を取得できません: '+type(exc).__name__
+ def update_gallery_buttons(self):
+  count=len(self.gallery_candidates)
+  self.gallery_previous.configure(state='normal' if self.gallery_index>0 else 'disabled')
+  self.gallery_next.configure(state='normal' if self.gallery_index+1<count else 'disabled')
+  self.gallery_resources.configure(state='normal' if count else 'disabled')
+ def change_gallery_image(self,delta):
+  if self.busy:return
+  index=self.gallery_index+delta
+  if not 0<=index<len(self.gallery_candidates):return
+  row=self.gallery_active_row;info=self.gallery_active_info;generation=self.gallery_generation
+  candidates=self.gallery_candidates
+  self.gallery_photo.configure(image='',text=tr('読み込み中…'))
+  def run():
+   image,error=self.fetch_gallery_image(candidates[index])
+   return generation,row,info,image,error,candidates,index
+  self.work(run,'gallery_image')
  def gallery_image(self,value):
-  generation,row,info,image,error=value
+  generation,row,info,image,error,candidates,index=value
   if generation!=self.gallery_generation:return
+  self.gallery_candidates=candidates;self.gallery_index=index
+  self.gallery_active_row=row;self.gallery_active_info=info
+  self.gallery_counter.set(str(index+1 if candidates else 0)+' / '+str(len(candidates)));self.update_gallery_buttons()
   self.display_gallery(row,info,image,error)
+ def gallery_image_resources(self):
+  if not self.gallery_candidates:return
+  import library_ui
+  library_ui.used_resources(self,self.gallery_candidates[self.gallery_index].get('meta') or {})
  def display_gallery(self,row,info,image,error=''):
   text=preview_content({**row,'info':info});self.linked_text(self.gallery_text,text)
   if image:

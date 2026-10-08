@@ -17,9 +17,9 @@ def general_image(item):
  if 'browsingLevel' in item:return type(item['browsingLevel']) is int and item['browsingLevel']==1
  return rated
 
-def preview_candidates(row,info,host,online=True):
+def preview_candidates(row,info,host,online=True,full=False):
  cached=[i for i in info.get('images',[]) if general_image(i)]
- if cached:return cached,''
+ if cached and not full:return cached,''
  if not online or network.OFFLINE:return [],NO_IMAGE
  sha=row.get('sha','')
  if not sha:return [],NO_IMAGE
@@ -34,13 +34,20 @@ def preview_candidates(row,info,host,online=True):
    if not any(str(f.get('hashes',{}).get('SHA256','')).lower()==sha.lower() for f in version.get('files',[])):continue
    success=True
    candidates=[i for i in version.get('images',[]) if general_image(i)]
-   if not candidates and version.get('id'):
-    page=fetch_json(base+'/api/v1/images?modelVersionId='+str(int(version['id']))+'&browsingLevel=1&type=image&limit=20')
-    candidates=[i for i in page.get('items',[]) if general_image(i)]
+   if (full or not candidates) and version.get('id'):
+    page=fetch_json(base+'/api/v1/images?modelVersionId='+str(int(version['id']))+'&browsingLevel=1&type=image&limit='+('50&withMeta=true' if full else '20'))
+    if full:
+     candidates=[i for i in page.get('items',[]) if general_image(i)]+candidates
+     unique={}
+     for item in candidates:
+      if item.get('url'):unique.setdefault(item['url'],item)
+     candidates=list(unique.values())
+    else:candidates=[i for i in page.get('items',[]) if general_image(i)]
    if candidates:return candidates,''
   except HTTPError as exc:
    if exc.code!=404:errors.append('auth' if exc.code in (401,403) else 'failed')
   except Exception:errors.append('failed')
+ if full and cached:return cached,''
  if 'auth' in errors:return [],AUTH
  if errors:return [],FAILED
  return [],NO_IMAGE

@@ -24,6 +24,7 @@ from restore_ui import RestoreUI
 from result_ui import ResultUI
 from tag_editor_ui import TagEditorUI
 import network
+import library_ui
 
 class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,TagEditorUI):
     def __init__(self,root,data=DATA):
@@ -53,7 +54,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.pages={};self.page_notebooks={};self.page_hosts={}
         from scroll_pages import ScrollablePage,scroll_wheel
         root.bind_all('<MouseWheel>',scroll_wheel)
-        groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性')]),('training','学習データ',[('captions','Image to Text'),('texts','Edit Text' if __import__('i18n').LANG=='ja' else 'テキスト編集'),('tag_ranking','Tag rankings'),('tag_editor','Tag editor')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('restore','履歴・復元',[('restore','履歴・復元')])]
+        groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性'),('authors','作者別一覧')]),('training','学習データ',[('captions','Image to Text'),('texts','Edit Text' if __import__('i18n').LANG=='ja' else 'テキスト編集'),('tag_ranking','Tag rankings'),('tag_editor','Tag editor')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('restore','履歴・復元',[('restore','履歴・復元')])]
         for group,title,children in groups:
             parent=ttk.Frame(self.tabs,padding=2);self.tabs.add(parent,text=tr(title))
             if len(children)==1:
@@ -61,7 +62,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
             else:
                 notebook=ttk.Notebook(parent);notebook.pack(fill='both',expand=True)
                 for key,label in children:
-                    host=ScrollablePage(notebook,fit_width=(key in ('tag_editor','preview','compatibility')))
+                    host=ScrollablePage(notebook,fit_width=(key in ('tag_editor','preview','compatibility','authors')))
                     if key!='tag_ranking':notebook.add(host,text=tr(label))
                     self.pages[key]=host.body;self.page_hosts[key]=host
                     self.page_notebooks[key]=(parent,notebook)
@@ -138,6 +139,8 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         self.init_panels()
         self.init_captions()
         self.init_tag_editor()
+        import library_ui
+        library_ui.init(self)
         self.install_interactions()
         self.setup_support(shell)
         self.init_restore()
@@ -220,6 +223,7 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
                 elif kind=='compat_scanned':self.populate_compatibility();self.status.set(value);self.notify_result('互換性の調査完了',value)
                 elif kind=='gallery_rows':self.set_gallery_rows(value)
                 elif kind=='gallery_image':self.gallery_image(value)
+                elif kind=='library_callback':value[1]()
                 elif kind=='release':self.release_result(value)
                 elif kind=='progress':self.set_progress(*value)
                 elif kind=='status':self.status.set(value)

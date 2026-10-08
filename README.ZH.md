@@ -190,3 +190,7 @@ Windows CI 使用 Python 3.12，本地 Windows 发布包使用 Python 3.14.5 构
 应用源码采用 [MIT 许可证](LICENSE)。欢迎贡献和改进，但 MIT 不要求将修改提交回原项目。模型权重及第三方依赖保留各自的许可证和声明。
 
 标签编辑界面以 [unaya-git/TagFilter](https://github.com/unaya-git/TagFilter) 为设计参考。此致谢不代表背书或合作关系。
+
+### 模型检查工具
+
+浏览多张预览图、检查 Civitai 模型的新版本、批量复制触发词、按作者查看本地模型，并比较版本说明。图像生成元数据还可与已扫描的本地模型匹配。[操作指南（英文）](docs/MODEL-INSPECTION-TOOLS.md)。

@@ -7,6 +7,7 @@ def main():
  MODULES.append('test_gallery_filters')
  MODULES.append('test_callback_errors')
  MODULES.append('test_preview_lookup')
+ MODULES.append('test_library_models')
  for module in MODULES:
   run=subprocess.run([sys.executable,'-X','utf8','-m','unittest','-q',module],cwd=ROOT,env=ENV,capture_output=True,text=True,encoding='utf-8')
   print(module+(': PASS' if run.returncode==0 else ': FAIL'),flush=True)
