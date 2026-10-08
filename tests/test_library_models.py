@@ -27,6 +27,8 @@ class LibraryTests(unittest.TestCase):
    png=PngImagePlugin.PngInfo();png.add_text('prompt',json.dumps({'1':{'class_type':'CheckpointLoaderSimple','inputs':{'ckpt_name':'a.safetensors'}},'2':{'inputs':{'lora_name':'b.safetensors'}}}))
    Image.new('RGB',(16,16),'gray').save(path,pnginfo=png)
    self.assertEqual([r['name'] for r in m.resources(m.png_metadata(path))],['a.safetensors','b.safetensors'])
+   Image.new('RGB',(16,16),'gray').save(path)
+   self.assertEqual(m.resources(m.png_metadata(path)),[])
  def test_multiple_previews_keep_only_general_audience(self):
   version={'id':3,'files':[{'hashes':{'SHA256':'a'*64}}],'images':[{'nsfwLevel':1,'url':'https://example.invalid/1'}]}
   page={'items':[{'nsfwLevel':1,'url':'https://example.invalid/1','meta':{'resources':[{'name':'model'}]}},{'nsfwLevel':'None','url':'https://example.invalid/2'},{'nsfwLevel':8,'url':'https://example.invalid/3'}]}
@@ -80,6 +82,9 @@ class LibraryTests(unittest.TestCase):
     library_ui.expand_authors(app,True);self.assertTrue(app.author_tree.item(parent,'open'))
     self.assertTrue(app.author_tree.cget('yscrollcommand'));self.assertTrue(app.author_tree.cget('xscrollcommand'))
     self.assertFalse(app.author_tree.column('type','stretch'))
+    self.assertFalse(app.author_tree.column('#0','stretch'))
+    self.assertEqual(app.author_tree.column('#0','width'),280)
+    self.assertIn('生成情報',app.image_model_tip.text)
     self.assertTrue(app.gallery_list.cget('yscrollcommand'))
     content=preview_content({**records[0],'metadata':{'ss_datasets':'[{"num_train_images":196,"tag_frequency":{"img":{"muk":49}}}]'}})
     self.assertIn('Public API / Safetensors metadata',content)

@@ -97,11 +97,11 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         body=ttk.Frame(outer);body.pack(fill='both',expand=True);body.rowconfigure(0,weight=1);body.columnconfigure(0,weight=1)
         columns=('decision','name','kind','family','confidence','source','destination')
         self.table=ttk.Treeview(body,columns=columns,show='headings',selectmode='extended')
-        for c,t,w in zip(columns,['判断','モデル／ファイル','種類','系統','根拠の確かさ','現在の場所','移動先'],[75,225,80,90,120,235,235]):
+        for c,t,w in zip(columns,['判断','モデル／ファイル','モデル種類','ベースモデル系統','識別の確かさ','現在の場所','移動先'],[75,225,80,90,120,235,235]):
             self.table.heading(c,text=t);self.table.column(c,width=w,minwidth=70,stretch=True)
         self.table.grid(row=0,column=0,sticky='nsew')
         from tips import TIPS
-        column_help=[TIPS[x] for x in ['判断','モデル／ファイル','種類','系統','根拠の確かさ','現在の場所','移動先']]
+        column_help=[TIPS[x] for x in ['判断','モデル／ファイル','モデル種類','ベースモデル系統','識別の確かさ','現在の場所','移動先']]
         tip=Tooltip(self.table,column_help[0]);tip.column=None
         def column_hint(event):
             col=self.table.identify_column(event.x)

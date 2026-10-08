@@ -95,7 +95,7 @@ class Gallery:
   filters=ttk.Frame(page);filters.pack(fill='x',pady=(6,0))
   self.gallery_family=ChoiceVar(value='すべて');self.gallery_kind=ChoiceVar(value='すべて')
   self.gallery_filters={}
-  for key,label,var in [('family','系統',self.gallery_family),('kind','種類',self.gallery_kind)]:
+  for key,label,var in [('family','ベースモデル系統',self.gallery_family),('kind','モデル種類',self.gallery_kind)]:
    ttk.Label(filters,text=label).pack(side='left',padx=(0,4))
    box=ttk.Combobox(filters,textvariable=var,state='readonly',width=24);box.pack(side='left',padx=(0,12))
    box.bind('<<ComboboxSelected>>',lambda event:self.filter_gallery_rows());self.gallery_filters[key]=box
@@ -110,7 +110,7 @@ class Gallery:
   list_frame=ttk.Frame(upper);list_frame.pack(fill='both',expand=True)
   list_frame.rowconfigure(0,weight=1);list_frame.columnconfigure(0,weight=1)
   self.gallery_list=ttk.Treeview(list_frame,columns=('name','family'),show='headings',height=9)
-  self.gallery_list.heading('name',text='モデル／ファイル',command=lambda:self.sort_gallery('name'));self.gallery_list.heading('family',text='系統 / 種類',command=lambda:self.sort_gallery('family'));self.gallery_list.column('name',width=320);self.gallery_list.column('family',width=230)
+  self.gallery_list.heading('name',text='モデル／ファイル',command=lambda:self.sort_gallery('name'));self.gallery_list.heading('family',text='ベースモデル系統 / モデル種類',command=lambda:self.sort_gallery('family'));self.gallery_list.column('name',width=320);self.gallery_list.column('family',width=230)
   self.gallery_list.grid(row=0,column=0,sticky='nsew')
   y=ttk.Scrollbar(list_frame,orient='vertical',command=self.gallery_list.yview);y.grid(row=0,column=1,sticky='ns')
   x=ttk.Scrollbar(list_frame,orient='horizontal',command=self.gallery_list.xview);x.grid(row=1,column=0,sticky='ew')
@@ -264,7 +264,7 @@ class Gallery:
   compat_frame=ttk.Frame(page);compat_frame.pack(fill='both',expand=True)
   compat_frame.rowconfigure(0,weight=1);compat_frame.columnconfigure(0,weight=1)
   self.compat_table=ttk.Treeview(compat_frame,columns=('model','family','result'),show='headings')
-  for key,label,width in [('model','チェックポイント',450),('family','系統',120),('result','判定',400)]:self.compat_table.heading(key,text=label);self.compat_table.column(key,width=width)
+  for key,label,width in [('model','チェックポイント',450),('family','ベースモデル系統',120),('result','判定',400)]:self.compat_table.heading(key,text=label);self.compat_table.column(key,width=width)
   self.compat_table.grid(row=0,column=0,sticky='nsew')
   scroll=ttk.Scrollbar(compat_frame,orient='vertical',command=self.compat_table.yview);scroll.grid(row=0,column=1,sticky='ns');self.compat_table.configure(yscrollcommand=scroll.set)
   x=ttk.Scrollbar(compat_frame,orient='horizontal',command=self.compat_table.xview);x.grid(row=1,column=0,sticky='ew');self.compat_table.configure(xscrollcommand=x.set)
@@ -306,9 +306,9 @@ class Gallery:
   if index<0:return
   row=self.compat_inputs[index];reverse=self.compat_direction.get()=='Checkpoint → LoRA'
   candidates=self.compat_loras if reverse else self.compat_checkpoints
-  summary=('Checkpoint: ' if reverse else 'LoRA: ')+row['source']+'\nBase family: '+(row.get('family') or 'Unknown')+'\n'
+  summary=('Checkpoint: ' if reverse else 'LoRA: ')+row['source']+'\nBase model family: '+(row.get('family') or 'Unknown')+'\n'
   summary+='Compared with '+str(len(candidates))+(' LoRA models.' if reverse else ' checkpoint / diffusion models.')+'\n'
-  summary+='Family estimate only; no model loading or image generation is performed.\n'+row.get('url','')
+  summary+='Base model family estimate only; no model loading or image generation is performed.\n'+row.get('url','')
   self.linked_text(self.compat_summary,summary);self.compat_table.delete(*self.compat_table.get_children())
   self.compat_pairs=compatibility(row,candidates)
   self.compat_rating.set('自動判定');self.compat_note.set('')

@@ -1,7 +1,7 @@
 """Read-only library updates, authors, caption words and version comparison."""
 from pathlib import Path
 import tkinter as tk
-from i18n import ttk,LocalizedToplevel,LocalizedText,messagebox,filedialog,tr
+from i18n import ttk,LocalizedToplevel,LocalizedText,messagebox,filedialog,tr,Tooltip
 from core import fetch_json
 from features import enrich
 import network,library_models as models
@@ -11,11 +11,17 @@ from locales import CATALOG
 TEXTS={'作者別一覧':'Authors','一覧を更新':'Refresh list','モデルの更新確認':'Check model updates','トリガーワードをコピー':'Copy trigger words','バージョンの説明を比較':'Compare version descriptions','画像から使用モデルを探す':'Find models used in image','この画像の使用モデル':'Models used in this image','作者':'Author','手持ちモデル':'Installed model','追加部分は緑、削除部分は赤で表示します。':'Additions are green; removals are red.','調査済みで現在も存在するモデルのみを一覧表示します。':'Only scanned models still present on this PC are listed.','公開APIが返す一般向け画像を切り替えます。':'Browse general-audience images returned by the public API.','前の画像':'Previous image','次の画像':'Next image'}
 TEXTS.update({'タグをすべて開く':'Expand all','すべて閉じる':'Collapse all'})
 CATALOG['en'].update(TEXTS)
+IMAGE_MODEL_HELP='生成情報を含むPNG専用です。対応するモデル名・ハッシュ値、またはComfyUIの生成用ノード情報を、調査済みライブラリと照合します。Civitaiの画像に限りません。情報のない通常のPNGや、見た目だけでは使用モデルを判別できません。情報があっても一部のモデルを特定できない場合があります。'
+CATALOG['en'][IMAGE_MODEL_HELP]='Requires a PNG containing supported generation metadata: model names/hashes or a ComfyUI prompt graph. Matches these records against the scanned library; images need not come from Civitai. Ordinary PNGs without this metadata cannot identify models from appearance alone. Even with metadata, some models may remain unidentified.'
+
 def selected(app):
  return [app.gallery_rows[int(i)] for i in app.gallery_list.selection()]
 def init(app):
  bar=ControlFlow(app.pages['preview']);bar.pack(fill='x',before=app.gallery_filters['family'].master,pady=3)
- for label,action in [('モデルの更新確認',lambda:check_updates(app)),('トリガーワードをコピー',lambda:copy_words(app)),('バージョンの説明を比較',lambda:compare(app)),('作者別一覧',lambda:show_authors(app)),('画像から使用モデルを探す',lambda:from_png(app))]:ttk.Button(bar,text=label,command=action).pack(side='left')
+ for label,action in [('モデルの更新確認',lambda:check_updates(app)),('トリガーワードをコピー',lambda:copy_words(app)),('バージョンの説明を比較',lambda:compare(app)),('作者別一覧',lambda:show_authors(app)),('画像から使用モデルを探す',lambda:from_png(app))]:
+  button=ttk.Button(bar,text=label,command=action);button.pack(side='left')
+  if label=='画像から使用モデルを探す':
+   app.image_model_tip=Tooltip(button,IMAGE_MODEL_HELP)
  page=app.pages['authors']
  ttk.Label(page,text='調査済みで現在も存在するモデルのみを一覧表示します。').pack(anchor='w')
  controls=ttk.Frame(page);controls.pack(fill='x',pady=4)
@@ -25,8 +31,8 @@ def init(app):
  frame=ttk.Frame(page);frame.pack(fill='both',expand=True);frame.rowconfigure(0,weight=1);frame.columnconfigure(0,weight=1)
  tree=ttk.Treeview(frame,columns=('version','type','family'),show='tree headings')
  tree.heading('#0',text=tr('作者')+' / '+tr('手持ちモデル'))
- for key,label in [('version','Version'),('type','種類'),('family','系統')]:tree.heading(key,text=tr(label));tree.column(key,width={'version':75,'type':85,'family':95}[key],minwidth=55,stretch=False)
- tree.column('#0',width=380,minwidth=180,stretch=True)
+ for key,label in [('version','Version'),('type','モデル種類'),('family','ベースモデル系統')]:tree.heading(key,text=tr(label));tree.column(key,width={'version':90,'type':110,'family':150}[key],minwidth=55,stretch=False)
+ tree.column('#0',width=280,minwidth=180,stretch=False)
  tree.grid(row=0,column=0,sticky='nsew')
  y=ttk.Scrollbar(frame,orient='vertical',command=tree.yview);y.grid(row=0,column=1,sticky='ns')
  x=ttk.Scrollbar(frame,orient='horizontal',command=tree.xview);x.grid(row=1,column=0,sticky='ew');tree.configure(yscrollcommand=y.set,xscrollcommand=x.set)
@@ -103,7 +109,7 @@ def updates_result(app,results):
  ttk.Label(window,text='Newer public versions are listed by publication date. Families may differ; compare before downloading.').pack(anchor='w')
  tree=ttk.Treeview(window,columns=('current','new','family','result'),show='tree headings')
  tree.heading('#0',text='Model')
- for key,label in [('current','Installed version ID'),('new','New version'),('family','Family'),('result','Result')]:tree.heading(key,text=label);tree.column(key,width=145)
+ for key,label in [('current','Installed version ID'),('new','New version'),('family','ベースモデル系統'),('result','Result')]:tree.heading(key,text=label);tree.column(key,width=145)
  tree.pack(fill='both',expand=True);links={}
  for row,identity,newer,error in results:
   current=identity[2] if identity else ''
@@ -160,7 +166,7 @@ def used_resources(app,meta):
  window=LocalizedToplevel(app.root);window.title(tr('この画像の使用モデル'));window.geometry('800x420')
  ttk.Label(window,text='Compared with scanned files still on this PC. Unidentified does not prove the model is absent.').pack(anchor='w')
  tree=ttk.Treeview(window,columns=('type','result','file'),show='tree headings');tree.heading('#0',text='Resource')
- for key,label in [('type','Type'),('result','Match'),('file','Local file')]:tree.heading(key,text=label);tree.column(key,width=190)
+ for key,label in [('type','モデル種類'),('result','Match'),('file','Local file')]:tree.heading(key,text=label);tree.column(key,width=190)
  tree.pack(fill='both',expand=True)
  for item in items:
   status,file=models.match_resource(item,rows,app.engine.cache.get('details',{}))

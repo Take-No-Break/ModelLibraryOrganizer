@@ -39,9 +39,9 @@ def note_content(row,sections=None):
     info=row.get('info',{})
     lines=['Model Library Organizer — Source information','', 'Model: '+row.get('title',''),
       'Filename: '+Path(row['source']).name,'Source: '+(row.get('url') or 'Unknown'),
-      'Type: '+row.get('kind',''),'Base model family: '+row.get('family',''),
+      'Model type: '+row.get('kind',''),'Base model family: '+row.get('family',''),
       'Creator / organization: '+(row.get('author') or info.get('author') or 'Unknown'),
-      'SHA256: '+row.get('sha',''),'Confidence: '+row.get('confidence',''),'Evidence: '+row.get('evidence',''),
+      'SHA256: '+row.get('sha',''),'Identification confidence: '+row.get('confidence',''),'Evidence: '+row.get('evidence',''),
       '', 'Trigger words: '+(', '.join(info.get('triggers',[])) or 'Not available / not retrieved'),
       '', '[Model description]',plain(info.get('model_description','')),
       '', '[Version description]',plain(info.get('description','')),

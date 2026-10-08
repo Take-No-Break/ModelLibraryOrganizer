@@ -352,3 +352,7 @@ if 'de' in CATALOG: CATALOG['de'].update({'ファイル名検索': 'Dateiname su
 if 'th' in CATALOG: CATALOG['th'].update({'ファイル名検索': 'ค้นหาชื่อไฟล์', '互換性の調査完了。': 'ตรวจสอบความเข้ากันได้เสร็จแล้ว'})
 
 CATALOG['en'].update({"選択した履歴の変更前の配置へ戻します。復元済みの履歴も再確認できます。記録済みの場所から同じファイルを特定できない場合や競合がある場合は停止します。":"Restore the layout before the selected operation. Previously restored histories can be checked again. Restoration stops if the unchanged file cannot be uniquely located in recorded paths or a destination conflicts."})
+
+# Explicit display labels; internal model classification codes remain unchanged.
+for code, labels in {'en': ['Model type', 'Base model family', 'Identification confidence'], 'es': ['Tipo de modelo', 'Familia del modelo base', 'Confianza de identificación'], 'zh-CN': ['模型类型', '基础模型系列', '识别可信度'], 'zh-TW': ['模型類型', '基礎模型系列', '辨識可信度'], 'pt-BR': ['Tipo de modelo', 'Família do modelo base', 'Confiança da identificação'], 'de': ['Modelltyp', 'Basismodellfamilie', 'Identifikationssicherheit'], 'th': ['ประเภทโมเดล', 'ตระกูลโมเดลพื้นฐาน', 'ความมั่นใจในการระบุ']}.items():
+ CATALOG[code].update(dict(zip(("モデル種類","ベースモデル系統","識別の確かさ"),labels)))
