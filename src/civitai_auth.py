@@ -14,6 +14,26 @@ def clear():
  TOKEN='';EXPIRES=0;GENERATION+=1
 def bearer():
  return TOKEN if time.time()<EXPIRES else ''
+def rejection_detail(exc):
+ try:
+  raw=exc.read(65536)
+ except Exception:return 'response_unavailable'
+ if str(getattr(exc,'headers',{}).get('cf-mitigated','')).lower()=='challenge':return 'cloudflare_challenge'
+ try:
+  data=json.loads(raw)
+ except Exception:
+  text=raw.decode('utf-8',errors='replace').lower()
+  return 'cloudflare_challenge' if 'cloudflare' in text or 'just a moment' in text else 'non_json_rejection'
+ allowed={'invalid_grant','invalid_client','invalid_request','unsupported_grant_type','invalid_scope','INVALID_ORIGIN','MISSING_ORIGIN','UNAUTHORIZED_CLIENT','INVALID_CODE','INVALID_CODE_VERIFIER','ACCESS_DENIED','FORBIDDEN'}
+ for key in ('error','code'):
+  value=data.get(key)
+  if isinstance(value,str) and value in allowed:return value
+ # Classify only; never expose arbitrary response text or credentials.
+ text=str(data.get('error_description',''))+' '+str(data.get('message',''))
+ if 'origin' in text.lower():return 'origin_rejected'
+ if 'client' in text.lower() and 'public' in text.lower():return 'public_client_rejected'
+ return 'unclassified_json_rejection'
+
 def login(client_id,notify):
  global TOKEN,EXPIRES,STATUS
  original_notify=notify
@@ -59,14 +79,9 @@ def login(client_id,notify):
   clear()
   code=getattr(exc,'code',None)
   reason=''
-  if code:
-   try:
-    response=json.loads(exc.read(65536))
-    value=response.get('error','')
-    if value in ('invalid_grant','invalid_client','invalid_request','unsupported_grant_type','invalid_scope'):reason=': '+value
-   except Exception:pass
+  if code:reason=': '+rejection_detail(exc)
   elif isinstance(exc,ValueError) and str(exc)=='missing UserRead / ModelsRead / MediaRead permissions':
    reason=': enable UserRead, ModelsRead and MediaRead in OAuth Apps, then reconnect'
-  notify(False,'Civitai connection failed'+(' (HTTP '+str(code)+')' if code else ' ('+type(exc).__name__+')')+reason+'.')
+  notify(False,'Civitai token exchange failed'+(' (HTTP '+str(code)+')' if code else ' ('+type(exc).__name__+')')+reason+'.')
 
  finally:LOGIN_LOCK.release()
