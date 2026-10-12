@@ -14,6 +14,10 @@ CATALOG['en'].update(TEXTS)
 IMAGE_MODEL_HELP='生成情報を含むPNG専用です。対応するモデル名・ハッシュ値、またはComfyUIの生成用ノード情報を、調査済みライブラリと照合します。Civitaiの画像に限りません。情報のない通常のPNGや、見た目だけでは使用モデルを判別できません。情報があっても一部のモデルを特定できない場合があります。'
 CATALOG['en'][IMAGE_MODEL_HELP]='Requires a PNG containing supported generation metadata: model names/hashes or a ComfyUI prompt graph. Matches these records against the scanned library; images need not come from Civitai. Ordinary PNGs without this metadata cannot identify models from appearance alone. Even with metadata, some models may remain unidentified.'
 
+CATALOG['pt-BR'].update({
+ '作者別一覧':'Autores','一覧を更新':'Atualizar lista','モデルの更新確認':'Verificar atualizações dos modelos','トリガーワードをコピー':'Copiar palavras de ativação','バージョンの説明を比較':'Comparar descrições das versões','画像から使用モデルを探す':'Encontrar modelos usados na imagem','この画像の使用モデル':'Modelos usados nesta imagem','作者':'Autor','手持ちモデル':'Modelo instalado','追加部分は緑、削除部分は赤で表示します。':'Adições em verde; remoções em vermelho.','調査済みで現在も存在するモデルのみを一覧表示します。':'Lista apenas modelos analisados que ainda estão neste PC.','公開APIが返す一般向け画像を切り替えます。':'Navegue pelas imagens para público geral retornadas pela API pública.','前の画像':'Imagem anterior','次の画像':'Próxima imagem','タグをすべて開く':'Expandir tudo','すべて閉じる':'Recolher tudo',
+ IMAGE_MODEL_HELP:'Requer um PNG com metadados de geração compatíveis: nomes/hashes de modelos ou grafo de prompt do ComfyUI. Compara com a biblioteca analisada; imagens não precisam vir do Civitai. PNG sem esses dados não revela modelos pela aparência. Mesmo com metadados, alguns modelos podem não ser identificados.'})
+
 def selected(app):
  return [app.gallery_rows[int(i)] for i in app.gallery_list.selection()]
 def init(app):

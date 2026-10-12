@@ -4,12 +4,16 @@ import tkinter as tk
 class ControlFlow(tk.Frame):
  def __init__(self,parent,align='left',**kwargs):
   super().__init__(parent,**kwargs);self.align=align;self.items=None;self.pending=None;self.scheduler=self._root()
-  self.bind('<Configure>',self.schedule);self.scheduler.after_idle(self.reflow)
+  self.bind('<Configure>',self.schedule);self.bind('<Destroy>',self.cancel,add='+');self.pending=self.scheduler.after_idle(self.reflow)
+ def cancel(self,event=None):
+  if event is None or event.widget is self:
+   if self.pending:self.scheduler.after_cancel(self.pending);self.pending=None
  def schedule(self,event=None):
   if self.pending:self.scheduler.after_cancel(self.pending)
   self.pending=self.scheduler.after_idle(self.reflow)
  def reflow(self):
   self.pending=None
+  if not self.winfo_exists():return
   if self.items is None:
    left=[];right=[]
    for child in self.pack_slaves():

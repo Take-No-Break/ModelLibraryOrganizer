@@ -24,7 +24,7 @@ class Release17Tests(unittest.TestCase):
     texts.append(str(w.getvar(w.cget('textvariable'))))
    if isinstance(w,tk.Text):
     text=w.get('1.0','end');texts.append(text)
-    if 'A desktop utility for inspecting' in text:about=True
+    if 'Revisa y organiza modelos locales de IA' in text:about=True
    for text in texts:
     if re.search('[ぁ-んァ-ヶ一-龯]',text) and text not in i18n.LANGS.values():bad.append(text)
   self.assertEqual(bad,[]);self.assertTrue(about)

@@ -62,6 +62,20 @@ class Tooltip:
 class LocalizedText(tk.Text):
  def insert(self,index,chars,*args):return super().insert(index,tr(chars),*args)
 class LocalizedToplevel(tk.Toplevel):
+ def __init__(self,*args,**kwargs):
+  super().__init__(*args,**kwargs)
+  self._center_scheduler=self._root()
+  self._center_job=self._center_scheduler.after_idle(self._initial_center)
+  self.bind('<Destroy>',self._cancel_center,add='+')
+ def _cancel_center(self,event):
+  if event.widget is self and self._center_job:
+   self._center_scheduler.after_cancel(self._center_job);self._center_job=None
+ def _initial_center(self):
+  self._center_job=None
+  if self.winfo_exists():
+   from display import center_popup
+   center_popup(self,self.master.winfo_toplevel())
+
  def title(self,string=None):return super().title(tr(string) if string is not None else None)
  def geometry(self,value=None):
   if value is not None:
@@ -70,6 +84,7 @@ class LocalizedToplevel(tk.Toplevel):
    match=re.fullmatch(r'(\d+)x(\d+)(.*)',str(value))
    if match:
     width,height=scaled_window_size(self,int(match[1]),int(match[2]))
+    width=min(width,max(320,self.winfo_screenwidth()-60));height=min(height,max(220,self.winfo_screenheight()-100))
     value=f'{width}x{height}'+match[3]
   return super().geometry(value)
 class LocalizedTreeview(native_ttk.Treeview):

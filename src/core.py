@@ -462,10 +462,14 @@ class Engine:
                 if h.exists() and not os.path.samefile(d,h):raise ValueError('リンク先が置き換わっています')
             for note in op.get('notes',[]):
                 p=Path(note['path']).resolve()
+                permitted={Path(name).resolve().with_name(Path(name).name+'.source.txt') for name in [op['destination'],*op['links']]}
+                if p not in permitted or not safe_tree(Path(note['path'])):raise ValueError('History note must be a model source TXT sidecar.')
                 if not p.is_relative_to(root):raise ValueError('履歴のTXTパス不正')
                 if p.exists() and digest(p)!=note['sha']:raise ValueError('配布元TXTが編集されています。復元を中止')
             if note:=op.get('moved_note'):
                 ns=Path(note['source']);nd=Path(note['destination'])
+                if ns!=s.with_name(s.name+'.source.txt') or nd!=d.with_name(d.name+'.source.txt'):raise ValueError('Invalid moved model source TXT paths.')
+                if (ns.exists() and not safe_tree(ns)) or (nd.exists() and not safe_tree(nd)):raise ValueError('Cannot restore a linked source TXT.')
                 if nd.exists() and (ns.exists() or snapshot(nd)!=note['snapshot']):raise ValueError('移動した配布元TXTが変更されています')
                 if not nd.exists() and not ns.exists():raise ValueError('配布元TXTが見つかりません')
             ops.append((op,s,d))

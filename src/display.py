@@ -1,5 +1,6 @@
 """Windows DPI setup and consistent readable Tk fonts."""
 import sys
+import tkinter as tk
 from tkinter import font
 
 def center_popup(window,parent):
@@ -7,7 +8,12 @@ def center_popup(window,parent):
     width=window.winfo_width();height=window.winfo_height()
     x=parent.winfo_rootx()+(parent.winfo_width()-width)//2
     y=parent.winfo_rooty()+(parent.winfo_height()-height)//2
-    window.geometry(f'{width}x{height}{x:+d}{y:+d}')
+    # Bypass LocalizedToplevel.geometry: dimensions here are already physical pixels.
+    if 0<=parent.winfo_rootx()<window.winfo_screenwidth():
+        x=max(0,min(x,window.winfo_screenwidth()-width))
+    if 0<=parent.winfo_rooty()<window.winfo_screenheight():
+        y=max(0,min(y,window.winfo_screenheight()-height))
+    tk.Wm.geometry(window,f'{width}x{height}{x:+d}{y:+d}')
 
 def enable_dpi():
     if sys.platform != 'win32': return

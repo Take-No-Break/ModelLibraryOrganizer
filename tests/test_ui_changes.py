@@ -75,7 +75,7 @@ class LayoutAndOptions(UIChanges):
   row={'source':'demo.safetensors','kind':'loras','info':{'triggers':['unique'],'description':'desc'},'metadata':{'secret':'data'}}
   from note_format import note_content
   text=note_content(row,['triggers'])
-  self.assertIn('Type: loras',text);self.assertIn('unique',text);self.assertNotIn('secret',text);self.assertNotIn('[Model description]',text)
+  self.assertIn('Model type: loras',text);self.assertIn('unique',text);self.assertNotIn('secret',text);self.assertNotIn('[Model description]',text)
  def test_stale_preview_ignored(self):
   self.app.gallery_generation=2
   with patch.object(self.app,'display_gallery') as display:

@@ -36,6 +36,10 @@
 
 附带 `Uninstall.cmd`，用于移除已记录的应用文件，保留模型库和用户数据。**卸载程序尚未运行或测试。** 已进行本地测试和打包程序启动验证，但没有宣称完成另一台电脑或虚拟机上的测试。
 
+## 应用内帮助
+
+**About**显示简短介绍、离线与更新设置及支持链接。旁边的**How to use**说明Models、Model inspection、Training data、Tools、History / Restore。诊断先显示状态摘要，详细日志可另行查看或保存。[Discord支持](https://discord.gg/KPGjqWEWXB)。
+
 ## 整理模型库
 
 ![模型列表：类型、家族及建议目标位置](docs/screenshots/models.jpg)
@@ -119,7 +123,7 @@ SeaArt 和 Tensor.Art 不会被自动查询：本应用没有经过验证的反�
 
 ### Image to Text
 
-本项目目前实现的适配器为 **PixAI、JoyCaption、CL Tagger 和 Taggerine**，并非所有 Image to Text 模型的完整列表。在 **Image to Text model folder** 选择模型目录，再在 **Model** 选择对应适配器。需要包含该适配器所需文件的完整模型包，单个或任意 `.safetensors` 文件并不足够。其他架构需要兼容适配器的实现，否则可能加载失败。阈值设置因适配器而异，可能不适用于其他模型。权重和依赖项需另行安装。
+本项目目前实现的适配器为 **PixAI、JoyCaption、CL Tagger 和 Taggerine**，并非所有 Image to Text 模型的完整列表。在 **Image to Text model folder** 选择模型目录，再在 **Model** 选择对应适配器。需要包含该适配器所需文件的完整模型包，单个或任意 `.safetensors` 文件并不足够。其他架构需要兼容适配器的实现，否则可能加载失败。阈值设置因适配器而异，可能不适用于其他模型。权重和依赖项需另行安装。 PixAI在ComfyUI中执行所选模型包内的Python。只使用可信模型包；来源匹配并不验证代码安全性。
 
 ![Image to Text：模型设置和工作流预览](docs/screenshots/image-to-text.jpg)
 

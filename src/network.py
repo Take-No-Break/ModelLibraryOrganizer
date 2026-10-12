@@ -23,7 +23,7 @@ def request_json(url):
     remaining=COOLDOWN.get(host,0)-time.time()
     if remaining>0:
         record(host,operation,'一時停止中',remaining);raise ServicePaused(f'{host}: 一時停止中。約{int(remaining)+1}秒後に再調査してください')
-    req=urllib.request.Request(url,headers={'User-Agent':'ModelLibraryOrganizer/1.2','Accept':'application/json'})
+    req=urllib.request.Request(url,headers={'User-Agent':'ModelLibraryOrganizer/1.0.0','Accept':'application/json'})
     try:
         with urllib.request.urlopen(req,timeout=18) as response:
             body=response.read(8*1024*1024+1)

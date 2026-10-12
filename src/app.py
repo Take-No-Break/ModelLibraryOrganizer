@@ -50,15 +50,23 @@ class App(Panels,CaptionUI,DatasetEditor,SupportUI,FeatureUI,RestoreUI,ResultUI,
         style=ttk.Style();style.configure('Treeview',rowheight=scaled_window_size(root,27,27)[0])
         outer=ttk.Frame(root,padding=4);outer.pack(fill='both',expand=True)
         shell=outer
-        self.tabs=ttk.Notebook(shell);self.tabs.pack(fill='both',expand=True)
+        self.tabs=ttk.Notebook(shell,style='Main.TNotebook');self.tabs.pack(fill='both',expand=True)
+        self._navigation_compact=None
+        def fit_navigation(event):
+            if event.widget is not self.tabs:return
+            compact=event.width<scaled_window_size(root,820,1)[0]
+            if compact!=self._navigation_compact:
+                self._navigation_compact=compact
+                ttk.Style().configure('Main.TNotebook.Tab',font=('Yu Gothic UI',8 if compact else 9),padding=(3 if compact else 8,3))
+        self.tabs.bind('<Configure>',fit_navigation,add='+')
         self.pages={};self.page_notebooks={};self.page_hosts={}
         from scroll_pages import ScrollablePage,scroll_wheel
         root.bind_all('<MouseWheel>',scroll_wheel)
-        groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性'),('authors','作者別一覧')]),('training','学習データ',[('captions','Image to Text'),('texts','Edit Text' if __import__('i18n').LANG=='ja' else 'テキスト編集'),('tag_ranking','Tag rankings'),('tag_editor','Tag editor')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('restore','履歴・復元',[('restore','履歴・復元')])]
+        groups=[('results','調査結果',[('results','調査結果')]),('models','モデル一覧',[('models','モデル一覧')]),('inspect','モデル確認',[('preview','プレビュー'),('compatibility','互換性'),('authors','作者別一覧')]),('training','学習データ',[('captions','Image to Text'),('texts','Edit Text' if __import__('i18n').LANG=='ja' else 'テキスト編集'),('tag_ranking','Tag rankings'),('tag_editor','Tag editor')]),('tools','ツール',[('tools','ツール')]),('help','About',[('help','About')]),('howto','How to use',[('howto','How to use')]),('restore','履歴・復元',[('restore','履歴・復元')])]
         for group,title,children in groups:
             parent=ttk.Frame(self.tabs,padding=2);self.tabs.add(parent,text=tr(title))
             if len(children)==1:
-                host=ScrollablePage(parent,fit_width=(children[0][0]=='models'));host.pack(fill='both',expand=True);key=children[0][0];self.pages[key]=host.body;self.page_hosts[key]=parent
+                host=ScrollablePage(parent,fit_width=(children[0][0] in ('models','help','howto','tools')));host.pack(fill='both',expand=True);key=children[0][0];self.pages[key]=host.body;self.page_hosts[key]=parent
             else:
                 notebook=ttk.Notebook(parent);notebook.pack(fill='both',expand=True)
                 for key,label in children:

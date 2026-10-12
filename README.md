@@ -36,6 +36,10 @@ Use an AI assistant to guide you through this repository or README: [Complete co
 
 `Uninstall.cmd` is included. It removes recorded application files while leaving model libraries and user data. **The uninstaller has not been executed or tested.** This release has local tests and packaged startup verification; a separate-PC or virtual-machine test is not claimed.
 
+## In-app help
+
+**About** gives a short overview, offline/update settings and support links. **How to use**, beside About, explains Models, Model inspection, Training data, Tools and History / Restore. Support opens a readable status summary first; detailed logs can be viewed or saved separately. [Discord support](https://discord.gg/KPGjqWEWXB).
+
 ## Organize a model library
 
 ![Models: file types, families and proposed destinations](docs/screenshots/models.jpg)
@@ -120,7 +124,7 @@ Create and edit image captions for LoRA or checkpoint training datasets. Image t
 
 ### Image to Text
 
-The adapters currently implemented in this project are **PixAI, JoyCaption, CL Tagger and Taggerine**; this is not a list of every Image to Text model available. Select your model directory in **Image to Text model folder**, then select the matching adapter in **Model**. Use a complete model bundle with the files required by that adapter. A standalone or arbitrary `.safetensors` file is not sufficient. Other architectures need a compatible adapter implementation and may fail to load. Threshold settings are adapter-specific and may not apply to a different model. Weights and model dependencies must be installed separately.
+The adapters currently implemented in this project are **PixAI, JoyCaption, CL Tagger and Taggerine**; this is not a list of every Image to Text model available. Select your model directory in **Image to Text model folder**, then select the matching adapter in **Model**. Use a complete model bundle with the files required by that adapter. A standalone or arbitrary `.safetensors` file is not sufficient. Other architectures need a compatible adapter implementation and may fail to load. Threshold settings are adapter-specific and may not apply to a different model. Weights and model dependencies must be installed separately. PixAI executes Python supplied in the selected model bundle inside ComfyUI. Use trusted model bundles; source identification alone does not verify their code.
 
 ![Image to Text: model settings and workflow preview](docs/screenshots/image-to-text.jpg)
 

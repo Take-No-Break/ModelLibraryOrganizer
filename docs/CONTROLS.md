@@ -9,6 +9,8 @@ This guide describes the visible controls and dialogs, including what they chang
 | Control | What it does |
 | --- | --- |
 | Results | Opens saved operation reports. |
+| About | Short overview, offline/update settings and support links. |
+| How to use | Task-based guidance for Models, Model inspection, Training data, Tools and History / Restore. |
 | Models | Opens file identification and organization proposals. |
 | Model inspection → Preview | Shows model information and available preview images. |
 | Model inspection → Compatibility | Compares LoRA → Checkpoint or Checkpoint → LoRA using scanned base model families. |
@@ -284,9 +286,11 @@ A scan inventory alone contains paths, not executed moves. It needs linked move 
 
 | Control | What it does |
 | --- | --- |
-| Overview / Identification and organization / Offline and privacy / Support & Updates / About | Opens the corresponding guide section. |
+| About | Shows a short app description and settings/support controls. |
+| How to use | Opens the task-based guide next to About. |
 | Fully offline | Blocks external API, preview and update requests; local tools and local ComfyUI remain available. Turning it on also disables new public API lookups. |
-| Network diagnostics / support logs | Shows a sanitized local diagnostic report. |
+| Network diagnostics / support logs | Shows a readable summary of recent connection/error records. Detailed log reveals the sanitized JSON separately. |
+| Discord support | Opens the configured Discord invite in the browser; nothing is posted automatically. |
 | Save diagnostic log | Exports JSON for you to inspect/share yourself; no automatic upload. |
 | Open support page | Opens repository Issues or the configured HTTPS support page. Does not submit a report. |
 | GitHub repository | Opens the configured repository. |
@@ -320,3 +324,5 @@ Choose Base model family and Model type to combine filters. All removes that fil
 - Compatibility direction can be LoRA → Checkpoint or Checkpoint → LoRA. Both use the same saved pair assessment. Family similarity remains an estimate, not a verified loader test.
 - Version comparison uses a larger colour-coded legend: additions green, removals red.
 - ss_datasets and ss_tag_frequency are training metadata. Tag numbers are recorded frequencies, not confidence scores or generation prompt weights.
+
+Popup dialogs initially center on the parent window. Their initial size is limited to the screen; DPI centering does not rescale dimensions twice. The main tab row uses smaller spacing and text in narrow windows.

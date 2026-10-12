@@ -356,3 +356,5 @@ CATALOG['en'].update({"選択した履歴の変更前の配置へ戻します。
 # Explicit display labels; internal model classification codes remain unchanged.
 for code, labels in {'en': ['Model type', 'Base model family', 'Identification confidence'], 'es': ['Tipo de modelo', 'Familia del modelo base', 'Confianza de identificación'], 'zh-CN': ['模型类型', '基础模型系列', '识别可信度'], 'zh-TW': ['模型類型', '基礎模型系列', '辨識可信度'], 'pt-BR': ['Tipo de modelo', 'Família do modelo base', 'Confiança da identificação'], 'de': ['Modelltyp', 'Basismodellfamilie', 'Identifikationssicherheit'], 'th': ['ประเภทโมเดล', 'ตระกูลโมเดลพื้นฐาน', 'ความมั่นใจในการระบุ']}.items():
  CATALOG[code].update(dict(zip(("モデル種類","ベースモデル系統","識別の確かさ"),labels)))
+
+CATALOG['pt-BR']['選択した履歴の変更前の配置へ戻します。復元済みの履歴も再確認できます。記録済みの場所から同じファイルを特定できない場合や競合がある場合は停止します。']='Restaura a organização anterior à operação selecionada. Históricos já restaurados podem ser verificados novamente. Para se o mesmo arquivo não puder ser identificado nos caminhos registrados ou houver conflito.'

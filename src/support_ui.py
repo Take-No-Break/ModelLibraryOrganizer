@@ -103,60 +103,8 @@ class SupportUI:
     if not str(url).startswith('https://'):raise ValueError('HTTPS URL required.')
     webbrowser.open(url)
  def help_center(self):
-    win=self.open_panel('help','About')
-    tabs=ttk.Notebook(win);tabs.pack(fill='both',expand=True,padx=12,pady=12)
-    titles=['概要','識別と整理','オフライン・プライバシー','Support & Updates']
-    for idx,title in enumerate(titles):
-        frame=ttk.Frame(tabs,padding=12);tabs.add(frame,text=tr(title))
-        body=LocalizedText(frame,wrap='word',height=12);body.pack(fill='both',expand=True);body.insert('1.0',GUIDE[i18n.LANG][idx]+('\n\n'+GUIDE[i18n.LANG][4] if idx==3 else ''));body.configure(state='disabled')
-        if idx==2:
-            offline=tk.BooleanVar(value=network.OFFLINE)
-            def toggle(v=offline):
-                network.OFFLINE=v.get();self.preferences['offline']=v.get();self.save_preferences()
-                if v.get():self.online.set(False)
-            ttk.Checkbutton(frame,text='完全オフライン（すべての通信を停止）',variable=offline,command=toggle,tooltip='ネットワーク通信はオフライン設定で無効です。').pack(anchor='w',pady=8)
-        if idx==3:
-            ttk.Button(frame,text='通信診断・サポートログ…',command=self.network_report).pack(side='left',padx=5)
-            ttk.Button(frame,text='問い合わせページを開く',command=self.open_support).pack(side='left',padx=5)
-        if idx==3:
-            ttk.Button(frame,text='GitHub repository',command=self.open_repository).pack(side='left',padx=5)
-            repo=self.publisher.get('github_repository','')
-            if repo:
-                link=ttk.Label(frame,text='https://github.com/'+valid_repo(repo),foreground=__import__('tag_theme').BLUE,cursor='hand2');link.pack(anchor='w',pady=5);link.bind('<Button-1>',lambda event:self.open_repository())
-            auto=tk.BooleanVar(value=self.preferences.get('auto_updates',False))
-            def toggle_auto(v=auto):self.preferences['auto_updates']=v.get();self.save_preferences()
-            ttk.Checkbutton(frame,text='起動時に更新を確認（任意）',variable=auto,command=toggle_auto,tooltip='最新版の確認にはインターネット接続が必要です。自動インストールはしません。').pack(anchor='w',pady=8)
-            ttk.Button(frame,text='更新を確認',command=self.check_updates).pack(side='left',padx=5)
-            ttk.Button(frame,text='更新・サポート設定',command=self.publisher_settings).pack(side='left',padx=5)
-    about=ttk.Frame(tabs,padding=12);tabs.add(about,text='About')
-    tabs.select(about)
-    body=tk.Text(about,wrap='word');body.pack(fill='both',expand=True)
-    body.insert('1.0',f'''Model Library Organizer {VERSION}
-
-A desktop utility for inspecting and organizing local AI model libraries.
-
-Identify models using file structure, embedded metadata, SHA256 hashes and available public source information. Review proposed destinations and hard links before applying file changes. Unidentified files remain visible for review.
-
-Compatibility colors are estimates: green indicates the same family, yellow indicates related SDXL families, and gray indicates no known relationship or insufficient information. Successful loading does not guarantee useful results. You can record a separate assessment for each LoRA/checkpoint pair after testing it.
-
-Image to Text exports editable ComfyUI workflow templates for supported image analysis models. The app can submit analysis to an already running local ComfyUI server, or export a workflow to run there. It does not launch or restart ComfyUI. Current outputs use an adapter-named image subfolder containing original-image hardlinks and matching TXT. The text editor supports individual and batch caption edits. Model source TXT instead documents model identity, source links, family, trigger words and other selected metadata; it is not a training caption.
-
-Model weights, ComfyUI and a GPU runtime are not bundled. Choose folders on each computer; the app does not search every drive. Preview images are shown inside the app, not written beside your models.
-
-Online lookup can send model hashes and search names to source services. Offline mode disables external requests; workflow template creation and text editing remain available. Diagnostic reports are not uploaded automatically. Updates and support links depend on the distributor's configured publication address.
-
-Source lookup limits: Combined scanning automatically checks Civitai and Hugging Face. Civitai uses SHA256 lookup; Hugging Face searches up to five filename-based candidates on their main branch, then verifies file SHA256. It is not a global hash index. SeaArt's published interfaces do not provide a verified public reverse-SHA256 lookup for this app; SeaArt-only downloads can remain unidentified. Tensor.Art supports website hash searches: enter @sha256 followed by the file's SHA256 in its search box (https://tensor.art/updates). An automatic public reverse-hash API has not been verified for this app, so it does not automatically query Tensor.Art. The lookup report distinguishes these limitations from requests actually made. Check the original download page and add its URL manually. A matching filename alone is not proof. Safetensors is a file format, not a distribution website.
-
-Scan and restoration: Every scan first saves a JSON inventory of original file/folder paths under scan-history. Scanning does not move files. Applying approved changes separately writes a move journal under history before the first change and links it to that inventory. Select the inventory or open its JSON in History / Restore to inspect it; restore uses the linked move journals. Inventory is not a file-content backup, and it cannot undo edits/deletions or changes made outside this app.
-
-Source descriptions and model names retain their original language. Exported model information uses English field labels. This application is independent of ComfyUI, Civitai, Hugging Face and the model authors.
-
-Folder organization: Starting a scan offers the existing type/category layout or provider / creator / type / family. Creator mode uses verified source metadata; Hugging Face namespaces may be organizations. Unknown creators or types stay in place for review. Already organized libraries can be scanned again to propose the other layout. The destination models root remains user-selected. Provider-first layouts can require corresponding ComfyUI model-search configuration. Only empty former source folders are removed after approved moves; installed files, independent duplicate copies and existing hard-link aliases are not deleted. Empty-folder changes are recorded with the move history. Recognized ComfyUI workflow JSON files are included; arbitrary JSON settings are not treated as workflows.
-
-Create source TXT fills in missing model information files. A scan alone does not create these TXT files. Applying organization creates a TXT if missing and moves an existing source TXT with its model. The button skips existing TXT rather than creating extra copies or overwriting edits. Update readable TXT is a separate explicit operation with backup.
-
-Tag editor statistics count how many caption TXT files contain each comma-separated tag, counting a tag once per file. The denominator includes existing TXT, including empty files, and new captions with pending edits; images without a TXT and without edits are excluded. This is dataset usage frequency, not rating/tag confidence from an AI model. Source-information .source.txt files are excluded. Tag editor shares the folder and frequency statistics. Scroll the left-hand image thumbnails and select them with Ctrl/Shift. Compact rounded tags can be sorted by count/name, searched and filtered by category; clicking a statistics tag filters the images containing it. Category filters show matching tags, not image recognition: local keyword rules assign categories, and right-click offers manual overrides. Click an image's tag to edit it, then Enter to apply or Esc to cancel; × removes it from that image. Bulk Insert, Remove, Remove unwanted, Delete category and Delete all tags use the Selected / Filtered / All scope. Registering an unwanted tag alone does not remove existing tags; it excludes that exact tag from future Bulk Insert, and Remove unwanted stages explicit removal. Save all changes opens a before/after review, then updates original TXT with conflict checks and caption-backups. Images are never edited. No auto-tagging or model inference is performed by these tabs.
-''');body.configure(state='disabled')
+    from help_pages import build_help
+    build_help(self)
  def publisher_settings(self):
     win=self.open_panel('help','更新・サポート設定')
     ttk.Label(win,text='GitHub: owner/repository').pack(anchor='w',padx=16,pady=10)
@@ -192,13 +140,5 @@ Tag editor statistics count how many caption TXT files contain each comma-separa
     if not url:messagebox.showinfo('公開先未設定','公開先を設定してください。ログは自動送信されません。');return
     self.open_external(url)
  def network_report(self):
-    report=support_report(self.engine.data)
-    win=self.open_panel('results','通信診断・サポートログ')
-    box=LocalizedText(win,wrap='word');box.pack(fill='both',expand=True,padx=12,pady=12)
-    box.insert('1.0',GUIDE[i18n.LANG][3]+'\n\n'+json.dumps(report,ensure_ascii=False,indent=2));box.configure(state='disabled')
-    def export():
-        p=filedialog.asksaveasfilename(parent=win,defaultextension='.json',initialfile='model-organizer-support.json')
-        if p:atomic_json(p,report);messagebox.showinfo('保存完了','必要な場合、このJSONを配布者に送ってください。',parent=win)
-    ttk.Button(win,text='診断ログを保存…（自動送信なし）',command=export).pack(side='left',padx=12,pady=10)
-    ttk.Button(win,text='問い合わせページを開く',command=self.open_support).pack(side='left',padx=12,pady=10)
-
+    from help_pages import diagnostics_page
+    diagnostics_page(self,support_report(self.engine.data))

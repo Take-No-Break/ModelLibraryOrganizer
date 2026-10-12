@@ -202,6 +202,7 @@ class Gallery:
    with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'ModelLibraryOrganizer/1.0'}),timeout=20) as response:raw=response.read(20*1024*1024+1)
    if len(raw)>20*1024*1024:raise ValueError('Image exceeds 20 MB')
    with Image.open(io.BytesIO(raw)) as source:
+    if source.width*source.height>40_000_000:raise ValueError('Preview exceeds 40 million pixels')
     source.thumbnail((450,480));image=source.convert('RGB')
    return image,''
   except Exception as exc:return None,'画像を取得できません: '+type(exc).__name__
@@ -222,8 +223,8 @@ class Gallery:
    return generation,row,info,image,error,candidates,index
   self.work(run,'gallery_image')
  def gallery_image(self,value):
+  if not value or value[0]!=self.gallery_generation:return
   generation,row,info,image,error,candidates,index=value
-  if generation!=self.gallery_generation:return
   self.gallery_candidates=candidates;self.gallery_index=index
   self.gallery_active_row=row;self.gallery_active_info=info
   self.gallery_counter.set(str(index+1 if candidates else 0)+' / '+str(len(candidates)));self.update_gallery_buttons()

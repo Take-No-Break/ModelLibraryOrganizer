@@ -28,7 +28,9 @@ class ReleaseTests(unittest.TestCase):
       yield from children(child)
     labels=[str(w.cget('text')) for w in children(app.pages['tools']) if 'text' in w.keys()]
     self.assertFalse(any('SeaArt' in text for text in labels))
-   finally:root.update_idletasks();root.destroy()
+   finally:
+    for job in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(job)
+    root.update_idletasks();root.destroy()
  def test_completion_popup_keeps_tab_and_persists_history(self):
   with tempfile.TemporaryDirectory() as folder:
    root=tk.Tk();root.withdraw()
@@ -41,7 +43,9 @@ class ReleaseTests(unittest.TestCase):
     self.assertEqual(len(list((Path(folder)/'operation-results').glob('*.json'))),1)
     app.refresh_results();self.assertTrue(any(r['text']=='workflow.json' for r in app.result_records.values()))
     app.record_result('Second result','captions saved');self.assertEqual(len(app.result_records),2)
-   finally:root.update_idletasks();root.destroy()
+   finally:
+    for job in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(job)
+    root.update_idletasks();root.destroy()
  def test_caption_review_is_popup_without_navigation(self):
   with tempfile.TemporaryDirectory() as folder:
    root=tk.Tk();root.withdraw()
@@ -52,20 +56,24 @@ class ReleaseTests(unittest.TestCase):
     self.assertEqual(app.current_page(),before)
     self.assertTrue(any(isinstance(w,tk.Toplevel) for w in root.winfo_children()))
     self.assertTrue(any('BEFORE\nold\nAFTER\nnew' in r['text'] for r in app.result_records.values()))
-   finally:root.update_idletasks();root.destroy()
+   finally:
+    for job in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(job)
+    root.update_idletasks();root.destroy()
  def test_grouped_navigation_and_percentage(self):
   with tempfile.TemporaryDirectory() as folder:
    root=tk.Tk();root.withdraw()
    try:
     app=App(root,Path(folder));root.update()
-    self.assertEqual(len(app.tabs.tabs()),7)
+    self.assertEqual(len(app.tabs.tabs()),8)
     app.select_page(app.pages['preview']);self.assertEqual(app.current_page(),str(app.pages['preview']))
     app.select_page(app.pages['texts']);self.assertEqual(app.current_page(),str(app.pages['texts']))
     self.assertEqual(app.tabs.tab(app.page_hosts['help'],'text'),'About')
     app.set_progress(17,100);self.assertEqual(app.progress_label.get(),'17%')
     self.assertEqual(float(app.progress['value']),17)
     self.assertEqual(str(app.progress['mode']),'determinate')
-   finally:root.update_idletasks();root.destroy()
+   finally:
+    for job in root.tk.splitlist(root.tk.call('after','info')):root.after_cancel(job)
+    root.update_idletasks();root.destroy()
  def test_scan_counts_completed_files(self):
   with tempfile.TemporaryDirectory() as folder:
    base=Path(folder);source=base/'models';source.mkdir()
