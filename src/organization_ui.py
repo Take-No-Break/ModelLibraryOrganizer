@@ -18,11 +18,15 @@ CATALOG['en'][CREATOR]='2. Provider → Creator → Model type → Base model fa
 def choose_layout(app):
     import organization_text
     win=LocalizedToplevel(app.root);win.title('フォルダーの整理方法');win.transient(app.root);win.grab_set();win.geometry('720x500')
+    from display import scaled_window_size
+    minimum=scaled_window_size(win,620,380);win.minsize(min(minimum[0],win.winfo_screenwidth()-60),min(minimum[1],win.winfo_screenheight()-100))
     result=[None];choice=tk.StringVar(value=app.preferences.get('organization_layout','category'))
     ttk.Label(win,text='どの方法でフォルダーを整理しますか？',padding=12).pack(anchor='w')
     ttk.Radiobutton(win,text='1. 種類・カテゴリー別（既存の方法）',variable=choice,value='category').pack(anchor='w',padx=15,pady=6)
     ttk.Radiobutton(win,text='2. 配布サイト・投稿者別',variable=choice,value='creator').pack(anchor='w',padx=15,pady=6)
-    preview=LocalizedText(win,height=12,wrap='word');preview.pack(fill='both',expand=True,padx=15,pady=8)
+    frame=ttk.Frame(win);frame.pack(fill='both',expand=True,padx=15,pady=8)
+    preview=LocalizedText(frame,height=12,wrap='word');preview.pack(side='left',fill='both',expand=True)
+    scroll=ttk.Scrollbar(frame,command=preview.yview);scroll.pack(side='right',fill='y');preview.configure(yscrollcommand=scroll.set)
     def show(*_):
         text=EXISTING if choice.get()=='category' else CREATOR
         preview.configure(state='normal');preview.delete('1.0','end');preview.insert('1.0',text);preview.configure(state='disabled')

@@ -52,15 +52,16 @@ def build_help(app):
  def auto_change():app.preferences['auto_updates']=auto.get();app.save_preferences()
  ttk.Checkbutton(page,text='起動時に更新を確認（任意）',variable=auto,command=auto_change).pack(anchor='w',pady=4)
  controls=ControlFlow(page);controls.pack(fill='x',pady=8)
- for label,fn in [('How to use',lambda:app.select_page(app.pages['howto'])),('GitHub repository',app.open_repository),('Discord support',app.open_support),('更新を確認',app.check_updates),('更新・サポート設定',app.publisher_settings)]:ttk.Button(controls,text=label,command=fn).pack(side='left',padx=3)
+ for label,fn in [('GitHub repository',app.open_repository),('Discord support',app.open_support),('更新を確認',app.check_updates),('更新・サポート設定',app.publisher_settings)]:ttk.Button(controls,text=label,command=fn).pack(side='left',padx=3)
  page=app.pages['howto']
  for child in page.winfo_children():child.destroy()
  tabs=ttk.Notebook(page);tabs.pack(fill='both',expand=True)
- from help_pages_locales import GUIDES
+ from help_pages_locales import GUIDES,ADDITIONS
  guide=JA if i18n.LANG=='ja' else dict(zip(EN,GUIDES[i18n.LANG])) if i18n.LANG in GUIDES else EN
- for title,body in guide.items():
+ for index,(title,body) in enumerate(guide.items()):
   frame=ttk.Frame(tabs,padding=8);tabs.add(frame,text=title)
-  text_panel(frame,body)
+  extra=ADDITIONS.get(i18n.LANG,ADDITIONS['en'])[index]
+  text_panel(frame,body+'\n\n'+extra)
 
 def diagnostics_page(app,report):
  win=app.open_panel('results','通信診断・サポートログ')

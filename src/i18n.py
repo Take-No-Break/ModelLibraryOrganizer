@@ -85,6 +85,7 @@ class LocalizedToplevel(tk.Toplevel):
    if match:
     width,height=scaled_window_size(self,int(match[1]),int(match[2]))
     width=min(width,max(320,self.winfo_screenwidth()-60));height=min(height,max(220,self.winfo_screenheight()-100))
+    self._requested_size=(width,height)
     value=f'{width}x{height}'+match[3]
   return super().geometry(value)
 class LocalizedTreeview(native_ttk.Treeview):

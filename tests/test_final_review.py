@@ -25,7 +25,7 @@ class ReviewSafety(unittest.TestCase):
   parent.winfo_width.return_value=1000;parent.winfo_height.return_value=800
   parent.winfo_rootx.return_value=100;parent.winfo_rooty.return_value=100
   with patch('display.tk.Wm.geometry') as geometry:center_popup(window,parent)
-  geometry.assert_called_once_with(window,'800x600+200+200');window.geometry.assert_not_called()
+  geometry.assert_called_once_with(window,'+200+200');window.geometry.assert_not_called()
  def test_all_languages_have_about_and_usage(self):
   from help_pages import ABOUT,JA,EN
   from help_pages_locales import GUIDES
@@ -46,6 +46,8 @@ class ReviewUI(unittest.TestCase):
     self.assertEqual(labels[labels.index('About')+1],'How to use')
     about=app.pages['help']
     self.assertFalse(any(w.winfo_class()=='TNotebook' for w in about.winfo_children()))
+    buttons=[w for frame in about.winfo_children() for w in frame.winfo_children() if w.winfo_class()=='TButton']
+    self.assertFalse(any(w.cget('text')=='How to use' for w in buttons))
     app.network_report()
     windows=[w for w in root.winfo_children() if isinstance(w,tk.Toplevel)]
     self.assertEqual(len(windows),1);windows[0].withdraw()

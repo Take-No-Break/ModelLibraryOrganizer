@@ -6,14 +6,20 @@ from tkinter import font
 def center_popup(window,parent):
     window.update_idletasks()
     width=window.winfo_width();height=window.winfo_height()
+    requested=getattr(window,'_requested_size',None)
+    if isinstance(requested,tuple) and len(requested)==2 and (width<=1 or height<=1):
+        width,height=requested
+    elif width<=1 or height<=1:
+        width=window.winfo_reqwidth();height=window.winfo_reqheight()
     x=parent.winfo_rootx()+(parent.winfo_width()-width)//2
     y=parent.winfo_rooty()+(parent.winfo_height()-height)//2
-    # Bypass LocalizedToplevel.geometry: dimensions here are already physical pixels.
+    # Position only: mapping may not have applied the requested dimensions yet.
+    # Writing winfo_width/height here can freeze a new dialog at 1x1.
     if 0<=parent.winfo_rootx()<window.winfo_screenwidth():
         x=max(0,min(x,window.winfo_screenwidth()-width))
     if 0<=parent.winfo_rooty()<window.winfo_screenheight():
         y=max(0,min(y,window.winfo_screenheight()-height))
-    tk.Wm.geometry(window,f'{width}x{height}{x:+d}{y:+d}')
+    tk.Wm.geometry(window,f'{x:+d}{y:+d}')
 
 def enable_dpi():
     if sys.platform != 'win32': return

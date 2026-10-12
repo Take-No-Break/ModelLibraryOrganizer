@@ -38,3 +38,64 @@ GUIDES['zh-TW']=[
 'Find duplicates 比較 SHA-256，不自動刪除。\n\nCheck workflow references 檢查核准移動影響的支援載入器路徑，選取 JSON 後確認修復並備份。不執行工作流程，不支援所有自訂節點。\n\nIdentification results 顯示當前辨識結果，不重新掃描或移動。\n\nDiagnostics / Support 顯示近期連線與錯誤，儲存紀錄後自行附到 Discord，不自動上傳。\n\nAPI 關閉停止新來源查詢；About 的 Fully offline 也停止外部圖片與更新，本機 ComfyUI 仍可使用。',
 '1. 掃描記錄原路徑，移動另外儲存歷程。\n2. History / Restore 選取紀錄或開啟 JSON。\n3. Restore this layout 復原符合條件的檔案，已復原歷程可再檢查。\n4. 紀錄缺失、檔案變更或路徑衝突會停止復原。\n\n無移動歷程的掃描 JSON 無法復原。歷程不是模型內容備份。只開啟可信紀錄；Results 查看舊報告。'
 ]
+
+# Additional decisions that are not covered by the numbered quick-start steps.
+# Section order matches Models, Model inspection, Training data, Tools, History.
+ADDITIONS={
+ 'ja':[
+  '整理先に必要な種類別・用途別・系統別フォルダを作るのは、移動案を承認して実行するときです。「Unknown / Not Found」は情報を特定できなかった状態で、モデルが手元にないという意味ではありません。移動先が違う場合は、実行前に「移動先・リンクを編集」で直します。',
+  '更新確認は同じ配布元モデルの新しいバージョンを知らせる機能です。新しいモデルを自動でダウンロードしたり、手持ちのファイルを置き換えたりはしません。画像のモデル照合で「名前だけ一致」と表示されたものは、ハッシュで同一ファイルを確認した結果とは区別してください。',
+  'アプリからの実行はTXTを保存します。書き出したワークフローから保存する場合は「Save matching TXT in ComfyUI」をオンにします。どちらも出力先の既存TXTは上書きせずスキップします。\n\nTag editorの一括操作はSelected（選択中）、Filtered（絞り込み中）、All（読み込んだ全件）で対象を決めます。タグを変えただけでは未保存です。「Save All」は表示中の画像だけでなく、読み込んだ全件の未保存変更を確認して保存します。',
+  'ワークフロー参照の修正対象は、同じ整理先modelsルート内で行う承認済みの移動です。「変更が見つからない」はすべてのワークフローが正しいという意味ではありません。モデルを別のmodelsルートへ移した場合や未対応ノードは、ComfyUIで参照を確認してください。',
+  '学習用キャプションの編集を戻すときはEdit Textの「TXT変更を元に戻す」を使います。モデルの移動履歴と、学習用TXTの編集バックアップは別の記録です。'
+ ],
+ 'en':[
+  'Required type, purpose and family folders are created when you approve and apply moves. Unknown / Not Found means the available information did not identify the model; it does not mean you lack the file. Use Edit destination / links before applying an incorrect destination.',
+  'Check updates reports newer versions of the same source model. It does not download updates or replace local files. In image model matching, Name match only is not the same as verifying the file by hash.',
+  'Running from this app saves TXT. To save from an exported workflow, enable Save matching TXT in ComfyUI. Both skip existing output TXT rather than overwriting it.\n\nTag editor bulk actions use Selected, Filtered or All (all loaded records). Tag changes remain unsaved until you save. Save All reviews pending changes across all loaded records, including images currently hidden by a filter.',
+  'Workflow reference repairs cover approved moves inside the same destination models root. No changes found does not certify that every workflow reference is correct. Check references in ComfyUI after moving between models roots or using unsupported nodes.',
+  'To undo training caption edits, use Undo TXT changes in Edit Text. Model move history and training TXT edit backups are separate records.'
+ ],
+ 'zh-CN':[
+  '需要的类型、用途及系列目录在批准并执行移动时创建。Unknown / Not Found 表示现有信息无法识别模型，不代表本地没有该文件。目标路径不正确时，请在执行前使用 Edit destination / links 修改。',
+  '检查更新报告同一来源模型的新版本，不会自动下载或替换本地文件。图片模型匹配中的 Name match only 不等于通过哈希验证同一文件。',
+  '从本应用执行会保存 TXT。使用导出的工作流保存时，请开启 Save matching TXT in ComfyUI。两种方式均跳过输出目录内已有的 TXT，不覆盖它们。\n\nTag editor 批量操作通过 Selected（选中）、Filtered（筛选结果）或 All（全部已加载记录）选择范围。修改标签后仍未保存；Save All 会审核并保存所有已加载记录的待保存修改，包括当前被筛选隐藏的图片。',
+  '工作流引用修复仅覆盖同一目标 models 根目录内的已批准移动。没有发现修改不代表所有引用都正确。跨 models 根目录移动或使用不支持的节点时，请在 ComfyUI 检查引用。',
+  '撤销训练文本编辑请使用 Edit Text 的 Undo TXT changes。模型移动历史与训练 TXT 编辑备份是不同的记录。'
+ ],
+ 'zh-TW':[
+  '需要的類型、用途與系列資料夾，在核准並執行移動時建立。Unknown / Not Found 表示現有資訊無法辨識模型，不代表本機沒有該檔案。目標路徑不正確時，請在執行前以 Edit destination / links 修改。',
+  '更新確認會提示同一來源模型的新版本，不會自動下載或取代本機檔案。圖片模型比對中的 Name match only，不等於以雜湊驗證同一檔案。',
+  '從本應用程式執行會儲存 TXT。從匯出的工作流程儲存時，請啟用 Save matching TXT in ComfyUI。兩種方式都會略過輸出資料夾中既有的 TXT，不覆寫它們。\n\nTag editor 批次操作以 Selected（選取）、Filtered（篩選結果）或 All（全部已載入紀錄）決定範圍。修改標籤後仍未儲存；Save All 會確認並儲存所有已載入紀錄的待存修改，包括目前被篩選隱藏的圖片。',
+  '工作流程參照修復只涵蓋同一目標 models 根目錄內的已核准移動。未找到變更，不代表所有參照都正確。跨 models 根目錄移動或使用未支援節點時，請在 ComfyUI 檢查參照。',
+  '還原訓練文字的編輯，請使用 Edit Text 的 Undo TXT changes。模型移動歷程與訓練 TXT 編輯備份是不同的紀錄。'
+ ],
+ 'pt-BR':[
+  'As pastas necessárias de tipo, finalidade e família são criadas ao aprovar e executar as movimentações. Unknown / Not Found significa que as informações disponíveis não identificaram o modelo, não que o arquivo esteja ausente. Corrija o destino com Edit destination / links antes de executar.',
+  'Check updates informa novas versões do mesmo modelo na origem. Não baixa atualizações nem substitui arquivos locais. Na busca de modelos em imagens, Name match only não equivale à verificação do arquivo por hash.',
+  'Executar pelo aplicativo salva TXT. Para salvar pelo workflow exportado, ative Save matching TXT in ComfyUI. Ambos ignoram TXT já existentes na saída, sem sobrescrevê-los.\n\nAs ações em lote do Tag editor usam Selected (selecionados), Filtered (filtrados) ou All (todos os registros carregados). As edições ficam pendentes até salvar. Save All revisa as alterações de todos os registros carregados, inclusive imagens ocultas pelo filtro.',
+  'O reparo de referências cobre movimentações aprovadas dentro da mesma raiz models de destino. Nenhuma alteração encontrada não garante que todas as referências estejam corretas. Confira no ComfyUI após mover entre raízes models ou usar nós não suportados.',
+  'Para desfazer edições de legendas de treinamento, use Undo TXT changes em Edit Text. O histórico de movimentações de modelos e os backups de edição TXT são registros separados.'
+ ],
+ 'es':[
+  'Las carpetas necesarias de tipo, uso y familia se crean al aprobar y ejecutar los movimientos. Unknown / Not Found indica que la información disponible no identificó el modelo, no que falte el archivo. Corrige el destino con Edit destination / links antes de ejecutar.',
+  'Check updates avisa de versiones nuevas del mismo modelo de origen. No descarga actualizaciones ni sustituye archivos locales. En la búsqueda de modelos en imágenes, Name match only no equivale a verificar el archivo por hash.',
+  'Ejecutar desde la aplicación guarda TXT. Para guardar desde un workflow exportado, activa Save matching TXT in ComfyUI. Ambos omiten los TXT existentes en la salida sin sobrescribirlos.\n\nLas acciones masivas de Tag editor usan Selected (seleccionados), Filtered (filtrados) o All (todos los registros cargados). Los cambios quedan pendientes hasta guardar. Save All revisa los cambios de todos los registros cargados, incluidas las imágenes ocultas por el filtro.',
+  'La reparación de referencias cubre movimientos aprobados dentro de la misma raíz models de destino. No encontrar cambios no garantiza que todas las referencias sean correctas. Compruébalas en ComfyUI tras mover entre raíces models o usar nodos no compatibles.',
+  'Para deshacer cambios de textos de entrenamiento, usa Undo TXT changes en Edit Text. El historial de movimientos de modelos y las copias de edición TXT son registros distintos.'
+ ],
+ 'de':[
+  'Benötigte Typ-, Zweck- und Familienordner werden beim Freigeben und Ausführen der Verschiebungen erstellt. Unknown / Not Found bedeutet, dass die verfügbaren Informationen das Modell nicht identifizieren; die Datei fehlt dadurch nicht. Falsche Ziele vor dem Ausführen mit Edit destination / links korrigieren.',
+  'Check updates meldet neuere Versionen desselben Quellmodells. Updates werden nicht heruntergeladen und lokale Dateien nicht ersetzt. Bei der Modellsuche in Bildern entspricht Name match only keiner Dateiprüfung per Hash.',
+  'Die Ausführung aus dieser App speichert TXT. Beim exportierten Workflow dazu Save matching TXT in ComfyUI aktivieren. Beide überspringen vorhandene Ausgabe-TXT, ohne sie zu überschreiben.\n\nStapelaktionen im Tag editor gelten für Selected (ausgewählt), Filtered (gefiltert) oder All (alle geladenen Einträge). Änderungen bleiben bis zum Speichern ungespeichert. Save All prüft Änderungen aller geladenen Einträge, auch der vom Filter ausgeblendeten Bilder.',
+  'Die Referenzreparatur umfasst freigegebene Verschiebungen innerhalb derselben models-Zielwurzel. Auch wenn keine Änderungen gefunden werden, können Referenzen falsch sein. Nach Verschiebungen zwischen models-Wurzeln oder bei nicht unterstützten Nodes in ComfyUI prüfen.',
+  'Trainingstext-Änderungen mit Undo TXT changes in Edit Text rückgängig machen. Modell-Verschiebeverlauf und TXT-Editierbackups sind getrennte Aufzeichnungen.'
+ ],
+ 'th':[
+  'โฟลเดอร์ประเภท จุดประสงค์ และตระกูลที่จำเป็นจะสร้างเมื่ออนุมัติและดำเนินการย้าย Unknown / Not Found หมายถึงข้อมูลที่มีระบุโมเดลไม่ได้ ไม่ได้แปลว่าไม่มีไฟล์ หากปลายทางผิด ให้แก้ด้วย Edit destination / links ก่อนดำเนินการ',
+  'Check updates แจ้งเวอร์ชันใหม่ของโมเดลจากแหล่งเดิม ไม่ดาวน์โหลดหรือแทนที่ไฟล์ในเครื่อง ในการหาโมเดลจากภาพ Name match only ไม่เท่ากับการยืนยันไฟล์ด้วยแฮช',
+  'การเรียกใช้จากแอปนี้บันทึก TXT หากใช้เวิร์กโฟลว์ที่ส่งออก ให้เปิด Save matching TXT in ComfyUI เพื่อบันทึก ทั้งสองวิธีข้าม TXT ที่มีอยู่ในปลายทางโดยไม่เขียนทับ\n\nการแก้ไขแบบกลุ่มใน Tag editor เลือกขอบเขต Selected (ที่เลือก), Filtered (ที่กรอง) หรือ All (รายการที่โหลดทั้งหมด) การแก้แท็กยังไม่บันทึกจนกว่าจะสั่งบันทึก Save All ตรวจการแก้ไขของรายการที่โหลดทั้งหมด รวมภาพที่ตัวกรองซ่อนไว้',
+  'การแก้การอ้างอิงเวิร์กโฟลว์ครอบคลุมการย้ายที่อนุมัติภายในราก models ปลายทางเดียวกัน ไม่พบการเปลี่ยนแปลงไม่ได้ยืนยันว่าการอ้างอิงทั้งหมดถูกต้อง หากย้ายข้ามราก models หรือใช้โหนดที่ไม่รองรับ ให้ตรวจใน ComfyUI',
+  'หากต้องการยกเลิกการแก้ข้อความฝึก ให้ใช้ Undo TXT changes ใน Edit Text ประวัติย้ายโมเดลกับข้อมูลสำรองการแก้ TXT เป็นคนละบันทึก'
+ ]
+}
